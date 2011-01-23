@@ -285,6 +285,8 @@ public class CLI {
                     return;
                 }
 
+                archive.updateRootObject(current.toBytes(), RootObjectKind.FILE_MANIFEST);
+
                 try {
                     List<String> keys = Arrays.asList(cache.readValue("remote"));
                     LinkDigest refs =
