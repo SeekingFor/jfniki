@@ -22,7 +22,7 @@
  * "fniki" (a wiki implementation running over Freenet).
  */
 
-package fniki.plugin;
+package fniki.freenet.plugin;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

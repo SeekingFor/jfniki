@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
 # TIP:
-# You should be able to copy this script anywhere you want and make a symlink
-# to the jfniki.jar file in your build directory, in the directory you copy it to.
+# You should be able to copy this script anywhere you want. Just make symlinks
+# to the jfniki.jar and freenet.jar files in the same directory.
 
 # TIP:
 # Look in the XML file generate by FMS when you export and identity on

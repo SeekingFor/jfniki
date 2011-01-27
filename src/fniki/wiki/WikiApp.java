@@ -380,7 +380,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     }
 
     // NO trailing slash.
-    private static String containerPrefix() { return "/plugins/fniki.plugin.Fniki"; }
+    private static String containerPrefix() { return "/plugins/fniki.freenet.plugin.Fniki"; }
 
     ////////////////////////////////////////////////////////////
     // Wiki context implementations.

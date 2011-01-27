@@ -26,7 +26,7 @@ package fniki.freenet.filter;
 
 import fniki.wiki.ContentFilter;
 
-// Keep Freenet gook out of my code.
+// Keep explicit Freenet dependencies out of my code.
 public class ContentFilterFactory {
     public static ContentFilter create(String containerPrefix, String fproxyPrefix) {
         return new WikiContentFilter(containerPrefix, fproxyPrefix);

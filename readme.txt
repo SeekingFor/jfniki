@@ -1,4 +1,4 @@
-20110122
+20110126
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -30,9 +30,14 @@ Edit the script/jfniki.sh to set PRIVATE_FMS_SSK and FMS_ID correctly and commen
 Look at http://127.0.0.1:8083 with your web browser.
 
 BUILD FREENET PLUGIN:
+The plugin code is included in the jfniki.jar but there is no UI for configuration yet,
+so you have to edit the source code and recompile.
+
 Manually edit plugin/src/fniki/plugin/Fniki.java to include your FMS_ID and PRIVATE_FMS_SSK.
 
-ant plugin
-load the jar file from ./build/jar/jfniki-plugin.jar
+ant jar
+load the jar file from ./build/jar/jfniki.jar
 
-
+KNOWN ISSUES:
+o Pages don't auto-refresh. You need to manually reload to see status changes.
+  [Freenet ContentFilter is eating meta-refresh???]

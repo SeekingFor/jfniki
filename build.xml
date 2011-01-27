@@ -11,7 +11,7 @@
     <delete dir="${classes}"/>
   </target>
 
-  <!--Build external dependencies from source, but keep them separate. -->
+  <!-- Build external dependencies from source, but keep them separate. -->
   <target name="compile.alien.src">
     <mkdir dir="${classes}"/>
     <javac srcdir="${alien.src}" destdir="${classes}" debug="true">
@@ -19,7 +19,8 @@
     </javac>
   </target>
 
-  <target name="check.for.freenet.jar">
+  <target name="compile" depends="compile.alien.src">
+    <mkdir dir="${classes}"/>
     <mkdir dir="${alien.libs}"/>
     <fail message="No freenet.jar! Copy freenet.jar into: ${alien.libs}">
       <condition>
@@ -30,10 +31,6 @@
         </not>
       </condition>
     </fail>
-  </target>
-
-  <target name="compile" depends="check.for.freenet.jar, compile.alien.src">
-    <mkdir dir="${classes}"/>
     <javac srcdir="${src}" destdir="${classes}" debug="true">
         <compilerarg line="-encoding utf8"/>
         <classpath>
@@ -42,32 +39,13 @@
     </javac>
   </target>
 
-  <target name="compile.plugin.src" depends="check.for.freenet.jar, compile">
-    <mkdir dir="${classes}"/>
-    <javac srcdir="${plugin.src}" destdir="${classes}" debug="true">
-      <compilerarg line="-encoding utf8"/>
-      <classpath>
-        <pathelement location="${alien.libs}/freenet.jar"/>
-      </classpath>
-    </javac>
-  </target>
-
+  <!-- jfniki.jar contains both standalone and plugin code too. -->
   <target name="jar" depends="compile">
     <mkdir dir="${jars}"/>
     <jar destfile="${jars}/jfniki.jar" basedir="${classes}">
       <manifest>
         <attribute name="Main-Class" value="fniki.standalone.ServeHttp"/>
-      </manifest>
-    </jar>
-  </target>
-
-  <!-- jfniki-plugin.jar contains all the standalone code too. -->
-  <target name="plugin" depends="compile.plugin.src">
-    <mkdir dir="${jars}"/>
-    <jar destfile="${jars}/jfniki-plugin.jar" basedir="${classes}">
-      <manifest>
-        <attribute name="Main-Class" value="fniki.standalone.ServeHttp"/>
-        <attribute name="Plugin-Main-Class" value="fniki.plugin.Fniki"/>
+        <attribute name="Plugin-Main-Class" value="fniki.freenet.plugin.Fniki"/>
       </manifest>
     </jar>
   </target>
