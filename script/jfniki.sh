@@ -29,9 +29,9 @@ export set JAR_NAME="jfniki.jar"
 # If you want to move it to somewhere else, modify the line below.
 #export set JAR_PATH="${0%%/*}/../build/jar"
 export set SCRIPT_DIR=`dirname $0`
+
 export set JAR_PATH="${SCRIPT_DIR}/../build/jar"
 export set JAR_FILE="${JAR_PATH}/${JAR_NAME}"
-
 if [ ! -f ${JAR_FILE} ];
 then
     export set JAR_PATH=${SCRIPT_DIR}
@@ -49,7 +49,30 @@ then
     fi
 fi
 
-echo "Using jar file: ${JAR_FILE}"
+echo "Using fniki.jar: ${JAR_FILE}"
+echo
+
+export set FN_JAR_NAME="freenet.jar"
+export set FN_JAR_PATH="${SCRIPT_DIR}/../alien/libs"
+export set FN_JAR_FILE="${FN_JAR_PATH}/${FN_JAR_NAME}"
+if [ ! -f ${FN_JAR_FILE} ];
+then
+    export set FN_JAR_PATH=${SCRIPT_DIR}
+    export set FN_JAR_FILE="${FN_JAR_PATH}/${FN_JAR_NAME}"
+    if [ ! -f ${FN_JAR_FILE} ];
+    then
+        echo "Looked in:"
+        echo "${SCRIPT_DIR}/../alien/libs/${FN_JAR_NAME}"
+        echo "and"
+        echo "${FN_JAR_FILE}"
+        echo
+        echo "but still can't find the freenet.jar file!"
+        echo "Not sure what's going on. :-("
+        exit -1
+    fi
+fi
+
+echo "Using freenet.jar: ${FN_JAR_FILE}"
 echo
 
 # FCP configuration
@@ -68,7 +91,7 @@ export set FPROXY_PREFIX="http://127.0.0.1:8888/"
 
 export set JAVA_CMD="java"
 
-${JAVA_CMD} -jar ${JAR_FILE} \
+${JAVA_CMD} -classpath ${JAR_FILE}:${FN_JAR_FILE} fniki.standalone.ServeHttp \
     ${LISTEN_PORT} \
     ${FCP_HOST} \
     ${FCP_PORT} \

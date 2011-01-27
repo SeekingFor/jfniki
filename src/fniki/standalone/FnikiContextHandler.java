@@ -25,6 +25,7 @@
 package fniki.standalone;
 
 import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import net.freeutils.httpserver.HTTPServer;
 
 import fniki.wiki.Query;
@@ -43,13 +44,53 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
 
     private static class WikiQuery implements Query {
         private final HTTPServer.Request mParent;
+        private final String mSaveText;
+        private final String mSavePage;
 
-        WikiQuery(HTTPServer.Request parent) {
-            mParent = parent;
+        // Hmmmm... can't figure out any other way to know when part is done.
+        private final String readAsUtf8(HTTPServer.MultipartIterator.Part part) throws IOException {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            while (part.body.available() > 0) { // Do better? Does it matter?
+                int oneByte = part.body.read();
+                if (oneByte == -1) {
+                    throw new IOException("Unexpected EOF???");
+                }
+                baos.write(oneByte);
+            }
+
+            return new String(baos.toByteArray(), "utf8");
         }
 
+
+        WikiQuery(HTTPServer.Request parent) throws IOException {
+            mParent = parent;
+
+            String saveText = null;
+            String savePage = null;
+            if (parent.getHeaders().getParams("Content-Type").
+                containsKey("multipart/form-data")) {
+                HTTPServer.MultipartIterator iter = new HTTPServer.MultipartIterator(parent);
+                while (iter.hasNext()) {
+                    HTTPServer.MultipartIterator.Part part = iter.next();
+                    if (part.name.equals("savetext")) {
+                        saveText = readAsUtf8(part);
+                    } else if (part.name.equals("savepage")) {
+                        savePage = readAsUtf8(part);
+                    }
+                }
+                parent.consumeBody();
+            }
+            mSaveText = saveText;
+            mSavePage = savePage;
+        }
         public boolean containsKey(String paramName) {
             try {
+                if (paramName.equals("savetext")) {
+                    return mSaveText != null;
+                } else if (paramName.equals("savepage")) {
+                    return mSavePage != null;
+                }
                 return mParent.getParams().containsKey(paramName);
             } catch (IOException ioe) {
                 return false;
@@ -58,6 +99,11 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
 
         public String get(String paramName) {
             try {
+                if (paramName.equals("savetext")) {
+                    return mSaveText;
+                } else if (paramName.equals("savepage")) {
+                    return mSavePage;
+                }
                 return mParent.getParams().get(paramName);
             } catch (IOException ioe) {
                 return null;

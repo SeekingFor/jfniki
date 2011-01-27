@@ -47,6 +47,8 @@ import fniki.wiki.child.QueryError;
 import fniki.wiki.child.Submitting;
 import fniki.wiki.child.WikiContainer;
 
+import fniki.freenet.filter.ContentFilterFactory;
+
 // Aggregates a bunch of other Containers and runs UI state machine.
 public class WikiApp implements ChildContainer, WikiContext {
     // Delegate to implement link, image and macro handling in wikitext.
@@ -71,10 +73,15 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     private ArchiveManager mArchiveManager;
 
+    private ContentFilter mFilter;
     private String mFproxyPrefix = "http://127.0.0.1:8888/";
     private boolean mAllowImages = true;
     private String mFormPassword;
-    private boolean mUseMultiPartForms;
+
+    // final because it is called from the ctor.
+    private final void resetContentFilter() {
+        mFilter = ContentFilterFactory.create(mFproxyPrefix, containerPrefix());
+    }
 
     public WikiApp(ArchiveManager archiveManager) {
         mParserDelegate = new LocalParserDelegate(this, archiveManager);
@@ -91,6 +98,8 @@ public class WikiApp implements ChildContainer, WikiContext {
 
         mState = mWikiContainer;
         mArchiveManager = archiveManager;
+
+        resetContentFilter();
     }
 
     public void setFproxyPrefix(String value) {
@@ -98,6 +107,7 @@ public class WikiApp implements ChildContainer, WikiContext {
             throw new IllegalArgumentException("Expected a value starting with 'http' and ending with '/'");
         }
         mFproxyPrefix = value;
+        resetContentFilter();
     }
 
     public void setAllowImages(boolean value) {
@@ -106,10 +116,6 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     public void setFormPassword(String value) {
         mFormPassword = value;
-    }
-
-    public void setUseMultiPartForms(boolean value) {
-        mUseMultiPartForms = value;
     }
 
     private ChildContainer setState(WikiContext context, ChildContainer container) {
@@ -267,7 +273,8 @@ public class WikiApp implements ChildContainer, WikiContext {
         try {
             ChildContainer childContainer = routeRequest(context);
             System.err.println("Request routed to: " + childContainer.getClass().getName());
-            return childContainer.handle(context);
+
+            return mFilter.filter(childContainer.handle(context));
         } catch (ChildContainerException cce) {
             // Normal, used to do redirection.
             throw cce;
@@ -399,11 +406,6 @@ public class WikiApp implements ChildContainer, WikiContext {
             return containerPrefix();
         } else if (keyName.equals("form_password") && mFormPassword != null) {
             return mFormPassword;
-        } else if (keyName.equals("form_encoding")) {
-            if (mUseMultiPartForms) {
-                return "multipart/form-data";
-            }
-            return "application/x-www-form-urlencoded";
         }
 
         return defaultValue;

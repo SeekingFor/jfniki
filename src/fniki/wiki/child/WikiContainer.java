@@ -112,16 +112,20 @@ public class WikiContainer implements ChildContainer {
 
     private String handleSave(WikiContext context, Query form) throws ChildContainerException, IOException {
         // Name is included in the query data.
+        System.err.println("handleSave -- ENTERED");
         String name = form.get("savepage");
         String wikiText = form.get("savetext");
 
+        System.err.println("handleSave --got params");
         if (name == null || wikiText == null) {
             context.raiseAccessDenied("Couldn't parse parameters from POST.");
         }
 
         System.err.println("Writing: " + name);
         context.getStorage().putPage(name, wikiText);
+        System.err.println("Raising redirect!");
         context.raiseRedirect(context.makeLink("/" + name), "Redirecting...");
+        System.err.println("SOMETHING WENT WRONG!");
         return "unreachable code";
     }
 
@@ -210,7 +214,13 @@ public class WikiContainer implements ChildContainer {
                       "\" enctype=\"");
 
         // IMPORTANT: Only multipart/form-data encoding works in plugins.
-        buffer.append(context.getString("form_encoding", "application/x-www-form-urlencoded"));
+        // IMPORTANT: Must be multipart/form-date even for standalone because
+        //            the Freenet ContentFilter rewrites the encoding in all forms
+        //            to this value.
+        buffer.append("multipart/form-data");
+
+        System.err.println("Sending form encoding: " + context.getString("form_encoding", "application/x-www-form-urlencoded"));
+
 
         buffer.append("\" accept-charset=\"UTF-8\">\n");
 
@@ -229,6 +239,7 @@ public class WikiContainer implements ChildContainer {
         buffer.append("</textarea>\n");
         buffer.append("<br><input type=submit value=\"Save\">\n");
         buffer.append("<input type=hidden name=formPassword value=\"");
+
         // IMPORTANT: Required by Freenet Plugin.
         buffer.append(context.getString("form_password", "FORM_PASSWORD_NOT_SET")); // DCI: % encode?
         buffer.append("\"/>\n");

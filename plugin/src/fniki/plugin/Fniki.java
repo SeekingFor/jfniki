@@ -90,9 +90,6 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
             // doesn't contain a hidden field with the freenet per boot form password.
             wikiApp.setFormPassword(pr.getNode().clientCore.formPassword);
 
-            // I couldn't get application/x-www-form-urlencoded forms to work.
-            wikiApp.setUseMultiPartForms(true);
-
             mWikiApp = wikiApp;
 
         } catch (IOException ioe) {

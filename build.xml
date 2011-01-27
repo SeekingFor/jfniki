@@ -19,14 +19,7 @@
     </javac>
   </target>
 
-  <target name="compile" depends="compile.alien.src">
-    <mkdir dir="${classes}"/>
-    <javac srcdir="${src}" destdir="${classes}" debug="true">
-    <compilerarg line="-encoding utf8"/>
-    </javac>
-  </target>
-
-  <target name="compile.plugin.src" depends="compile">
+  <target name="check.for.freenet.jar">
     <mkdir dir="${alien.libs}"/>
     <fail message="No freenet.jar! Copy freenet.jar into: ${alien.libs}">
       <condition>
@@ -37,7 +30,19 @@
         </not>
       </condition>
     </fail>
+  </target>
 
+  <target name="compile" depends="check.for.freenet.jar, compile.alien.src">
+    <mkdir dir="${classes}"/>
+    <javac srcdir="${src}" destdir="${classes}" debug="true">
+        <compilerarg line="-encoding utf8"/>
+        <classpath>
+        <pathelement location="${alien.libs}/freenet.jar"/>
+        </classpath>
+    </javac>
+  </target>
+
+  <target name="compile.plugin.src" depends="check.for.freenet.jar, compile">
     <mkdir dir="${classes}"/>
     <javac srcdir="${plugin.src}" destdir="${classes}" debug="true">
       <compilerarg line="-encoding utf8"/>
