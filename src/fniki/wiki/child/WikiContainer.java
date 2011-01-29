@@ -197,7 +197,7 @@ public class WikiContainer implements ChildContainer {
 
         buffer.append(makeLocalLink(context, "fniki/getversions", "confirm", "Discover"));
         buffer.append(" other recent version.<br>");
-        buffer.append("<a href=\"http://google.com\">Google</a>");
+
         buffer.append("</body></html>");
     }
 

@@ -49,7 +49,7 @@ import fniki.wiki.child.WikiContainer;
 
 import fniki.freenet.filter.ContentFilterFactory;
 
-// Aggregates a bunch of other Containers and runs UI state machine.
+// Aggregates a bunch of other ChildContainers and runs UI state machine.
 public class WikiApp implements ChildContainer, WikiContext {
     // Delegate to implement link, image and macro handling in wikitext.
     private final FreenetWikiTextParser.ParserDelegate mParserDelegate;
@@ -73,7 +73,10 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     private ArchiveManager mArchiveManager;
 
+    // Belt and braces. Run the ContentFilter from the Freenet fred codebase
+    // over all output before serving it.
     private ContentFilter mFilter;
+
     private String mFproxyPrefix = "http://127.0.0.1:8888/";
     private boolean mAllowImages = true;
     private String mFormPassword;
@@ -143,62 +146,6 @@ public class WikiApp implements ChildContainer, WikiContext {
     private ChildContainer routeRequest(WikiContext request)
         throws IOException {
 
-        // DCI: move this into the freenet plugin implementation
-        // mPath = "";
-        // mQuery = null;
-        // mAction = "";
-        // mTitle = "";
-
-        // System.err.println("Method: " + request.getMethod());
-        // String path = request.getPath();
-        // System.err.println(String.format("Raw Path: [%s]", path));
-
-        // String prefix = containerPrefix();
-        // if (!path.startsWith(prefix)) {
-        //     return mQueryError;
-        // }
-
-        // path = path.substring(prefix.length());
-        // if (path.equals("")) {
-        //     path = "/";
-        // }
-
-        // System.err.println(String.format("Local Path: [%s]", path));
-
-        // int slashCount = 0;
-        // for (int index = 0; index < path.length(); index++) {
-        //     if (path.charAt(index) == '/') {
-        //         slashCount++;
-        //     }
-        // }
-
-        // if (!path.startsWith("/")) {
-        //     System.err.println("Bad path!");
-        //     return mQueryError;
-        // }
-
-        // path = path.substring(1);
-
-        // Query query = new Query(request);
-        // System.err.println("Query: " + query.toString());
-        // String title = path;
-        // if (query.containsKey("title")) {
-        //     title = query.get("title");
-        // }
-
-        // // DCI: validate title here
-
-        // String action = "view";
-        // if (query.containsKey("action")) {
-        //     action = query.get("action");
-        // }
-
-        // mPath = path;
-        // mQuery = query;
-        // mAction = action;
-        // mTitle = title;
-
-        // The glue code is repsonsible for parsing.
         // Fail immediately if there are problems in the glue code.
         if (request.getPath() == null) {
             throw new RuntimeException("Assertion Failure: path == null");
