@@ -26,6 +26,7 @@ package fniki.freenet.plugin;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Set;
 
 import freenet.pluginmanager.AccessDeniedPluginHTTPException;
 import freenet.pluginmanager.FredPlugin;
@@ -39,6 +40,7 @@ import freenet.support.api.HTTPRequest;
 
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.Query;
+import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
 import fniki.wiki.WikiApp;
 
@@ -58,23 +60,9 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
         try {
             ArchiveManager archiveManager = new ArchiveManager();
 
-            // DCI: Parameter handling?
-            archiveManager.setFcpHost("127.0.0.1");
-            archiveManager.setFcpPort(9481);
-
-            archiveManager.setFmsHost("127.0.0.1");
-            archiveManager.setFmsPort(1119);
-
             // YOU MUST SET THESE OR THE PLUGIN WON'T LOAD.
-            archiveManager.setPrivateSSK("FMS_PRIVATE_SSK");
-            archiveManager.setFmsId("FMS_ID");
-
-            archiveManager.setFmsGroup("biss.test000");
-            archiveManager.setBissName("testwiki");
-
-            String fproxyPrefix = "http://127.0.0.1:8888/";
-            boolean enableImages = true;
-
+            // archiveManager.setPrivateSSK("FMS_PRIVATE_SSK");
+            archiveManager.setFmsId("SET_THE_FMS_ID");
             archiveManager.createEmptyArchive();
 
             WikiApp wikiApp = new WikiApp(archiveManager);
@@ -82,8 +70,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
             if (containerPrefix == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }
-            wikiApp.setFproxyPrefix(fproxyPrefix);
-            wikiApp.setAllowImages(enableImages);
+            wikiApp.setAllowImages(false); // User can enable
 
             // IMPORTANT:
             // HTTP POSTS will be rejected without any useful error message if your form
@@ -107,96 +94,63 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
 	}
     }
 
-    private static class PluginQuery implements Query {
+    private static class PluginQuery extends QueryBase {
         private final HTTPRequest mParent;
-        private final String mTitle;
-        private final String mAction;
-        private final String mSaveText;
-        private final String mSavePage;
+        private final String mPath;
 
-        PluginQuery(HTTPRequest parent, String path) {
-            mParent = parent;
+        public void readParams() throws IOException {
+            Set<String> allParams = paramsSet();
 
-            String title = path;
-            if (parent.isParameterSet("title")) {
-                title = parent.getParam("title");
+            // Read normal non-multipart params.
+            for (String name : allParams) {
+                if (!mParent.isParameterSet(name)) {
+                    continue;
+                }
+                mParamTable.put(name, mParent.getParam(name));
+                System.err.println("Set Param: " + name + " : " + mParamTable.get(name));
             }
-            mTitle = title;
 
-            // DCI: validate title here
-
-            String action = "view";
-            if (parent.isParameterSet("action")) {
-                action = parent.getParam("action");
-            }
-            mAction = action;
-
-            // Handle multipart form parameters.
-            System.err.println("Dumping list of parts...");
-            String saveText = "";
-            String savePage = "";
+            // Then read multipart params if there are any.
             try {
-                for (String part : parent.getParts()) {
-                    if (part.equals("savetext")) {
-                        // DCI: magic numbers
-                        saveText = new String(parent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
+                for (String part : mParent.getParts()) {
+                    if (!allParams.contains(part)) {
                         continue;
                     }
-                    if (part.equals("savepage")) {
-                        savePage = new String(parent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
-                    }
+
+                    String value = new String(mParent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
+                    mParamTable.put(part, value);
+                    System.err.println("Set multipart Param: " + part + " : " +
+                                       mParamTable.get(part));
                 }
             } catch (UnsupportedEncodingException ue) {
                 // Shouldn't happen.
                 ue.printStackTrace();
             }
-            mSaveText = saveText;
-            mSavePage = savePage;
 
-            parent.freeParts(); // DCI: test!, put in finally?
+            if (!mParamTable.containsKey("action")) {
+                System.err.println("Forced default action to view");
+                mParamTable.put("action", "view");
+            }
 
+            // DCI: title validation?
+            if (!mParamTable.containsKey("title")) {
+                mParamTable.put("title", mPath);
+            }
+            mParent.freeParts(); // DCI: test!, put in finally?
         }
 
-        public boolean containsKey(String paramName) {
-            if (paramName.equals("title") || paramName.equals("action") ||
-                paramName.equals("savetext") || paramName.equals("savepage")) {
-                return true;
-            }
-            return mParent.isParameterSet(paramName);
-        }
-
-        public String get(String paramName) {
-            if (paramName.equals("title")) {
-                return mTitle;
-            }
-            if (paramName.equals("action")) {
-                return mAction;
-            }
-            if (paramName.equals("savetext")) {
-                return mSaveText;
-            }
-            if (paramName.equals("savepage")) {
-                return mSavePage;
-            }
-            if (!containsKey(paramName)) {
-                return null;
-            }
-            return mParent.getParam(paramName);
+        PluginQuery(HTTPRequest parent, String path) throws IOException {
+            super();
+            mParent = parent;
+            mPath = path;
+            readParams();
         }
     }
 
     private static class PluginRequest implements Request {
         private final Query mQuery;
         private final String mPath;
-        PluginRequest(HTTPRequest parent, String containerPrefix) { // DCI throws IOException {
-            for (String key : parent.getParameterNames()) {
-                String value = parent.getParam(key);
-                if (value.length() > 128) {
-                    value = value.substring(0, 128) + "...";
-                }
-                System.err.println(String.format("[%s] => [%s]", key, value));
-            }
-
+        PluginRequest(HTTPRequest parent, String containerPrefix) throws IOException {
             String path = parent.getPath();
             if (!path.startsWith(containerPrefix)) {
                 // This should be impossible because of the way plugin requests are routed.
@@ -235,7 +189,11 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
         } catch(ChildContainerException serverError) {
             throw new ServerPluginHTTPException(serverError.getMessage(),
                                                 mWikiApp.getString("container_prefix", null));
+        } catch(IOException ioError) {
+            throw new ServerPluginHTTPException(ioError.getMessage(),
+                                                mWikiApp.getString("container_prefix", null));
         }
+
     }
 
     public String handleHTTPGet(HTTPRequest request) throws PluginHTTPException {

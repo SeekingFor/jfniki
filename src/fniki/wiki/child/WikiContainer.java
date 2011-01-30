@@ -198,6 +198,9 @@ public class WikiContainer implements ChildContainer {
         buffer.append(makeLocalLink(context, "fniki/getversions", "confirm", "Discover"));
         buffer.append(" other recent version.<br>");
 
+        buffer.append(makeLocalLink(context, "fniki/config", "view", "View"));
+        buffer.append(" configuration.<br>");
+
         buffer.append("</body></html>");
     }
 
@@ -218,10 +221,6 @@ public class WikiContainer implements ChildContainer {
         //            the Freenet ContentFilter rewrites the encoding in all forms
         //            to this value.
         buffer.append("multipart/form-data");
-
-        System.err.println("Sending form encoding: " + context.getString("form_encoding", "application/x-www-form-urlencoded"));
-
-
         buffer.append("\" accept-charset=\"UTF-8\">\n");
 
         buffer.append("<input type=hidden name=\"savepage\" value=\"");

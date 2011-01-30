@@ -49,7 +49,7 @@ public class ArchiveManager {
     private final static String FMS_HOST = "127.0.0.1";
     private final static int FMS_PORT = 1119;
     private final static String FMS_GROUP = "biss.test000";
-    private final static String BISS_NAME = "jfniki";
+    private final static String BISS_NAME = "testwiki";
     // Maximum number of versions to read from FMS.
     private final static int MAX_VERSIONS = 50;
 
@@ -94,12 +94,25 @@ public class ArchiveManager {
         mFmsId = value;
     }
 
+    public String getFmsId() { return mFmsId; }
+
     public void setFcpHost(String value) {mFcpHost = value; }
+    public String getFcpHost() { return mFcpHost; }
+
     public void setFcpPort(int value) {mFcpPort = value; }
+    public int getFcpPort() { return mFcpPort; }
+
     public void setFmsHost(String value) { mFmsHost = value; }
+    public String getFmsHost() { return mFmsHost; }
+
     public void setFmsPort(int value) { mFmsPort = value; }
+    public int getFmsPort() { return mFmsPort; }
+
     public void setFmsGroup(String value) { mFmsGroup = value; }
+    public String getFmsGroup() { return mFmsGroup; }
+
     public void setBissName(String value) { mBissName= value; }
+    public String getBissName() { return mBissName; }
 
     // DCI: Fix this to roll back state on exceptions.
     public void load(String uri) throws IOException {

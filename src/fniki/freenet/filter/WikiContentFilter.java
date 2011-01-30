@@ -76,8 +76,14 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * @throws CommentException If the URI is nvalid or unacceptable in some way.
      */
     public String processURI(String uri, String overrideType, boolean noRelative, boolean inline) throws CommentException {
-        // DCI: understand these parameters!
+        // inline is true for images (which we allow mod URI filtering).
+        // noRelative is true if you must return an absolute URI, which we don't allow.
         System.err.println("processURI(1): " + uri + " : " + overrideType + " : " + noRelative + " : " + inline);
+        if (noRelative) {
+            System.err.println("processURI(1): REJECTED URI because of noRelative.");
+            filterTripped();
+            return null;
+        }
         return processURI(uri, overrideType);
     }
 

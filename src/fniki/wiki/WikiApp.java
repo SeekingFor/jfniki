@@ -44,6 +44,7 @@ import fniki.wiki.child.LoadingArchive;
 import fniki.wiki.child.LoadingChangeLog;
 import fniki.wiki.child.LoadingVersionList;
 import fniki.wiki.child.QueryError;
+import fniki.wiki.child.SettingConfig;
 import fniki.wiki.child.Submitting;
 import fniki.wiki.child.WikiContainer;
 
@@ -59,7 +60,8 @@ public class WikiApp implements ChildContainer, WikiContext {
     private final ChildContainer mQueryError;
     private final ChildContainer mWikiContainer;
 
-    // Containers for asynchronous tasks.
+    // ChildContainers for modal UI states.
+    private final ChildContainer mSettingConfig;
     private final ChildContainer mLoadingVersionList;
     private final ChildContainer mLoadingArchive;
     private final ChildContainer mSubmitting;
@@ -94,6 +96,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         mQueryError = new QueryError();
         mWikiContainer = new WikiContainer();
 
+        mSettingConfig = new SettingConfig(this, archiveManager);
         mLoadingVersionList = new LoadingVersionList(archiveManager);
         mLoadingArchive = new LoadingArchive(archiveManager);
         mSubmitting = new Submitting(archiveManager);
@@ -195,8 +198,9 @@ public class WikiApp implements ChildContainer, WikiContext {
         }
 
         System.err.println("WikiApp.routeRequest: " + path);
-        if (path.equals("fniki/submit")) {
-            System.err.println("BC0");
+        if (path.equals("fniki/config")) {
+            return setState(request, mSettingConfig);
+        } else if (path.equals("fniki/submit")) {
             return setState(request, mSubmitting);
         } else if (path.equals("fniki/changelog")) {
             return setState(request, mLoadingChangeLog);

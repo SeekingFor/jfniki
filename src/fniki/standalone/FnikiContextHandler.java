@@ -26,9 +26,12 @@ package fniki.standalone;
 
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.util.Map;
+import java.util.Set;
 import net.freeutils.httpserver.HTTPServer;
 
 import fniki.wiki.Query;
+import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
 import fniki.wiki.WikiApp;
 
@@ -42,10 +45,9 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
     private final WikiApp mApp;
     private final String mContainerPrefix;
 
-    private static class WikiQuery implements Query {
+    private static class WikiQuery extends QueryBase {
         private final HTTPServer.Request mParent;
-        private final String mSaveText;
-        private final String mSavePage;
+        private final String mPath;
 
         // Hmmmm... can't figure out any other way to know when part is done.
         private final String readAsUtf8(HTTPServer.MultipartIterator.Part part) throws IOException {
@@ -62,52 +64,51 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
             return new String(baos.toByteArray(), "utf8");
         }
 
+        public void readParams() throws IOException {
+            Set<String> allParams = paramsSet();
 
-        WikiQuery(HTTPServer.Request parent) throws IOException {
-            mParent = parent;
+            // Read normal non-multipart params.
+            Map<String, String> parentParams = mParent.getParams();
+            for (String name : allParams) {
+                if (!parentParams.containsKey(name)) {
+                    continue;
+                }
+                System.err.println("Set Param: " + name + " : " + parentParams.get(name));
+                mParamTable.put(name, parentParams.get(name));
+            }
 
-            String saveText = null;
-            String savePage = null;
-            if (parent.getHeaders().getParams("Content-Type").
+            // Then read multipart params if there are any.
+            if (mParent.getHeaders().getParams("Content-Type").
                 containsKey("multipart/form-data")) {
-                HTTPServer.MultipartIterator iter = new HTTPServer.MultipartIterator(parent);
+                HTTPServer.MultipartIterator iter = new HTTPServer.MultipartIterator(mParent);
                 while (iter.hasNext()) {
                     HTTPServer.MultipartIterator.Part part = iter.next();
-                    if (part.name.equals("savetext")) {
-                        saveText = readAsUtf8(part);
-                    } else if (part.name.equals("savepage")) {
-                        savePage = readAsUtf8(part);
+                    if (!allParams.contains(part.name)) {
+                        continue;
                     }
+                    mParamTable.put(part.name, readAsUtf8(part));
+                    System.err.println("Set multipart Param: " + part.name + " : " +
+                                       mParamTable.get(part.name));
                 }
-                parent.consumeBody();
+                mParent.consumeBody();
             }
-            mSaveText = saveText;
-            mSavePage = savePage;
-        }
-        public boolean containsKey(String paramName) {
-            try {
-                if (paramName.equals("savetext")) {
-                    return mSaveText != null;
-                } else if (paramName.equals("savepage")) {
-                    return mSavePage != null;
-                }
-                return mParent.getParams().containsKey(paramName);
-            } catch (IOException ioe) {
-                return false;
+
+            if (!mParamTable.containsKey("action")) {
+                System.err.println("Forced default action to view");
+                mParamTable.put("action", "view");
+            }
+
+            // DCI: title validation?
+            if (!mParamTable.containsKey("title")) {
+                mParamTable.put("title", mPath);
             }
         }
 
-        public String get(String paramName) {
-            try {
-                if (paramName.equals("savetext")) {
-                    return mSaveText;
-                } else if (paramName.equals("savepage")) {
-                    return mSavePage;
-                }
-                return mParent.getParams().get(paramName);
-            } catch (IOException ioe) {
-                return null;
-            }
+        WikiQuery(HTTPServer.Request parent, String path) throws IOException {
+            super();
+            mParent = parent;
+            mPath = path;
+            readParams();
         }
     }
 
@@ -116,15 +117,6 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
         private final String mPath;
 
         WikiRequest(HTTPServer.Request parent, String containerPrefix) throws IOException {
-            mQuery = new WikiQuery(parent);
-            for (String key : parent.getParams().keySet()) {
-                String value = parent.getParams().get(key);
-                if (value.length() > 128) {
-                    value = value.substring(0, 128) + "...";
-                }
-                System.err.println(String.format("[%s] => [%s]", key, value));
-            }
-
             String path = parent.getPath();
             if (!path.startsWith(containerPrefix)) {
                 // This should be impossible because of the way HTTPServer routes requests.
@@ -138,26 +130,8 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                 path = path.substring(1).trim();
             }
 
-            // DCI: not sure that this stuff belongs here.
-            String title = path;
-            if (mQuery.containsKey("title")) {
-                title = mQuery.get("title");
-            } else {
-                parent.getParams().put("title", title);
-            }
-
-            // DCI: validate title here
-
-            String action = "view";
-            if (mQuery.containsKey("action")) {
-                action = mQuery.get("action");
-            } else {
-                parent.getParams().put("action", action);
-            }
             mPath = path;
-
-
-
+            mQuery = new WikiQuery(parent, path);
         }
 
         public String getPath() { return mPath; }
