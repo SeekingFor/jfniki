@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
 import freenet.pluginmanager.AccessDeniedPluginHTTPException;
+import freenet.pluginmanager.DownloadPluginHTTPException;
 import freenet.pluginmanager.FredPlugin;
 import freenet.pluginmanager.FredPluginHTTP;
 import freenet.pluginmanager.FredPluginThreadless;
@@ -45,13 +46,14 @@ import fniki.wiki.Request;
 import fniki.wiki.WikiApp;
 
 import fniki.wiki.AccessDeniedException;
+import fniki.wiki.DownloadException;
 import fniki.wiki.NotFoundException;
 import fniki.wiki.RedirectException;
 import fniki.wiki.ChildContainerException;
 
 public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     private WikiApp mWikiApp;
-
+    private String mContainerPrefix;
     public void terminate() {
         System.err.println("terminating...");
     }
@@ -59,18 +61,13 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     public void runPlugin(PluginRespirator pr) {
         try {
             ArchiveManager archiveManager = new ArchiveManager();
-
-            // YOU MUST SET THESE OR THE PLUGIN WON'T LOAD.
-            // archiveManager.setPrivateSSK("FMS_PRIVATE_SSK");
-            archiveManager.setFmsId("SET_THE_FMS_ID");
             archiveManager.createEmptyArchive();
 
             WikiApp wikiApp = new WikiApp(archiveManager);
-            final String containerPrefix = wikiApp.getString("container_prefix", null);
-            if (containerPrefix == null) {
+            if (wikiApp.getString("container_prefix", null) == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }
-            wikiApp.setAllowImages(false); // User can enable
+            mContainerPrefix = wikiApp.getString("container_prefix", null);
 
             // IMPORTANT:
             // HTTP POSTS will be rejected without any useful error message if your form
@@ -172,28 +169,27 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     }
 
     public String handle(HTTPRequest request) throws PluginHTTPException {
-        // DCI: cleanup container_prefix usage
-
         try {
-            mWikiApp.setRequest(new PluginRequest(request, mWikiApp.getString("container_prefix", null)));
+            mWikiApp.setRequest(new PluginRequest(request, mContainerPrefix));
             return mWikiApp.handle(mWikiApp);
-        } catch(AccessDeniedException accessDenied) {
-            throw new AccessDeniedPluginHTTPException(accessDenied.getMessage(),
-                                                      mWikiApp.getString("container_prefix", null));
-        } catch(NotFoundException notFound) {
-            throw new NotFoundPluginHTTPException(notFound.getMessage(),
-                                                  mWikiApp.getString("container_prefix", null));
-        } catch(RedirectException redirected) {
-            throw new RedirectPluginHTTPException(redirected.getMessage(),
-                                              redirected.getLocation());
-        } catch(ChildContainerException serverError) {
-            throw new ServerPluginHTTPException(serverError.getMessage(),
-                                                mWikiApp.getString("container_prefix", null));
-        } catch(IOException ioError) {
-            throw new ServerPluginHTTPException(ioError.getMessage(),
-                                                mWikiApp.getString("container_prefix", null));
-        }
 
+            // IMPORTANT: Look at these catch blocks carefully. They bypass the freenet ContentFilter.
+        } catch(AccessDeniedException accessDenied) {
+            throw new AccessDeniedPluginHTTPException(accessDenied.getMessage(), mContainerPrefix);
+        } catch(NotFoundException notFound) {
+            throw new NotFoundPluginHTTPException(notFound.getMessage(), mContainerPrefix);
+        } catch(RedirectException redirected) {
+            throw new RedirectPluginHTTPException(redirected.getMessage(), redirected.getLocation());
+        } catch(DownloadException forceDownload) {
+            // This is to allow exporting the configuration.
+            throw new DownloadPluginHTTPException(forceDownload.mData,
+                                                  forceDownload.mFilename,
+                                                  forceDownload.mMimeType);
+        } catch(ChildContainerException serverError) {
+            throw new ServerPluginHTTPException(serverError.getMessage(), mContainerPrefix);
+        } catch(IOException ioError) {
+            throw new ServerPluginHTTPException(ioError.getMessage(), mContainerPrefix);
+        }
     }
 
     public String handleHTTPGet(HTTPRequest request) throws PluginHTTPException {

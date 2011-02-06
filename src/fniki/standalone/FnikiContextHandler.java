@@ -26,6 +26,8 @@ package fniki.standalone;
 
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
 import java.util.Map;
 import java.util.Set;
 import net.freeutils.httpserver.HTTPServer;
@@ -36,6 +38,7 @@ import fniki.wiki.Request;
 import fniki.wiki.WikiApp;
 
 import fniki.wiki.AccessDeniedException;
+import fniki.wiki.DownloadException;
 import fniki.wiki.NotFoundException;
 import fniki.wiki.RedirectException;
 import fniki.wiki.ChildContainerException;
@@ -174,6 +177,27 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
             } catch(RedirectException redirected) {
                 resp.redirect(redirected.getLocation(), false);
                 return 0;
+            } catch(DownloadException forceDownload) {
+                try {
+                    resp.getHeaders().add("Content-disposition",
+                                          String.format("attachment; filename=%s", forceDownload.mFilename));
+                    resp.sendHeaders(200, forceDownload.mData.length, -1,
+                                     null, forceDownload.mMimeType, null);
+                    OutputStream body = resp.getBody();
+                    if (body == null) {
+                        return 0; // hmmm... getBody() can return null.
+                    }
+                    try {
+                        body.write(forceDownload.mData);
+                    } finally {
+                        body.close();
+                    }
+                    return 0;
+                } catch (IOException ioe) {
+                    // Totally hosed. We already sent the headers so we can't send a response.
+                    ioe.printStackTrace();
+                    return 0;
+                }
             } catch(ChildContainerException serverError) {
                 // This also handles ServerErrorException.
                 resp.sendError(500, serverError.getMessage());

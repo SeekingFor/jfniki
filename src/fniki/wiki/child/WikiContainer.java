@@ -140,7 +140,13 @@ public class WikiContainer implements ChildContainer {
         if (context.getStorage().hasPage(name)) {
             buffer.append(renderXHTML(context, context.getStorage().getPage(name)));
         } else {
-            buffer.append("Page doesn't exist in the wiki yet.");
+            if (name.equals(context.getString("default_page", "Front_Page"))) {
+                buffer.append(renderXHTML(context,
+                                          context.getString("default_wikitext",
+                                                            "Page doesn't exist in the wiki yet.")));
+            } else {
+                buffer.append("Page doesn't exist in the wiki yet.");
+            }
         }
         addFooter(context, name, buffer);
         return buffer.toString();

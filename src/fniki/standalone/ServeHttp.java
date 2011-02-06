@@ -24,9 +24,12 @@
 package fniki.standalone;
 
 import java.io.IOException;
+import java.io.FileInputStream;
 
 import net.freeutils.httpserver.HTTPServer;
 
+import wormarc.IOUtil;
+import fniki.wiki.Configuration;
 import fniki.wiki.WikiApp;
 import fniki.wiki.ArchiveManager;
 
@@ -41,64 +44,43 @@ public class ServeHttp {
         "Launch a wiki viewer / editor on localhost.\n" +
         "This is experimental code. Use it at your own peril.\n\n" +
         "USAGE:\n" +
-        "java -jar jfniki.jar <listen_port> <fcp_host> <fcp_port> <fms_host> <fms_port> " +
-        "<private_fms_ssk> <fms_id> <fms_group> <wiki_name> <fproxy_prefix> <enable_images> [uri]\n\n";
+        "java -jar jfniki.jar <listen_port>\n" +
+        "or\n" +
+        "java -jar jfniki.jar <config_file>\n\n" +
+        "NOTE:\nfreenet.jar MUST be in your classpath.\n\n" +
+        "EXAMPLES:\n" +
+        "java -jar jfniki.jar ~/saved_jfniki.cfg\n\n" +
+        "java -jar jfniki.jar 8099\n\n";
 
 
-    private final static String ARG_NAMES[] = new String[] {
-        "<listen_port>", "<fcp_host>", "<fcp_port>", "<fms_host>","<fms_port>",
-        "<private_fms_ssk>", "<fms_id>", "<fms_group>", "<wiki_name>",
-        "<fproxy_prefix>", "<enable_images>", "[uri]", };
-
-    public static void debugDumpArgs(String[] args) {
-        for (int index = 0; index < args.length; index++) {
-            String name = "???";
-            if (index < ARG_NAMES.length) {
-                name = ARG_NAMES[index];
-            }
-            System.out.println(String.format("[%d]:{%s}[%s]", index, name, args[index]));
-        }
-    }
-    public static int asInt(String value) { return Integer.parseInt(value); }
     public static void main(String[] args) throws Exception {
-        if (args.length < 11) {
+        if (args.length != 1) {
             System.err.println(HELP_TEXT);
             System.exit(-1);
         }
-        debugDumpArgs(args);
-        int listenPort = Integer.parseInt(args[0]);
 
         ArchiveManager archiveManager = new ArchiveManager();
-
-        archiveManager.setFcpHost(args[1]);
-        archiveManager.setFcpPort(asInt(args[2]));
-
-        archiveManager.setFmsHost(args[3]);
-        archiveManager.setFmsPort(asInt(args[4]));
-
-        archiveManager.setPrivateSSK(args[5]);
-        archiveManager.setFmsId(args[6]);
-
-        archiveManager.setFmsGroup(args[7]);
-        archiveManager.setBissName(args[8]);
-
-        String fproxyPrefix = args[9];
-        boolean enableImages = (args[10].equals("1") || args[10].toLowerCase().equals("true")) ? true : false;
-
-        if (args.length > 11) {
-            archiveManager.load(args[11]);
-        } else {
-            archiveManager.createEmptyArchive();
-        }
+        archiveManager.createEmptyArchive();
 
         WikiApp wikiApp = new WikiApp(archiveManager);
-        final String containerPrefix = wikiApp.getString("container_prefix", null);
-        if (containerPrefix == null) {
+
+        if(wikiApp.getString("container_prefix", null) == null) {
             throw new RuntimeException("Assertion Failure: container_prefix not set!");
         }
-        wikiApp.setFproxyPrefix(fproxyPrefix);
-        wikiApp.setAllowImages(enableImages);
 
+        try {
+            // Try to parse the argument as an integer listen port.
+            wikiApp.setListenPort(Integer.parseInt(args[0]));
+
+        } catch (NumberFormatException nfe) {
+            System.out.println("Reading configuration from: " + args[0]);
+            Configuration config =
+                Configuration.fromStringRep(IOUtil.readUtf8StringAndClose(new FileInputStream(args[0])));
+            wikiApp.setConfiguration(config);
+        }
+
+        int listenPort = wikiApp.getInt("listen_port", WikiApp.LISTEN_PORT);
+        final String containerPrefix = wikiApp.getString("container_prefix", null);
         // Redirect non-routed requests to the wiki app.
         HTTPServer.ContextHandler defaultRedirect = new HTTPServer.ContextHandler() {
                 public int serve(HTTPServer.Request req, HTTPServer.Response resp) throws IOException {

@@ -52,6 +52,22 @@ import fniki.freenet.filter.ContentFilterFactory;
 
 // Aggregates a bunch of other ChildContainers and runs UI state machine.
 public class WikiApp implements ChildContainer, WikiContext {
+    public final static int LISTEN_PORT = 8083;
+    private final static String FPROXY_PREFIX = "http://127.0.0.1:8888/";
+    private final static boolean ALLOW_IMAGES = false;
+    private final static Configuration DEFAULT_CONFIG =
+        new Configuration(LISTEN_PORT,
+                          ArchiveManager.FCP_HOST,
+                          ArchiveManager.FCP_PORT,
+                          FPROXY_PREFIX,
+                          ALLOW_IMAGES,
+                          ArchiveManager.FMS_HOST,
+                          ArchiveManager.FMS_PORT,
+                          "",
+                          "",
+                          ArchiveManager.FMS_GROUP,
+                          ArchiveManager.BISS_NAME);
+
     // Delegate to implement link, image and macro handling in wikitext.
     private final FreenetWikiTextParser.ParserDelegate mParserDelegate;
 
@@ -79,9 +95,11 @@ public class WikiApp implements ChildContainer, WikiContext {
     // over all output before serving it.
     private ContentFilter mFilter;
 
-    private String mFproxyPrefix = "http://127.0.0.1:8888/";
-    private boolean mAllowImages = true;
+    private String mFproxyPrefix = FPROXY_PREFIX;
+    private boolean mAllowImages = ALLOW_IMAGES;
     private String mFormPassword;
+    private int mListenPort = LISTEN_PORT;
+
 
     // final because it is called from the ctor.
     private final void resetContentFilter() {
@@ -96,7 +114,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         mQueryError = new QueryError();
         mWikiContainer = new WikiContainer();
 
-        mSettingConfig = new SettingConfig(this, archiveManager);
+        mSettingConfig = new SettingConfig();
         mLoadingVersionList = new LoadingVersionList(archiveManager);
         mLoadingArchive = new LoadingArchive(archiveManager);
         mSubmitting = new Submitting(archiveManager);
@@ -122,6 +140,11 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     public void setFormPassword(String value) {
         mFormPassword = value;
+    }
+
+    // Doesn't change port, just sets value returned by getInt("listen_port", -1)
+    public void setListenPort(int value) {
+        mListenPort = value;
     }
 
     private ChildContainer setState(WikiContext context, ChildContainer container) {
@@ -197,6 +220,7 @@ public class WikiApp implements ChildContainer, WikiContext {
             }
         }
 
+        // DCI: Fix. Use a hashmap of paths -> instances for static paths
         System.err.println("WikiApp.routeRequest: " + path);
         if (path.equals("fniki/config")) {
             return setState(request, mSettingConfig);
@@ -357,6 +381,8 @@ public class WikiApp implements ChildContainer, WikiContext {
             return containerPrefix();
         } else if (keyName.equals("form_password") && mFormPassword != null) {
             return mFormPassword;
+        } else if (keyName.equals("default_wikitext")) {
+            return getDefaultWikiText();
         }
 
         return defaultValue;
@@ -366,7 +392,46 @@ public class WikiApp implements ChildContainer, WikiContext {
         if (keyName.equals("allow_images")) {
             return mAllowImages ? 1 : 0;
         }
+        if (keyName.equals("listen_port")) {
+            return mListenPort;
+        }
+
         return defaultValue;
+    }
+
+    // Can return an invalid configuration. e.g. if fms id and private ssk are not set.
+    public Configuration getConfiguration() {
+        // Converts null values to ""
+        return new Configuration(getInt("listen_port", LISTEN_PORT), //DCI: clean up magic numbers
+                                 mArchiveManager.getFcpHost(),
+                                 mArchiveManager.getFcpPort(),
+                                 getString("fproxy_prefix", FPROXY_PREFIX),
+                                 mAllowImages,
+                                 mArchiveManager.getFmsHost(),
+                                 mArchiveManager.getFmsPort(),
+                                 mArchiveManager.getFmsId(),
+                                 mArchiveManager.getPrivateSSK(),
+                                 mArchiveManager.getFmsGroup(),
+                                 mArchiveManager.getBissName());
+    }
+
+    public Configuration getDefaultConfiguration() { return DEFAULT_CONFIG; }
+
+    // For setting data from forms and restoring saved settings.
+    // throws unchecked Configuration.ConfigurationException
+    public void setConfiguration(Configuration config) {
+        config.validate();
+        setListenPort(config.mListenPort);
+        mArchiveManager.setFcpHost(config.mFcpHost);
+        mArchiveManager.setFcpPort(config.mFcpPort);
+        setFproxyPrefix(config.mFproxyPrefix);
+        setAllowImages(config.mAllowImages);
+        mArchiveManager.setFmsHost(config.mFmsHost);
+        mArchiveManager.setFmsPort(config.mFmsPort);
+        mArchiveManager.setFmsId(config.mFmsId);
+        mArchiveManager.setPrivateSSK(config.mFmsSsk);
+        mArchiveManager.setFmsGroup(config.mFmsGroup);
+        mArchiveManager.setBissName(config.mWikiName);
     }
 
     // DCI: Think this through.
@@ -402,6 +467,10 @@ public class WikiApp implements ChildContainer, WikiContext {
         throw new ServerErrorException(msg);
     }
 
+    public void raiseDownload(byte[] data, String filename, String mimeType) throws DownloadException {
+        throw new DownloadException(data, filename, mimeType);
+    }
+
     public void logError(String msg, Throwable t) {
         if (msg == null) {
             msg = "null";
@@ -426,5 +495,53 @@ public class WikiApp implements ChildContainer, WikiContext {
             throw new IllegalArgumentException("request == null");
         }
         mRequest = request;
+    }
+
+    private static String getDefaultWikiText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("//You are seeing this Quick Start because the wiki has no Front_Page. It will disappear as soon as you edit and save the page. //\n");
+        sb.append("----\n");
+        sb.append("\n");
+        sb.append("== Quick Start ==\n");
+        sb.append("\n");
+        sb.append("===Configuration===\n");
+        sb.append("# Click on the \"View\" link below to view (and edit) the configuration.\n");
+        sb.append("# Set the \"FMS ID\" to the human readable part of your FMS ID (everything before the '@').\n");
+        sb.append("# Set the FMS Private SSK to your private FMS SSK (see below if you don't know how to find this).\n");
+        sb.append("# Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.\n");
+        sb.append("# Click the \"Done\" button to save the configuration changes.\n");
+        sb.append("\n");
+        sb.append("=== Finding Other Versions===\n");
+        sb.append("Click the \"Discover\" link below to search for other versions of the wiki.\n");
+        sb.append("\n");
+        sb.append("=== Submitting ===\n");
+        sb.append("Use the \"Submit\" link below to submit your changes.  It may take a long time for other people to see them.\n");
+        sb.append("\n");
+        sb.append("=== Finding Your Private SSK ===\n");
+        sb.append("# Go to http://127.0.0.1:18080/localidentities.htm in the FMS web interface and click the \"Export Identities\" button\n");
+        sb.append("to save your FMS indentities to a file.\n");
+        sb.append("\n");
+        sb.append("# In the text editor of your choice, open the file you saved above and look for the Name and PrivateKey values for the identity you want to use.\n");
+        sb.append("\n");
+        sb.append("In the example identity snippet below, the FMS ID value would be:\\\\ \n");
+        sb.append("SomeUser\n");
+        sb.append("\n");
+        sb.append("and the FMS Private Key would be: \\\\ \n");
+        sb.append("SSK@YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,AQECAAE/ \n");
+        sb.append("\n");
+        sb.append("----\n");
+        sb.append("{{{\n");
+        sb.append("<Identity>\n");
+        sb.append("   <Name><![CDATA[SomeUser]]></Name>\n");
+        sb.append("   <PublicKey>SSK@XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX,AQACAAE/</PublicKey>\n");
+        sb.append("   <PrivateKey>SSK@YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,AQECAAE/</PrivateKey>\n");
+        sb.append("   <SingleUse>false</SingleUse>\n");
+        sb.append("   <PublishTrustList>false</PublishTrustList>\n");
+        sb.append("   <PublishBoardList>false</PublishBoardList>\n");
+        sb.append("   <PublishFreesite>false</PublishFreesite>\n");
+        sb.append("</Identity>\n");
+        sb.append("}}}\n");
+        sb.append("\n");
+        return sb.toString();
     }
 }

@@ -43,13 +43,13 @@ import wormarc.RootObjectKind;
 import wormarc.io.FreenetIO;
 
 public class ArchiveManager {
-    private final static String FCP_HOST = "127.0.0.1";
-    private final static int FCP_PORT = 9481;
+    public final static String FCP_HOST = "127.0.0.1";
+    public final static int FCP_PORT = 9481;
 
-    private final static String FMS_HOST = "127.0.0.1";
-    private final static int FMS_PORT = 1119;
-    private final static String FMS_GROUP = "biss.test000";
-    private final static String BISS_NAME = "testwiki";
+    public final static String FMS_HOST = "127.0.0.1";
+    public final static int FMS_PORT = 1119;
+    public final static String FMS_GROUP = "biss.test000";
+    public final static String BISS_NAME = "testwiki";
     // Maximum number of versions to read from FMS.
     private final static int MAX_VERSIONS = 50;
 

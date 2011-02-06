@@ -131,6 +131,34 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
     public String processTag(ParsedTag pt) { return null; }
     ////////////////////////////////////////////////////////////
 
+    // One off hacks to allow specific cases mangled by the filter.
+    private final static String EXCEPTIONS[] = new String[] {
+        // Mangled form
+        "<input name=\"import\" type=\"submit\" value=\"Import Configuration\" />\n\n<hr>\n",
+        // Allowed
+        "<input name=\"import\" type=\"submit\" value=\"Import Configuration\"/>\n" +
+        "<input type=\"file\" name=\"upload\" size=\"64\">\n<hr>\n",
+        // Removed meta refresh
+        "html><head>\n\n<title>",
+        // Allowed.
+        "html><head><meta http-equiv=\"refresh\" content=\"15\" /><title>\n"
+    };
+
+    // Allow a few safe, specific exceptions through the content filter.
+    public String postProcess(String filtered, String unfiltered) {
+        // System.err.println("--- unfiltered ---");
+        // System.err.println(unfiltered);
+        // System.err.println("--- filtered ---");
+        // System.err.println(filtered);
+        // System.err.println("---");
+        int index = 0;
+        while (index < EXCEPTIONS.length) {
+            filtered = filtered.replace(EXCEPTIONS[index], EXCEPTIONS[index + 1]);
+            index += 2;
+        }
+        return filtered;
+    }
+
     public String filter(String html) throws ServerErrorException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -140,7 +168,7 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
                                                            baos, "text/html",
                                                            UTF8,
                                                            this);
-            return new String(baos.toByteArray(), UTF8);
+            return postProcess(new String(baos.toByteArray(), UTF8), html);
         } catch (UnsafeContentTypeException ucte) {
             ucte.printStackTrace();
             throw new ServerErrorException("BUG: Generated dangerous html(0)??? But we caught it :-)");

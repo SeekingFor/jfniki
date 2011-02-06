@@ -32,8 +32,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
-
 public abstract class QueryBase implements Query {
     protected Map<String, String> mParamTable = new HashMap<String, String>();
 
@@ -43,10 +41,10 @@ public abstract class QueryBase implements Query {
         "uri", "goto",
         "savepage", "savetext",
         "formPassword",
-        "saved", "discarded", "done",
-        // C&P from SettingConfig.java
+        // Configuration stuff.
+        "defaults", "done", "import", "export", "upload",
         "fcphost", "fcpport", "fpprefix", "fmshost", "fmsport",
-        "fmsssk", "fmsid", "wikiname", "images",
+        "fmsssk", "fmsid", "fmsgroup", "wikiname", "images",
     };
 
     protected static Set<String> paramsSet() {

@@ -55,12 +55,13 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
     protected String mExitPage = "/";
 
 
+    // IMPORTANT: See hacks in WikiContentFilter.EXCEPTIONS if this stops working.
     // 15 second refresh if the task isn't finished.
     protected String metaRefresh() {
         if (isFinished()) {
             return "";
         }
-        return "<meta http-equiv=\"refresh\" content=\"15\" />";
+        return "\n<meta http-equiv=\"refresh\" content=\"15\" />\n";
     }
 
     // DCI: make these return a string? To get rid of no return value warnings

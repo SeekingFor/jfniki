@@ -41,6 +41,12 @@ public interface WikiContext extends Request {
     String getString(String keyName, String defaultValue);
     int getInt(String keyName, int defaultValue);
 
+    Configuration getConfiguration();
+    Configuration getDefaultConfiguration();
+
+    // throws unchecked Configuration.ConfigurationException
+    void setConfiguration(Configuration config);
+
     // throwable can be null
     void logError(String msg, Throwable throwable);
 
@@ -48,4 +54,8 @@ public interface WikiContext extends Request {
     void raiseNotFound(String msg) throws NotFoundException;  // 404
     void raiseAccessDenied(String msg) throws AccessDeniedException;  // 403
     void raiseServerError(String msg) throws ServerErrorException;  // 500
+
+    // This is so we can play nice with the Freenet plugin API.
+    // Force a download to disk of data.
+    void raiseDownload(byte[] data, String filename, String mimeType) throws DownloadException;
 }
