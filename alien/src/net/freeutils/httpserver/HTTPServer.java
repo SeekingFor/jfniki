@@ -1631,7 +1631,7 @@ public class HTTPServer {
         if (serv != null)
             return;
         // djk: ONLY LISTEN ON LOCALHOST!
-        serv = new ServerSocket(port, -1, InetAddress.getLocalHost());
+        serv = new ServerSocket(port, -1,  InetAddress.getByName(null));
         if (executor == null) // assign default executor if needed
             executor = Executors.newCachedThreadPool();
         // register all host aliases (which may have been modified)
