@@ -44,6 +44,14 @@ public interface WikiContext extends Request {
     Configuration getConfiguration();
     Configuration getDefaultConfiguration();
 
+    // Returns a public fmsId.
+    // e.g. djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
+    //
+    // fmsId is the human readable part, can be null
+    // private SSK is the private SSK for the FMS identity.
+    // This can return "???" on failure or if the args are null.
+    String getPublicFmsId(String fmsId, String privateSSK);
+
     // throws unchecked Configuration.ConfigurationException
     void setConfiguration(Configuration config);
 

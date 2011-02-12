@@ -68,9 +68,13 @@ public class WikiApp implements ChildContainer, WikiContext {
                           ArchiveManager.FMS_GROUP,
                           ArchiveManager.BISS_NAME);
 
+    // Time to wait for FCP before giving up on inverting private key.
+    private final static int INVERT_TIMEOUT_MS = 30 * 1000;
+
     // Delegate to implement link, image and macro handling in wikitext.
     private final FreenetWikiTextParser.ParserDelegate mParserDelegate;
 
+    // ChildContainers for non-modal UI elements.
     private final ChildContainer mDefaultRedirect;
     private final ChildContainer mGotoRedirect;
     private final ChildContainer mQueryError;
@@ -99,7 +103,6 @@ public class WikiApp implements ChildContainer, WikiContext {
     private boolean mAllowImages = ALLOW_IMAGES;
     private String mFormPassword;
     private int mListenPort = LISTEN_PORT;
-
 
     // final because it is called from the ctor.
     private final void resetContentFilter() {
@@ -295,7 +298,6 @@ public class WikiApp implements ChildContainer, WikiContext {
                     sb.append("{ERROR PROCESSING TITLEINDEX MACRO}");
                     return true;
                 }
-
                 return true;
             }
 
@@ -402,7 +404,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     // Can return an invalid configuration. e.g. if fms id and private ssk are not set.
     public Configuration getConfiguration() {
         // Converts null values to ""
-        return new Configuration(getInt("listen_port", LISTEN_PORT), //DCI: clean up magic numbers
+        return new Configuration(getInt("listen_port", LISTEN_PORT),
                                  mArchiveManager.getFcpHost(),
                                  mArchiveManager.getFcpPort(),
                                  getString("fproxy_prefix", FPROXY_PREFIX),
@@ -416,6 +418,29 @@ public class WikiApp implements ChildContainer, WikiContext {
     }
 
     public Configuration getDefaultConfiguration() { return DEFAULT_CONFIG; }
+
+    public String getPublicFmsId(String fmsId, String privateSSK) {
+        if (fmsId == null || privateSSK == null || fmsId.indexOf("@") != -1) {
+            return "???";
+        }
+        try {
+            try {
+                String publicKey = mArchiveManager.invertPrivateSSK(privateSSK, INVERT_TIMEOUT_MS);
+                int pos = publicKey.indexOf(",");
+                if (pos == -1 || pos < 5) {
+                    return "???";
+                }
+                return fmsId + publicKey.substring("SSK".length(), pos);
+
+            } catch (IllegalArgumentException iae) {
+                // Was called with an invalid privateSSK value
+                return "???";
+            }
+        } catch (IOException ioe) {
+            logError("getPublicFmsId failed", ioe);
+            return "???";
+        }
+    }
 
     // For setting data from forms and restoring saved settings.
     // throws unchecked Configuration.ConfigurationException

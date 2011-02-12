@@ -44,10 +44,13 @@ public class SettingConfig implements ModalContainer {
 
     private boolean mFinished = false;
     private Configuration mConfig;
+    private String mPrivateSSK = "";
+    private String mPublicFmsId = "???";
     private String mMsg = "";
 
     // Doesn't validate.
-    private static Configuration parseConfigFromPost(Query query, int listenPort)  {
+    private Configuration parseConfigFromPost(WikiContext context, Query query,
+                                              int listenPort, String oldSSK)  {
         boolean allowImages = false;
         if (query.containsKey("images")) {
             allowImages = true;
@@ -66,6 +69,13 @@ public class SettingConfig implements ModalContainer {
             // NOP
         }
 
+        String newSSK = query.get("fmsssk");
+        if (newSSK == null || newSSK.equals("")) {
+            newSSK = oldSSK;
+        } else {
+            mPublicFmsId = context.getPublicFmsId(query.get("fmsid"), mPrivateSSK);
+        }
+
         Configuration config = new Configuration(listenPort,
                                                  query.get("fcphost"),
                                                  fcpPort,
@@ -74,7 +84,7 @@ public class SettingConfig implements ModalContainer {
                                                  query.get("fmshost"),
                                                  fmsPort,
                                                  query.get("fmsid"),
-                                                 query.get("fmsssk"),
+                                                 newSSK,
                                                  query.get("fmsgroup"),
                                                  query.get("wikiname"));
         return config;
@@ -87,7 +97,7 @@ public class SettingConfig implements ModalContainer {
             // Pop a save-as dialog for configuration.
             try {
                 // Save any changes the user made.
-                mConfig = parseConfigFromPost(query, context.getInt("listen_port", 8083));
+                mConfig = parseConfigFromPost(context, query, context.getInt("listen_port", 8083), mPrivateSSK);
                 mConfig.validate();
 
                 // Force browser to save the config file to disk.
@@ -113,6 +123,8 @@ public class SettingConfig implements ModalContainer {
                 Configuration config = Configuration.fromStringRep(query.get("upload"));
                 config.validate();
                 mConfig = config;
+                mPrivateSSK = mConfig.mFmsSsk;
+                mPublicFmsId = context.getPublicFmsId(mConfig.mFmsId, mConfig.mFmsSsk);
                 mMsg = "Imported configuration!";
                 return;
             } catch (Configuration.ConfigurationException cfe) {
@@ -138,8 +150,8 @@ public class SettingConfig implements ModalContainer {
             return;
         }
 
-        mConfig = parseConfigFromPost(query, context.getInt("listen_port", 8083));
-
+        mConfig = parseConfigFromPost(context, query, context.getInt("listen_port", 8083), mPrivateSSK);
+        
         try {
             mConfig.validate();
             context.setConfiguration(mConfig);
@@ -174,8 +186,8 @@ public class SettingConfig implements ModalContainer {
                              mConfig.mFproxyPrefix,
                              mConfig.mFmsHost,
                              mConfig.mFmsPort,
-                             mConfig.mFmsSsk,
                              mConfig.mFmsId,
+                             mPublicFmsId,
                              mConfig.mFmsGroup,
                              mConfig.mWikiName,
                              mConfig.mAllowImages ? "checked" : "",
@@ -195,6 +207,8 @@ public class SettingConfig implements ModalContainer {
     public void entered(WikiContext context) {
         mFinished = false;
         mConfig = context.getConfiguration();
+        mPrivateSSK = mConfig.mFmsSsk;
+        mPublicFmsId = context.getPublicFmsId(mConfig.mFmsId, mConfig.mFmsSsk);
         mMsg = "";
     }
 
@@ -242,11 +256,15 @@ public class SettingConfig implements ModalContainer {
         sb.append("  </tr>\n");
         sb.append("  <tr>\n");
         sb.append("    <td>FMS Private SSK</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmsssk\" size=\"128\" value=\"%s\" /> </td>\n");
+        sb.append("    <td><input type=\"text\" name=\"fmsssk\" size=\"128\" value=\"\" /> </td>\n");
         sb.append("  </tr>\n");
         sb.append("  <tr>\n");
-        sb.append("    <td>FMS ID</td>\n");
+        sb.append("    <td>FMS name</td>\n");
         sb.append("    <td><input type=\"text\" name=\"fmsid\" value=\"%s\" /> </td>\n");
+        sb.append("  </tr>\n");
+        sb.append("  <tr>\n");
+        sb.append("    <td>Full FMS ID</td>\n");
+        sb.append("    <td><input type=\"text\" name=\"fmsfull\" size=\"64\" readonly=\"readonly\" value=\"%s\" /> </td>\n");
         sb.append("  </tr>\n");
         sb.append("  <tr>\n");
         sb.append("    <td>FMS Group</td>\n");

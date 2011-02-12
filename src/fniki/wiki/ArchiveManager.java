@@ -75,12 +75,21 @@ public class ArchiveManager {
         FreenetIO.setDebugOutput(out);
     }
 
-    public void setPrivateSSK(String value) {
+    private static void validatePrivateSSK(String value) {
         if (!value.startsWith("SSK@") || !value.endsWith(",AQECAAE/")) {
             throw new IllegalArgumentException("That doesn't look like a private SSK. " +
                                            "Did you forget the trailing '/'?");
         }
+    }
+
+    public void setPrivateSSK(String value) {
+        validatePrivateSSK(value);
         mPrivateSSK = value;
+    }
+
+    public String invertPrivateSSK(String value, int timeoutMs) throws IOException {
+        validatePrivateSSK(value);
+        return (new FreenetIO(mFcpHost, mFcpPort)).invertPrivateSSK(value, timeoutMs);
     }
 
     public String getPrivateSSK() { return mPrivateSSK; }
