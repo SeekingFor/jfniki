@@ -122,7 +122,7 @@ public class WikiContainer implements ChildContainer {
         }
 
         System.err.println("Writing: " + name);
-        context.getStorage().putPage(name, wikiText);
+        context.getStorage().putPage(name, unescapeHTML(wikiText));
         System.err.println("Raising redirect!");
         context.raiseRedirect(context.makeLink("/" + name), "Redirecting...");
         System.err.println("SOMETHING WENT WRONG!");
@@ -236,9 +236,9 @@ public class WikiContainer implements ChildContainer {
         buffer.append("<textarea wrap=\"virtual\" name=\"savetext\" rows=\"17\" cols=\"120\">\n");
 
         if (context.getStorage().hasPage(name)) {
-            buffer.append(context.getStorage().getPage(name));
+            buffer.append(escapeHTML(context.getStorage().getPage(name)));
         } else {
-            buffer.append("Page doesn't exist in the wiki yet.");
+            buffer.append(escapeHTML("Page doesn't exist in the wiki yet."));
         }
 
         buffer.append("</textarea>\n");
