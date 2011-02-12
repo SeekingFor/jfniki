@@ -45,6 +45,7 @@ import fniki.wiki.Query;
 import wormarc.FileManifest;
 import fniki.wiki.FreenetWikiTextParser;
 import static fniki.wiki.HtmlUtils.*;
+import static fniki.wiki.Validations.*;
 import fniki.wiki.WikiApp;
 import fniki.wiki.WikiContext;
 import fniki.wiki.WikiTextStorage;
@@ -63,8 +64,17 @@ public class WikiContainer implements ChildContainer {
                 // a link from a finished task page. e.g. changelog.
                 action = "view";
             }
-
             String title = context.getTitle();
+            if (!isAlphaNumOrUnder(title)) {
+                // Titles must be legal page names.
+                context.raiseAccessDenied("Couldn't work out query.");
+            }
+
+            if (!isLowerCaseAlpha(action)) {
+                // Illegal action
+                context.raiseAccessDenied("Couldn't work out query.");
+            }
+
             Query query = context.getQuery();
 
             if (action.equals("view")) {
@@ -129,9 +139,8 @@ public class WikiContainer implements ChildContainer {
         return "unreachable code";
     }
 
-    private String titleFromName(String name) {
-        // DCI: html escape
-        return name.replace("_", " "); // DCI: Much more to it?
+    private String unescapedTitleFromName(String name) {
+        return name.replace("_", " ");
     }
 
     private String getPageHtml(WikiContext context, String name) throws IOException {
@@ -158,7 +167,7 @@ public class WikiContainer implements ChildContainer {
                       "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
         buffer.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n");
         buffer.append("<head><title>\n");
-        buffer.append(escapeHTML(titleFromName(name)));
+        buffer.append(escapeHTML(unescapedTitleFromName(name)));
         buffer.append("</title>\n");
         buffer.append("<style type=\"text/css\">div.indent{margin-left:20px;} " +
                       "div.center{text-align:center;} " +
@@ -167,12 +176,12 @@ public class WikiContainer implements ChildContainer {
         buffer.append("</head>\n");
         buffer.append("<body>\n");
         buffer.append("<h1>\n");
-        buffer.append(escapeHTML(titleFromName(name)));
+        buffer.append(escapeHTML(unescapedTitleFromName(name)));
         buffer.append("</h1><hr>\n");
     }
 
     private String makeLocalLink(WikiContext context, String name, String action, String label) {
-        String href = makeHref(context.makeLink(name), action, name, null, null);
+        String href = makeHref(context.makeLink("/" + name), action, name, null, null);
         return String.format("<a href=\"%s\">%s</a>", href, escapeHTML(label));
     }
 
@@ -230,7 +239,7 @@ public class WikiContainer implements ChildContainer {
         buffer.append("\" accept-charset=\"UTF-8\">\n");
 
         buffer.append("<input type=hidden name=\"savepage\" value=\"");
-                               buffer.append(name); // DCI: percent escape? Ok for now because of name checks
+        buffer.append(escapeHTML(name));
         buffer.append("\">\n");
 
         buffer.append("<textarea wrap=\"virtual\" name=\"savetext\" rows=\"17\" cols=\"120\">\n");
@@ -246,7 +255,7 @@ public class WikiContainer implements ChildContainer {
         buffer.append("<input type=hidden name=formPassword value=\"");
 
         // IMPORTANT: Required by Freenet Plugin.
-        buffer.append(context.getString("form_password", "FORM_PASSWORD_NOT_SET")); // DCI: % encode?
+        buffer.append(context.getString("form_password", "FORM_PASSWORD_NOT_SET"));  // Doesn't need escaping.
         buffer.append("\"/>\n");
         buffer.append("<input type=reset value=\"Reset\">\n");
         buffer.append("<br></form>");

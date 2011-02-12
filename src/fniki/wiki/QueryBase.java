@@ -37,7 +37,7 @@ public abstract class QueryBase implements Query {
 
     // MUST contain every parameter used by any ChildContainer.
     protected final static String PARAMS[] = new String[] {
-        "action",
+        "action", "title",
         "uri", "goto",
         "savepage", "savetext",
         "formPassword",

@@ -101,7 +101,6 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                 mParamTable.put("action", "view");
             }
 
-            // DCI: title validation?
             if (!mParamTable.containsKey("title")) {
                 mParamTable.put("title", mPath);
             }

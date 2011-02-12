@@ -59,8 +59,8 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * @throws CommentException If the URI is nvalid or unacceptable in some way.
      */
     public String processURI(String uri, String overrideType) throws CommentException {
-        System.err.println("processURI(0): " + uri + " : " + overrideType);
         if (!(uri.startsWith(mContainerPrefix) || uri.startsWith(mFproxyPrefix))) {
+            System.err.println("processURI(0): " + uri + " : " + overrideType);
             System.err.println("processURI(0): REJECTED URI");
             filterTripped();
             return null;
@@ -78,8 +78,8 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
     public String processURI(String uri, String overrideType, boolean noRelative, boolean inline) throws CommentException {
         // inline is true for images (which we allow mod URI filtering).
         // noRelative is true if you must return an absolute URI, which we don't allow.
-        System.err.println("processURI(1): " + uri + " : " + overrideType + " : " + noRelative + " : " + inline);
         if (noRelative) {
+            System.err.println("processURI(1): " + uri + " : " + overrideType + " : " + noRelative + " : " + inline);
             System.err.println("processURI(1): REJECTED URI because of noRelative.");
             filterTripped();
             return null;
@@ -168,6 +168,16 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
                                                            baos, "text/html",
                                                            UTF8,
                                                            this);
+
+            if (status.charset.equals("UTF-8")) {
+                throw new ServerErrorException("BUG: Generated output with unexpected "
+                                               + "character set. But we caught it :-)");
+            }
+            if (!status.mimeType.equals("text/html")) {
+                throw new ServerErrorException("BUG: Generated output with unexpected "
+                                               + "mime type. But we caught it :-)");
+
+            }
             return postProcess(new String(baos.toByteArray(), UTF8), html);
         } catch (UnsafeContentTypeException ucte) {
             ucte.printStackTrace();

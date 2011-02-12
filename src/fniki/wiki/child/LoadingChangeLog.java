@@ -65,7 +65,7 @@ public class LoadingChangeLog extends AsyncTaskContainer
                 startTask();
                 sendRedirect(context, context.getPath());
                 return "unreachable code";
-            } // DCI: ripped out code, need to fix links
+            }
 
             boolean showBuffer = false;
             String confirmTitle = null;

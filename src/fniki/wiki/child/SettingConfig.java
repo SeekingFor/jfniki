@@ -151,7 +151,7 @@ public class SettingConfig implements ModalContainer {
         }
 
         mConfig = parseConfigFromPost(context, query, context.getInt("listen_port", 8083), mPrivateSSK);
-        
+
         try {
             mConfig.validate();
             context.setConfiguration(mConfig);
@@ -171,28 +171,30 @@ public class SettingConfig implements ModalContainer {
         }
     }
 
-    // DCI: back over this. escape  quotes.
     public String handle(WikiContext context) throws ChildContainerException {
         handlePost(context);
 
         String href = makeHref(context.makeLink("/fniki/config"),
                                null, null, null, null);
 
+        // Html escape CDATA
+        // http://www.w3.org/TR/html401/types.html#type-cdata
         return String.format(formTemplate(),
-                             getMsgHtml(),
-                             href,
-                             mConfig.mFcpHost,
-                             mConfig.mFcpPort,
-                             mConfig.mFproxyPrefix,
-                             mConfig.mFmsHost,
-                             mConfig.mFmsPort,
-                             mConfig.mFmsId,
-                             mPublicFmsId,
-                             mConfig.mFmsGroup,
-                             mConfig.mWikiName,
-                             mConfig.mAllowImages ? "checked" : "",
+                             getMsgHtml(), // Already escaped
+                             href, // Not escaped
+                             escapeHTML(mConfig.mFcpHost),
+                             mConfig.mFcpPort, // Integer
+                             escapeHTML(mConfig.mFproxyPrefix),
+                             escapeHTML(mConfig.mFmsHost),
+                             mConfig.mFmsPort, // Integer
+                             escapeHTML(mConfig.mFmsId),
+                             escapeHTML(mPublicFmsId),
+                             escapeHTML(mConfig.mFmsGroup),
+                             escapeHTML(mConfig.mWikiName),
+                             mConfig.mAllowImages ? "checked" : "", // Not escaped
                              // IMPORTANT: Won't work as a plugin without this.
-                             context.getString("form_password", "FORM_PASSWORD_NOT_SET"));
+                             context.getString("form_password", "FORM_PASSWORD_NOT_SET") // Not escaped
+                             );
     }
 
     public String getMsgHtml() {
@@ -296,4 +298,3 @@ public class SettingConfig implements ModalContainer {
     }
 }
 
-// DCI: include form  html and script in comments.

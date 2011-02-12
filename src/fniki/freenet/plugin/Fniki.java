@@ -55,10 +55,11 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     private WikiApp mWikiApp;
     private String mContainerPrefix;
     public void terminate() {
-        System.err.println("terminating...");
+        System.err.println("Fniki plugin terminating...");
     }
 
     public void runPlugin(PluginRespirator pr) {
+        System.err.println("Fniki plugin starting...");
         try {
             ArchiveManager archiveManager = new ArchiveManager();
             archiveManager.createEmptyArchive();
@@ -77,7 +78,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
             mWikiApp = wikiApp;
 
         } catch (IOException ioe) {
-            System.err.println("EPIC FAIL!");
+            System.err.println("Fniki Plugin EPIC FAIL!");
             ioe.printStackTrace();
         }
     }
@@ -109,31 +110,33 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
 
             // Then read multipart params if there are any.
             try {
-                for (String part : mParent.getParts()) {
-                    if (!allParams.contains(part)) {
-                        continue;
+                try {
+                    for (String part : mParent.getParts()) {
+                        if (!allParams.contains(part)) {
+                            continue;
+                        }
+
+                        String value = new String(mParent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
+                        mParamTable.put(part, value);
+                        System.err.println("Set multipart Param: " + part + " : " +
+                                           mParamTable.get(part));
                     }
-
-                    String value = new String(mParent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
-                    mParamTable.put(part, value);
-                    System.err.println("Set multipart Param: " + part + " : " +
-                                       mParamTable.get(part));
+                } catch (UnsupportedEncodingException ue) {
+                    // Shouldn't happen.
+                    ue.printStackTrace();
                 }
-            } catch (UnsupportedEncodingException ue) {
-                // Shouldn't happen.
-                ue.printStackTrace();
-            }
 
-            if (!mParamTable.containsKey("action")) {
-                System.err.println("Forced default action to view");
-                mParamTable.put("action", "view");
-            }
+                if (!mParamTable.containsKey("action")) {
+                    System.err.println("Forced default action to view");
+                    mParamTable.put("action", "view");
+                }
 
-            // DCI: title validation?
-            if (!mParamTable.containsKey("title")) {
-                mParamTable.put("title", mPath);
+                if (!mParamTable.containsKey("title")) {
+                    mParamTable.put("title", mPath);
+                }
+            } finally {
+                mParent.freeParts();
             }
-            mParent.freeParts(); // DCI: test!, put in finally?
         }
 
         PluginQuery(HTTPRequest parent, String path) throws IOException {

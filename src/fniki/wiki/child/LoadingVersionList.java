@@ -135,6 +135,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
         }
     }
 
+    // Doesn't need escaping.
     public static String trustString(int value) {
         if (value == -1) {
             return "null";
@@ -163,7 +164,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 for (FMSUtil.BISSRecord record : records)  {
                     mListHtml.append(String.format(fmt,
                                                    escapeHTML(record.mFmsId),
-                                                   record.mDate,
+                                                   escapeHTML(record.mDate),
                                                    getVersionLink(mContainerPrefix,
                                                                   "/jfniki/loadarchive", record.mKey),
                                                    trustString(record.msgTrust()),

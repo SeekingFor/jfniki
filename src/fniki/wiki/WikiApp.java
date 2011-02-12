@@ -36,6 +36,7 @@ import java.util.Set;
 import wormarc.FileManifest;
 
 import static fniki.wiki.HtmlUtils.*;
+import static fniki.wiki.Validations.*;
 
 import fniki.wiki.child.AsyncTaskContainer;
 import fniki.wiki.child.DefaultRedirect;
@@ -316,7 +317,7 @@ public class WikiApp implements ChildContainer, WikiContext {
                 sb.append("</a>");
                 return;
             }
-            if (isValidLocalLink(link[0])) {
+            if (isAlphaNumOrUnder(link[0])) {
                 // Link to an internal wiki page.
                 sb.append("<a href=\""+ makeHref(mContext.makeLink("/" + link[0].trim())) +"\" rel=\"nofollow\">");
                 sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
@@ -459,19 +460,21 @@ public class WikiApp implements ChildContainer, WikiContext {
         mArchiveManager.setBissName(config.mWikiName);
     }
 
-    // DCI: Think this through.
     public String makeLink(String containerRelativePath) {
         // Hacks to find bugs
         if (!containerRelativePath.startsWith("/")) {
             containerRelativePath = "/" + containerRelativePath;
             System.err.println("WikiApp.makeLink -- added leading '/': " +
                                containerRelativePath);
+            (new RuntimeException("find missing /")).printStackTrace();
+
         }
         String full = containerPrefix() + containerRelativePath;
         while (full.indexOf("//") != -1) {
             System.err.println("WikiApp.makeLink -- fixing  '//': " +
                                full);
             full = full.replace("//", "/");
+            (new RuntimeException("find extra /")).printStackTrace();
         }
         return full;
     }

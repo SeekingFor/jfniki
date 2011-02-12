@@ -36,7 +36,6 @@ public class QueryError implements ChildContainer {
     public QueryError() {}
 
     public String handle(WikiContext context) throws ChildContainerException {
-        // DCI: force redirect to a default location?
         context.raiseAccessDenied("Couldn't resolve query or post.");
         return "unreachable code";
     }

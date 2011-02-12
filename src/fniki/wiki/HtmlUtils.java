@@ -84,11 +84,13 @@ public class HtmlUtils {
     }
 
     public static String makeFproxyHref(String fproxyPrefix, String freenetUri) {
-        // DCI: url encode? use key=?
-        return fproxyPrefix + freenetUri;
+        try {
+            return new URI(fproxyPrefix + "?key=" +freenetUri).toString();
+        } catch (URISyntaxException se) {
+            return "HTML_UTILS_MAKE_FPROXY_HREF_FAILED";
+        }
     }
 
-    // DCI: option to convert '_' -> ' '
     public static void appendPageLink(String prefix, StringBuilder sb, String name, String action, boolean asTitle) {
         String title = name;
         if (asTitle) {
@@ -105,7 +107,7 @@ public class HtmlUtils {
         if (values.size() == 0) {
             return;
         }
-        sb.append(label);
+        sb.append(escapeHTML(label));
         sb.append(": ");
         List<String> sorted = new ArrayList<String>(values);
         Collections.sort(sorted);
@@ -132,7 +134,7 @@ public class HtmlUtils {
             "   <input type=submit value=\"%s\">" +
             "   <input type=hidden name=\"action\" value=\"%s\">" +
             "</form>";
-        return String.format(fmt, makeHref(fullPath), label, action);
+        return String.format(fmt, makeHref(fullPath), escapeHTML(label), escapeHTML(action));
     }
 
     public static String getVersionLink(String prefix, String name, String uri, String action) {
@@ -144,26 +146,5 @@ public class HtmlUtils {
     // Hmmmm...
     public static String getVersionLink(String prefix, String name, String uri) {
         return getVersionLink(prefix, name, uri, "finished");
-    }
-
-    public static boolean isValidFreenetUri(String link) {
-        // DCI: do much better!
-        return (link.startsWith("freenet:CHK@") ||
-                link.startsWith("freenet:SSK@") ||
-                link.startsWith("freenet:USK@"));
-    }
-
-    public static boolean isValidLocalLink(String link) {
-        for (int index = 0; index < link.length(); index++) {
-            char c  = link.charAt(index);
-            if ((c >= '0' && c <= '9') ||
-                (c >= 'a' && c <= 'z') ||
-                (c >= 'A' && c <= 'Z') ||
-                c == '_') {
-                continue;
-            }
-            return false;
-        }
-        return true;
     }
 }

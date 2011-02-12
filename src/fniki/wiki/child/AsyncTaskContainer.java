@@ -78,8 +78,6 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
         context.raiseRedirect(context.makeLink("/" + target), "Redirecting...");
     }
 
-
-
     // DCI: use a single form? Really ugly.
     protected void addButtonsHtml(WikiContext context, PrintWriter writer,
                                   String confirmTitle, String cancelTitle) {
