@@ -1,4 +1,4 @@
-<project>
+<project name="jfniki" default="jar">
   <property name="src" value="./src" />
   <property name="alien.src" value="./alien/src" />
   <property name="alien.libs" value="./alien/libs" />
