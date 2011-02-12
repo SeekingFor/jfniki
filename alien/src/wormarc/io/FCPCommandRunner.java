@@ -24,6 +24,7 @@
 
 package wormarc.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -62,6 +63,9 @@ public class FCPCommandRunner {
     private final static boolean DONT_COMPRESS = true;
     private final static String REAL_TIME_FIELD = "RealTimeFlag";
     private final static String REAL_TIME_VALUE = "true";
+
+    // If a request takes longer than this it is assumed to have timed out.
+    private final static int FOREVER_MS = 1000 * 60 * 60;
 
     private static PrintStream sDebugOut = System.err;
 
@@ -330,7 +334,6 @@ public class FCPCommandRunner {
         }
     }
 
-
     static class GetTopKey extends Command {
         private FreenetTopKey mTopKey;
         protected GetTopKey(String name, String uri, FCPCommandRunner runner) {
@@ -385,6 +388,47 @@ public class FCPCommandRunner {
                 // Should never happen.
                 throw new RuntimeException("Assertion Failure: Read of topkey bytes failed.", ioe);
             }
+        }
+    }
+
+    static class InvertPrivateKey extends Command {
+        private long mLength;
+        private InputStream mData;
+
+        public InvertPrivateKey(String name, String privateSSK, FCPCommandRunner runner) {
+            super(name, privateSSK + "inverting", runner);
+            byte[] raw = new byte[] {'d', 'u','m', 'm', 'y'};
+            mLength = raw.length;
+            mData = new ByteArrayInputStream(raw);
+        }
+
+        public long getLength() { return mLength; }
+
+        // Can return null.
+        public String getPublicSSK() {
+            // SSK@/kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/
+            final String KEY_START = "SSK@";
+            final String KEY_END = ",AQACAAE/";
+            final int pos = mUri.indexOf(KEY_END);
+            if (mUri == null || !mUri.startsWith(KEY_START) || mUri.indexOf(KEY_END) == -1) {
+                return null;
+            }
+            return mUri.substring(0, pos + KEY_END.length());
+        }
+
+        protected void handleData(long length, InputStream data) throws IOException {
+            handleDone("Not expecting AllData");
+        }
+
+        protected FcpMessage getStartMessage() {
+            ClientPut msg = new ClientPut(mUri, mFcpId);
+            msg.setDataLength(mLength);
+            msg.setPayloadInputStream(mData);
+            msg.setVerbosity(VERBOSITY);
+            msg.setDontCompress(DONT_COMPRESS);
+            msg.setPriority(PRIORITY);
+            msg.setGetCHKOnly(true); // Also works for SSKs.
+            return msg;
         }
     }
 
@@ -448,16 +492,30 @@ public class FCPCommandRunner {
         return cmd;
     }
 
+    public synchronized InvertPrivateKey sendInvertPrivateKey(String privateSSKKey) throws IOException  {
+        InvertPrivateKey cmd = new InvertPrivateKey("invert_private_ssk", privateSSKKey, this);
+        start(cmd);
+        return cmd;
+    }
+
     public synchronized int getPendingCount() {
         return mPending.size();
     }
 
     // DCI: make this call raiseOnFailure for each request?
-    // DCI: timeout
-    public synchronized void waitUntilAllFinished() throws InterruptedException {
+    public synchronized void waitUntilAllFinished(int timeoutMs) throws InterruptedException {
+        long maxTimeMs = System.currentTimeMillis() + timeoutMs;
         while (mPending.size() > 0) {
+            if (System.currentTimeMillis() > maxTimeMs) {
+                // DCI:, LATER: Is this 100% correct. Should I be setting the interrupted flag too?
+                throw new InterruptedException("Timed out before all requests finished.");
+            }
             wait(250);
         }
+    }
+
+    public synchronized void waitUntilAllFinished() throws InterruptedException {
+        waitUntilAllFinished(FOREVER_MS);
     }
 
     protected synchronized void start(Command cmd) throws IOException {

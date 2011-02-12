@@ -137,6 +137,26 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
         mPreviousTopKey = readTopKey(topKeyUri);
     }
 
+    public String invertPrivateSSK(String privateSSKKey, int timeoutMs) throws IOException {
+        FCPCommandRunner runner = null;
+        try {
+            runner = new FCPCommandRunner(mHost, mPort,
+                                          mClientName +
+                                          IOUtil.randomHexString(12));
+
+            FCPCommandRunner.InvertPrivateKey invert = runner.sendInvertPrivateKey(privateSSKKey);
+            runner.waitUntilAllFinished(timeoutMs);
+            return invert.getPublicSSK();
+
+        } catch (InterruptedException ie) {
+            throw new IOException("Timed out waiting for FCP command.", ie);
+        } finally {
+            if (runner != null) {
+                runner.disconnect();
+            }
+        }
+    }
+
     // DCI: BUG: redundant inserts are not supported yet. False assumption Block <-> CHK
     // Updates the request URI on success.
     public void write(HistoryLinkMap linkMap, List<Block> blocks, List<Archive.RootObject> rootObjects) throws IOException {
