@@ -127,7 +127,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
                 }
 
                 if (!mParamTable.containsKey("action")) {
-                    System.err.println("Forced default action to view");
+                    //System.err.println("Forced default action to view");
                     mParamTable.put("action", "view");
                 }
 

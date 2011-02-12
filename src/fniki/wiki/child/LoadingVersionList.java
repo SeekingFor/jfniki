@@ -117,6 +117,10 @@ public class LoadingVersionList extends AsyncTaskContainer {
             body.println("</head><body>\n");
 
             body.println("<h3>" + escapeHTML(title) + "</h3>");
+            body.println(String.format("wikiname:%s<br>FMS group:%s<p>",
+                                    escapeHTML(context.getString("wikiname", "NOT_SET")),
+                                    escapeHTML(context.getString("fms_group", "NOT_SET"))));
+
             if (showBuffer) {
                 body.println(getListHtml());
                 body.println("<hr>");

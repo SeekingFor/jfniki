@@ -81,9 +81,6 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
     // DCI: use a single form? Really ugly.
     protected void addButtonsHtml(WikiContext context, PrintWriter writer,
                                   String confirmTitle, String cancelTitle) {
-
-        System.err.println("addButtonsHtml -- context.getPath(): " + context.getPath());
-
         if (confirmTitle != null) {
             writer.println(buttonHtml(context.makeLink("/" + context.getPath()), confirmTitle, "confirm"));
         }

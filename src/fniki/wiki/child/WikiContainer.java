@@ -109,9 +109,9 @@ public class WikiContainer implements ChildContainer {
         if (context.getStorage().hasPage(name)) {
             context.getStorage().deletePage(name);
         }
-        // DCI: apply uniform style! add link to default page!
-        String html =  "<html><head><title>Delete Page</title></head><body>Deleted Page</body></html>";
-        return html;
+
+        // LATER: do better.
+        return getPageHtml(context, name);
     }
 
     private String handleRevert(WikiContext context, String name) throws ChildContainerException, IOException {
@@ -211,10 +211,16 @@ public class WikiContainer implements ChildContainer {
         buffer.append(" change history for this version. <br>");
 
         buffer.append(makeLocalLink(context, "fniki/getversions", "confirm", "Discover"));
-        buffer.append(" other recent version.<br>");
+        buffer.append(String.format(" other recent version of this wiki (wikiname: [%s], FMS group: [%s])<br>",
+                                    escapeHTML(context.getString("wikiname", "NOT_SET")),
+                                    escapeHTML(context.getString("fms_group", "NOT_SET"))));
 
         buffer.append(makeLocalLink(context, "fniki/config", "view", "View"));
-        buffer.append(" configuration.<br>");
+        buffer.append(" configuration.<p/>\n");
+
+        buffer.append(gotoPageFormHtml(context.makeLink("/" + name),
+                                       context.getString("default_page", "Front_Page")));
+
 
         buffer.append("</body></html>");
     }

@@ -386,6 +386,14 @@ public class WikiApp implements ChildContainer, WikiContext {
             return mFormPassword;
         } else if (keyName.equals("default_wikitext")) {
             return getDefaultWikiText();
+        } else if (keyName.equals("wikiname")) {
+            if (mArchiveManager.getBissName() != null) {
+                return mArchiveManager.getBissName();
+            }
+        } else if (keyName.equals("fms_group")) {
+            if (mArchiveManager.getFmsGroup() != null) {
+                return mArchiveManager.getFmsGroup();
+            }
         }
 
         return defaultValue;

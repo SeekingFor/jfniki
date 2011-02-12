@@ -97,7 +97,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
             }
 
             if (!mParamTable.containsKey("action")) {
-                System.err.println("Forced default action to view");
+                //System.err.println("Forced default action to view");
                 mParamTable.put("action", "view");
             }
 

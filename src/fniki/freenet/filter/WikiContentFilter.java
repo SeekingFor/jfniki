@@ -116,6 +116,7 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      */
     public String processForm(String method, String action) throws CommentException {
         if (!(action.startsWith(mContainerPrefix) || action.startsWith(mFproxyPrefix))) {
+            System.err.println("action: " + action);
             System.err.println("processForm: REJECTED URI");
             filterTripped();
             return null;
