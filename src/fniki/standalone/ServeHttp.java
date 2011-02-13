@@ -44,24 +44,24 @@ public class ServeHttp {
         "Launch a wiki viewer / editor on localhost.\n" +
         "This is experimental code. Use it at your own peril.\n\n" +
         "USAGE:\n" +
-        "java -jar jfniki.jar <listen_port>\n" +
+        "java -jar jfniki.jar <listen_port> [SSK@/XXX...XXX/0123456789abcdef]\n" +
         "or\n" +
-        "java -jar jfniki.jar <config_file>\n\n" +
-        "NOTE:\nfreenet.jar MUST be in your classpath.\n\n" +
+        "java -jar jfniki.jar <config_file> [SSK@/XXX...XXX/0123456789abcdef]\n\n" +
+        "NOTE:\nfreenet.jar MUST be in your classpath.\n" +
+        "If you include an archive SSK on the command line, the web UI doesn't\n" +
+        "start until it is loaded.\n\n" +
         "EXAMPLES:\n" +
         "java -jar jfniki.jar ~/saved_jfniki.cfg\n\n" +
         "java -jar jfniki.jar 8099\n\n";
 
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
+        if (args.length > 2 || args.length < 1) {
             System.err.println(HELP_TEXT);
             System.exit(-1);
         }
 
         ArchiveManager archiveManager = new ArchiveManager();
-        archiveManager.createEmptyArchive();
-
         WikiApp wikiApp = new WikiApp(archiveManager);
 
         if(wikiApp.getString("container_prefix", null) == null) {
@@ -77,6 +77,13 @@ public class ServeHttp {
             Configuration config =
                 Configuration.fromStringRep(IOUtil.readUtf8StringAndClose(new FileInputStream(args[0])));
             wikiApp.setConfiguration(config);
+        }
+
+        if (args.length == 1) {
+            archiveManager.createEmptyArchive();
+        } else {
+            // Needs to happen after the config is loaded.
+            archiveManager.load(args[1]);
         }
 
         int listenPort = wikiApp.getInt("listen_port", WikiApp.LISTEN_PORT);
