@@ -542,7 +542,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         sb.append("\n");
         sb.append("===Configuration===\n");
         sb.append("# Click on the \"View\" link below to view (and edit) the configuration.\n");
-        sb.append("# Set the \"FMS ID\" to the human readable part of your FMS ID (everything before the '@').\n");
+        sb.append("# Set the \"FMS Name\" to the human readable part of your FMS ID (everything before the '@').\n");
         sb.append("# Set the FMS Private SSK to your private FMS SSK (see below if you don't know how to find this).\n");
         sb.append("# Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.\n");
         sb.append("# Click the \"Done\" button to save the configuration changes.\n");
@@ -559,7 +559,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         sb.append("\n");
         sb.append("# In the text editor of your choice, open the file you saved above and look for the Name and PrivateKey values for the identity you want to use.\n");
         sb.append("\n");
-        sb.append("In the example identity snippet below, the FMS ID value would be:\\\\ \n");
+        sb.append("In the example identity snippet below, the FMS Name value would be:\\\\ \n");
         sb.append("SomeUser\n");
         sb.append("\n");
         sb.append("and the FMS Private Key would be: \\\\ \n");

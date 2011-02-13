@@ -261,7 +261,7 @@ public class SettingConfig implements ModalContainer {
         sb.append("    <td><input type=\"text\" name=\"fmsssk\" size=\"128\" value=\"\" /> </td>\n");
         sb.append("  </tr>\n");
         sb.append("  <tr>\n");
-        sb.append("    <td>FMS name</td>\n");
+        sb.append("    <td>FMS Name</td>\n");
         sb.append("    <td><input type=\"text\" name=\"fmsid\" value=\"%s\" /> </td>\n");
         sb.append("  </tr>\n");
         sb.append("  <tr>\n");
