@@ -85,7 +85,7 @@ public class HtmlUtils {
 
     public static String makeFproxyHref(String fproxyPrefix, String freenetUri) {
         try {
-            return new URI(fproxyPrefix + "?key=" +freenetUri).toString();
+            return new URI(fproxyPrefix + freenetUri).toString();
         } catch (URISyntaxException se) {
             return "HTML_UTILS_MAKE_FPROXY_HREF_FAILED";
         }
