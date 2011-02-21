@@ -24,6 +24,7 @@
 
 package fniki.wiki;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -35,6 +36,7 @@ import java.util.Set;
 import static ys.wikiparser.Utils.*;
 
 import wormarc.FileManifest;
+import wormarc.IOUtil;
 
 public class HtmlUtils {
 
@@ -137,15 +139,39 @@ public class HtmlUtils {
         return String.format(fmt, makeHref(fullPath), escapeHTML(label), escapeHTML(action));
     }
 
-    public static String getVersionLink(String prefix, String name, String uri, String action) {
+    public static String getVersionHex(String uri) {
+        try {
+            if (uri == null) {
+                return "???";
+            }
+            return IOUtil.getFileDigest(IOUtil.toStreamAsUtf8(uri)).hexDigest(8);
+        } catch (IOException ioe) {
+            return "???";
+        }
+    }
+
+    public static String getVersionLink(String prefix, String name, String uri, String action,
+                                        boolean hexLabel) {
+        String label = uri;
+        if (hexLabel) {
+            label = getVersionHex(uri);
+        }
         String href = makeHref(prefix + name, action, null, uri, null);
 
-        return String.format("<a href=\"%s\">%s</a>", href, escapeHTML(uri));
+        return String.format("<a href=\"%s\">%s</a>", href, escapeHTML(label));
+    }
+
+    public static String getVersionLink(String prefix, String name, String uri, String action) {
+        return  getVersionLink(prefix, name, uri, action, false);
     }
 
     // Hmmmm...
     public static String getVersionLink(String prefix, String name, String uri) {
         return getVersionLink(prefix, name, uri, "finished");
+    }
+
+    public static String getShortVersionLink(String prefix, String name, String uri) {
+        return getVersionLink(prefix, name, uri, "finished", true);
     }
 
     public static String gotoPageFormHtml(String basePath, String defaultPage) {

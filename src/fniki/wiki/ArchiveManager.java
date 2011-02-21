@@ -328,7 +328,7 @@ public class ArchiveManager {
         return mOverlay;
     }
 
-    public String getNym(String sskRequestUri) {
+    public String getNym(String sskRequestUri, boolean showPublicKey) {
         int start = sskRequestUri.indexOf("@");
         int end = sskRequestUri.indexOf(",");
         if (start == -1 || end == -1 || start >= end) {
@@ -340,8 +340,11 @@ public class ArchiveManager {
         // SSK@THIS_PART,
         String nym = mNymLut.get(publicKeyHash);
         if (nym == null) {
-            return "???";
+            nym = "???";
         }
-        return nym;
+        if (!showPublicKey) {
+            return nym;
+        }
+        return nym + "@" + publicKeyHash;
     }
 }

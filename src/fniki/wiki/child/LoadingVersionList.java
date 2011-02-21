@@ -37,7 +37,6 @@ import fmsutil.FMSUtil;
 import wormarc.ExternalRefs;
 import wormarc.FileManifest;
 
-
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
@@ -147,6 +146,23 @@ public class LoadingVersionList extends AsyncTaskContainer {
         return Integer.toString(value);
     }
 
+    public static String getParentVersion(FMSUtil.BISSRecord record) {
+        if (record.mKey == null) {
+            return "???";
+        }
+        String[] fields = record.mKey.split("/");
+        if (fields.length != 2) {
+            return "???";
+        }
+
+        fields = fields[1].split("_");
+        if (fields.length != 2) { // LATER. handle multiple parents
+            return "???";
+        }
+
+        return fields[1];
+    }
+
     public boolean doWork(PrintStream out) throws Exception {
         synchronized (this) {
             mListHtml = new StringBuilder();
@@ -158,10 +174,11 @@ public class LoadingVersionList extends AsyncTaskContainer {
             synchronized (this) {
 
                 mListHtml.append("<table border=\"1\">\n");
-                mListHtml.append("<tr><td>FMS ID</td><td>Date</td><td>Key</td><td>Msg Trust</td><td>TL Trust</td>" +
+                mListHtml.append("<tr><td>FMS ID</td><td>Date</td><td>Version</td><td>Parent</td>" +
+                                 "<td>Msg Trust</td><td>TL Trust</td>" +
                                  "<td>Peer Msg Trust</td><td>Peer TL Trust</td></tr>\n");
 
-                final String fmt = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>" +
+                final String fmt = "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>" +
                 "<td>%s</td><td>%s</td></tr>\n";
 
                 // DCI: BUG. fix to force finished
@@ -169,8 +186,9 @@ public class LoadingVersionList extends AsyncTaskContainer {
                     mListHtml.append(String.format(fmt,
                                                    escapeHTML(record.mFmsId),
                                                    escapeHTML(record.mDate),
-                                                   getVersionLink(mContainerPrefix,
+                                                   getShortVersionLink(mContainerPrefix,
                                                                   "/jfniki/loadarchive", record.mKey),
+                                                   escapeHTML(getParentVersion(record)),
                                                    trustString(record.msgTrust()),
                                                    trustString(record.trustListTrust()),
                                                    trustString(record.peerMsgTrust()),

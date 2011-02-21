@@ -143,10 +143,10 @@ public class LoadingChangeLog extends AsyncTaskContainer
                                               FileManifest.Changes fromNewToOld) {
 
         mListHtml.append("<br>");
+        mListHtml.append(getShortVersionLink(mContainerPrefix, "/jfniki/changelog", oldVer.mExternalKey));
+        mListHtml.append("<br>\n");
         mListHtml.append("FmsID: ");
-        mListHtml.append(escapeHTML(mArchiveManager.getNym(oldVer.mExternalKey)));
-        mListHtml.append("<br>");
-        mListHtml.append(getVersionLink(mContainerPrefix, "/jfniki/changelog", oldVer.mExternalKey));
+        mListHtml.append(escapeHTML(mArchiveManager.getNym(oldVer.mExternalKey, true)));
         mListHtml.append("<br>\n");
         appendChangesHtml(fromNewToOld, mContainerPrefix, mListHtml);
         return true;

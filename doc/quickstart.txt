@@ -4,7 +4,8 @@
 == Quick Start ==
 
 ===Configuration===
-# Click on the "View" link below to view (and edit) the configuration.
+# Click on the "View" link below to view (and edit) the configuration. \\
+  //Hint: Open the "View" link in a separate tab or window.//
 # Set the "FMS Name" to the human readable part of your FMS ID (everything before the '@').
 # Set the FMS Private SSK to your private FMS SSK (see below if you don't know how to find this).
 # Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.
@@ -16,10 +17,13 @@ Click the "Discover" link below to search for other versions of the wiki.
 === Submitting ===
 Use the "Submit" link below to submit your changes.  It may take a long time for other people to see them.
 
+=== Known Limitations ===
+# There is no merging or rebasing (yet).
+
+----
 === Finding Your Private SSK ===
 # Go to http://127.0.0.1:18080/localidentities.htm in the FMS web interface and click the "Export Identities" button
 to save your FMS indentities to a file.
-
 # In the text editor of your choice, open the file you saved above and look for the Name and PrivateKey values for the identity you want to use.
 
 In the example identity snippet below, the FMS Name value would be:\\

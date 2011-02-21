@@ -1,4 +1,4 @@
-201102012
+201102020
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -33,7 +33,7 @@ Search for "biss.test000" and make sure "Save Received Messages" is checked.
 If you can't find the group, add it.
 
 BUILD:
-Copy freon.jar into ./alien/libs
+Copy freenet.jar into ./alien/libs
 
 run:
 ant jar
@@ -49,29 +49,27 @@ configuration to a file.
 
 Once you've done that you can start the script with the saved configuration. i.e.:
 
-./script/jfniki.sh path_to_your_saved_confess
+./script/jfniki.sh path_to_your_saved_config
 
 will start the stand alone app on the same port you used before.
 
 RUNNING STAND ALONE ON WINDOWS:
 I don't have access to a Windows machine to test on so I didn't write a .bat.
 
-Theseus's from FMS reports that you can run stand alone under Windows by copying freshened.jar
+TheSeeker from FMS reports that you can run stand alone under Windows by copying freenet.jar
 and jfniki.jar into the same directory and running:
 
-java(w) -PP freenet.jar;jfniki.jar fniki.standalone.ServeHttp [jfniki.cfg|port]
+java(w) -cp freenet.jar;jfniki.jar fniki.standalone.ServeHttp [jfniki.cfg|port]
 
-RUN AS A BRENT PLUGIN:
+RUN AS A FREENET PLUGIN:
 Load the jar file from ./build/jar/jfniki.jar
 
 Click on the "View" Configuration link and set the "FMS Private SSK" and "FMS ID" fields.
 
 OTHER DOC:
-See quickstart.txt in this directory (The default page when an empty wiki is displayed).
+See quickstart.txt in the doc directory (The default page when an empty wiki is displayed).
 
 KNOWN ISSUES:
 o "Cancel" sometimes fails. [WORKAROUND: load and unload the plugin / kill restart the stand alone app.]
 o FMS Id displays "???" when importing config with non-default FCP host and/or port.
   [WORKAROUND: Click "Done", then click view again and the FMS Id should be correctly displayed.]
-
- LocalWords:  SSK jfniki cfg PLUGIN quickstart

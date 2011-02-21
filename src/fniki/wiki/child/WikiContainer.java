@@ -187,9 +187,9 @@ public class WikiContainer implements ChildContainer {
 
     private void addFooter(WikiContext context, String name, StringBuilder buffer) throws IOException {
         buffer.append("<hr>\n");
-        buffer.append("Parent Version:<br>");
+        buffer.append("Parent Version: ");
         // DCI: css class to make this smaller.
-        String version = context.getString("parent_uri", "None");
+        String version = getVersionHex(context.getString("parent_uri", null));
         buffer.append(escapeHTML(version));
         buffer.append("<hr>\n");
 

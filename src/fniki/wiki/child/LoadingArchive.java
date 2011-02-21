@@ -95,12 +95,18 @@ public class LoadingArchive extends AsyncTaskContainer {
             body.println("<html><head>" + metaRefresh() + "<title>" + escapeHTML(title) + "</title></head><body>");
 
             if (getState() == STATE_WORKING || getState() == STATE_SUCCEEDED) {
-                title = "Loading Archive:"; // Don't put full uri in header
+                if (getState() == STATE_WORKING) {
+                    title = "Loading Archive:"; // Don't put full uri in header
+                } else {
+                    title = "Loaded Archive.";
+                }
             }
             body.println("<h3>" + escapeHTML(title) + "</h3>");
             if (showUri) {
-                body.println(escapeHTML(mUri));
-                body.println("<p/>Clicking Load will discard any unsubmitted local changes.</p>");
+                body.println(escapeHTML("Load Version: " + getVersionHex(mUri)));
+                body.println("<br>");
+                body.println(escapeHTML("from: " + mUri));
+                body.println("<p>Clicking Load will discard any unsubmitted local changes.</p>");
             } else if (getState() == STATE_WORKING || getState() == STATE_SUCCEEDED) {
                 body.println(escapeHTML(mUri));
             }
