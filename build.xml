@@ -3,6 +3,8 @@
   <property name="alien.src" value="./alien/src" />
   <property name="alien.libs" value="./alien/libs" />
   <property name="classes" value="./build/classes" />
+  <property name="doc" value="./doc" />
+  <property name="templates" value="./templates" />
   <property name="jars" value="./build/jar" />
 
   <target name="clean">
@@ -46,6 +48,8 @@
         <attribute name="Main-Class" value="fniki.standalone.ServeHttp"/>
         <attribute name="Plugin-Main-Class" value="fniki.freenet.plugin.Fniki"/>
       </manifest>
+      <fileset dir="${doc}" includes="quickstart.txt"/>
+      <fileset dir="${templates}" includes="*.html"/>
     </jar>
   </target>
 

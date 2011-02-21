@@ -5,9 +5,10 @@
 
 ===Configuration===
 # Click on the "View" link below to view (and edit) the configuration.
-# Set the "FMS name" to the human readable part of your FMS ID (everything before the '@').
+# Set the "FMS Name" to the human readable part of your FMS ID (everything before the '@').
 # Set the FMS Private SSK to your private FMS SSK (see below if you don't know how to find this).
-# Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary. # Click the "Done" button to save the configuration changes.
+# Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.
+# Click the "Done" button to save the configuration changes.
 
 === Finding Other Versions===
 Click the "Discover" link below to search for other versions of the wiki.

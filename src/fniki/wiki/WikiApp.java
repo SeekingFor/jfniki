@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import wormarc.FileManifest;
+import wormarc.IOUtil;
 
 import static fniki.wiki.HtmlUtils.*;
 import static fniki.wiki.Validations.*;
@@ -534,50 +535,10 @@ public class WikiApp implements ChildContainer, WikiContext {
     }
 
     private static String getDefaultWikiText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("//You are seeing this Quick Start because the wiki has no Front_Page. It will disappear as soon as you edit and save the page. //\n");
-        sb.append("----\n");
-        sb.append("\n");
-        sb.append("== Quick Start ==\n");
-        sb.append("\n");
-        sb.append("===Configuration===\n");
-        sb.append("# Click on the \"View\" link below to view (and edit) the configuration.\n");
-        sb.append("# Set the \"FMS Name\" to the human readable part of your FMS ID (everything before the '@').\n");
-        sb.append("# Set the FMS Private SSK to your private FMS SSK (see below if you don't know how to find this).\n");
-        sb.append("# Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.\n");
-        sb.append("# Click the \"Done\" button to save the configuration changes.\n");
-        sb.append("\n");
-        sb.append("=== Finding Other Versions===\n");
-        sb.append("Click the \"Discover\" link below to search for other versions of the wiki.\n");
-        sb.append("\n");
-        sb.append("=== Submitting ===\n");
-        sb.append("Use the \"Submit\" link below to submit your changes.  It may take a long time for other people to see them.\n");
-        sb.append("\n");
-        sb.append("=== Finding Your Private SSK ===\n");
-        sb.append("# Go to http://127.0.0.1:18080/localidentities.htm in the FMS web interface and click the \"Export Identities\" button\n");
-        sb.append("to save your FMS indentities to a file.\n");
-        sb.append("\n");
-        sb.append("# In the text editor of your choice, open the file you saved above and look for the Name and PrivateKey values for the identity you want to use.\n");
-        sb.append("\n");
-        sb.append("In the example identity snippet below, the FMS Name value would be:\\\\ \n");
-        sb.append("SomeUser\n");
-        sb.append("\n");
-        sb.append("and the FMS Private Key would be: \\\\ \n");
-        sb.append("SSK@YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,AQECAAE/ \n");
-        sb.append("\n");
-        sb.append("----\n");
-        sb.append("{{{\n");
-        sb.append("<Identity>\n");
-        sb.append("   <Name><![CDATA[SomeUser]]></Name>\n");
-        sb.append("   <PublicKey>SSK@XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX,AQACAAE/</PublicKey>\n");
-        sb.append("   <PrivateKey>SSK@YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,AQECAAE/</PrivateKey>\n");
-        sb.append("   <SingleUse>false</SingleUse>\n");
-        sb.append("   <PublishTrustList>false</PublishTrustList>\n");
-        sb.append("   <PublishBoardList>false</PublishBoardList>\n");
-        sb.append("   <PublishFreesite>false</PublishFreesite>\n");
-        sb.append("</Identity>\n");
-        sb.append("}}}\n");
-        sb.append("\n");
-        return sb.toString();
+        try {
+            return IOUtil.readUtf8StringAndClose(WikiApp.class.getResourceAsStream("/quickstart.txt"));
+        } catch (IOException ioe) {
+            return "Couldn't load default wikitext from jar???";
+        }
     }
 }

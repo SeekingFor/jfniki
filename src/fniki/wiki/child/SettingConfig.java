@@ -24,8 +24,11 @@
 
 package fniki.wiki.child;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import static ys.wikiparser.Utils.*;
+
+import wormarc.IOUtil;
 
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.ChildContainerException;
@@ -224,77 +227,11 @@ public class SettingConfig implements ModalContainer {
 
     // READ the comment above before modifiy the template!
     private static String formTemplate() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>\n");
-        sb.append("<head>\n");
-        sb.append("<title>\n");
-        sb.append("  Configuration\n");
-        sb.append("</title>\n");
-        sb.append("</head>\n");
-        sb.append("<body>\n");
-        sb.append("%s\n");
-        sb.append("<h1>Configuration</h1>\n");
-        sb.append("<form method=\"post\" action=\"%s\" enctype=\"multipart/form-data\" accept-charset=\"UTF-8\">\n");
-        sb.append("<table>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>Fcp Host</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fcphost\" value=\"%s\" /></td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>Fcp Port</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fcpport\" value=\"%d\" /></td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>Fproxy Prefix</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fpprefix\" size=\"64\" value=\"%s\" /></td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>FMS Host</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmshost\" value=\"%s\" /></td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>FMS Port</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmsport\" value=\"%d\" /> </td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>FMS Private SSK</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmsssk\" size=\"128\" value=\"\" /> </td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>FMS Name</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmsid\" value=\"%s\" /> </td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>Full FMS ID</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmsfull\" size=\"64\" readonly=\"readonly\" value=\"%s\" /> </td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>FMS Group</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"fmsgroup\" value=\"%s\" /> </td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td>Wiki Name</td>\n");
-        sb.append("    <td><input type=\"text\" name=\"wikiname\" value=\"%s\"/> </td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <tr>\n");
-        sb.append("    <td><input type=\"checkbox\" name=\"images\" %s/>Enable Images</td>\n");
-        sb.append("  </tr>\n");
-        sb.append("  <input type=\"hidden\" name=\"formPassword\" value=\"%s\"/>\n");
-        sb.append("</table>\n");
-        sb.append("<input name=\"defaults\" type=\"submit\" value=\"Reset Defaults\"/>\n");
-        sb.append("<input name=\"done\" type=\"submit\" value=\"Done\"/>\n");
-        sb.append("<hr>\n");
-        sb.append("<input name=\"import\" type=\"submit\" value=\"Import Configuration\"/>\n");
-        sb.append("<input type=\"file\" name=\"upload\" size=\"64\">\n");
-        sb.append("<hr>\n");
-        sb.append("<input name=\"export\" type=\"submit\" value=\"Export Configuration\"/>\n");
-        sb.append("<hr>\n");
-        sb.append("</form>\n");
-        sb.append("\n");
-        sb.append("</body>\n");
-        sb.append("</html>\n");
-
-        return sb.toString();
+        try {
+            return IOUtil.readUtf8StringAndClose(SettingConfig.class.getResourceAsStream("/config_form.html"));
+        } catch (IOException ioe) {
+            return "Couldn't load template from jar???";
+        }
     }
 }
 
