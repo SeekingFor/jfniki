@@ -127,7 +127,10 @@ public class ArchiveManager {
     public void load(String uri) throws IOException {
         FreenetIO io = new FreenetIO(mFcpHost, mFcpPort);
         io.setRequestUri(uri);
-        mArchive = Archive.load(io);
+        Archive archive = Archive.load(io);
+        validateUriHashes(archive, uri, true);
+
+        mArchive = archive;
         mFileManifest = FileManifest.fromArchiveRootObject(mArchive);
         mOverlay = new LocalWikiChanges(mArchive, mFileManifest); // DCI: why copy ?
         mParentUri = uri;
@@ -146,12 +149,76 @@ public class ArchiveManager {
         }
     }
 
-    private String getInsertUri(Archive archive) throws IOException {
+    // The name of a jfniki archive includes the hash of the
+    // full archive manifest file, and hashes of the SSK of
+    // it's parent(s).
+    //
+    // use '_' instead of '|' because '|' gets percent escaped.
+    // <sha1_of_am_file>[<underbar>sha1_of_parent_ssk]
+    private static String makeUriNamePart(Archive archive) throws IOException {
         // Generate a unique SSK.
         LinkDigest digest = archive.getRootObject(RootObjectKind.ARCHIVE_MANIFEST);
         // The hash of the actual file, not just the chain head SHA.
         LinkDigest fileHash = IOUtil.getFileDigest(archive.getFile(digest));
-        return mPrivateSSK + fileHash.hexDigest(8);
+
+        String parentKeyHashes = "";
+        LinkDigest refsDigest = archive.getRootObject(RootObjectKind.PARENT_REFERENCES);
+        if (!refsDigest.isNullDigest()) {
+            ExternalRefs refs = ExternalRefs.fromBytes(archive.getFile(refsDigest));
+            for (ExternalRefs.Reference ref : refs.mRefs) {
+                if (ref.mKind != ExternalRefs.KIND_FREENET) {
+                    continue;
+                }
+                parentKeyHashes += "_";
+                parentKeyHashes += IOUtil.getFileDigest(IOUtil.toStreamAsUtf8(ref.mExternalKey))
+                    .hexDigest(8);
+            }
+        }
+
+        return fileHash.hexDigest(8) + parentKeyHashes;
+    }
+
+    private static void validateUriHashes(Archive archive,
+                                          String uri,
+                                          boolean allowNoParents) throws IOException {
+        String[] fields = uri.split("/");
+        if (fields.length != 2) {
+            throw new IOException("Couldn't parse uri: " + uri);
+        }
+        fields = fields[1].split("_");
+        if (fields.length < 1) {
+            throw new IOException("Couldn't parse uri: " + uri);
+        }
+
+        String[] expected  = makeUriNamePart(archive).split("_");
+
+        for (int index = 0; index < expected.length; index++) {
+            if (index >= fields.length) {
+                continue;
+            }
+        }
+
+        if (fields.length == 1 && fields[0].equals(expected[0])) {
+            // LATER: tighten up.
+            // For now, allow old URIs that don't have parent info hashes.
+            return;
+        }
+
+        if (expected.length != fields.length) {
+            throw new IOException("Hash validation failed(0)! Inserter is lying about contents.");
+        }
+
+        for (int index = 0; index < expected.length; index++) {
+            if (!expected[index].equals(fields[index])) {
+                throw new IOException("Hash validation failed(1)! Inserter is lying about contents.");
+            }
+        }
+    }
+
+    private String getInsertUri(Archive archive) throws IOException {
+        String uri = mPrivateSSK + makeUriNamePart(archive);
+        validateUriHashes(archive, uri, false);
+        return uri;
     }
 
     // DCI: commitAndPushToFreenet() ?
