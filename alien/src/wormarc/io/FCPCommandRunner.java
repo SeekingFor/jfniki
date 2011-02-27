@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 
+import java.security.DigestInputStream;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -54,12 +56,13 @@ import net.pterodactylus.fcp.FcpMessage;
 import wormarc.Block;
 import wormarc.HistoryLinkMap;
 import wormarc.IOUtil;
+import wormarc.LinkDigest;
 
 // Christ on a bike! is jfcplib really this complicated?
 public class FCPCommandRunner {
     private final static Verbosity VERBOSITY = Verbosity.ALL;
     private final static Priority PRIORITY = Priority.interactive;
-    private final static int MAX_RETRIES = 3;
+    private final static int MAX_RETRIES = 6;
     private final static boolean DONT_COMPRESS = true;
     private final static String REAL_TIME_FIELD = "RealTimeFlag";
     private final static String REAL_TIME_VALUE = "true";
@@ -170,7 +173,9 @@ public class FCPCommandRunner {
             }
 
             // DCI: Handle too big! (code == 21). It means the
-            handleDone(String.format("ClientGet failed: %d", getFailed.getCode()));
+            handleDone(String.format("ClientGet failed: [%d]: %s",
+                                     getFailed.getCode(),
+                                     getFailed.getShortCodeDescription()));
         }
 
 	public void receivedPutFailed(FcpConnection fcpConnection, PutFailed putFailed) {
@@ -178,7 +183,9 @@ public class FCPCommandRunner {
                 return;
             }
 
-            handleDone(String.format("ClientPut failed: %d", putFailed.getCode()));
+            handleDone(String.format("ClientPut failed: [%d]: %s",
+                                     putFailed.getCode(),
+                                     putFailed.getShortCodeDescription()));
         }
 
         public void receivedAllData(FcpConnection fcpConnection, AllData allData) {
@@ -248,6 +255,7 @@ public class FCPCommandRunner {
     static class GetBlock extends Command {
         private long mLength;
         private Block mBlock;
+        private String mHexDigest;
         private FreenetIO mIO;
 
         protected GetBlock(String name, String uri, long length, FreenetIO io, FCPCommandRunner runner) {
@@ -265,7 +273,11 @@ public class FCPCommandRunner {
             if (data == null) {
                 throw new IllegalArgumentException("data == null");
             }
-            mBlock = mIO.readLinks(data);
+
+            DigestInputStream digestInput = IOUtil.getSha1DigestInputStream(data);
+            mBlock = mIO.readLinks(digestInput);
+            LinkDigest digest = new LinkDigest(digestInput.getMessageDigest().digest());
+            mHexDigest = digest.toString();
         }
 
         protected FcpMessage getStartMessage() {
@@ -279,19 +291,30 @@ public class FCPCommandRunner {
         }
 
         public Block getBlock() { return mBlock; }
+        public String getHexDigest() { return mHexDigest; }
     }
 
     static class PutBlock extends Command { // DCI: sleazy. How does stream get closed in failure cases?
         private long mLength;
-        private InputStream mData;
-        public PutBlock(String name, long length, InputStream data, FCPCommandRunner runner) {
+        private DigestInputStream mData;
+        private String mHexDigest;
+
+        public PutBlock(String name, long length, InputStream data, FCPCommandRunner runner) throws IOException {
             super(name, "CHK@", runner);
             mLength = length;
-            mData = data;
+            mData = IOUtil.getSha1DigestInputStream(data);
         }
 
         protected void handleData(long length, InputStream data) throws IOException {
             handleDone("Not expecting AllData");
+        }
+
+	public void receivedPutSuccessful(FcpConnection fcpConnection, PutSuccessful putSuccessful) {
+            LinkDigest digest = new LinkDigest(mData.getMessageDigest().digest());
+            mHexDigest = digest.toString();
+
+            // Order important. This posts handleDone.
+            super.receivedPutSuccessful(fcpConnection, putSuccessful);
         }
 
         protected FcpMessage getStartMessage() {
@@ -305,6 +328,8 @@ public class FCPCommandRunner {
             msg.setField(REAL_TIME_FIELD, REAL_TIME_VALUE);
             return msg;
         }
+        public long getLength() { return mLength; }
+        public String getHexDigest() { return mHexDigest; }
     }
 
     static class GetBlockChk extends Command { // DCI: sleazy. How does stream get closed in failure cases?
@@ -330,6 +355,8 @@ public class FCPCommandRunner {
             msg.setDontCompress(DONT_COMPRESS);
             msg.setPriority(PRIORITY);
             msg.setGetCHKOnly(true);
+            msg.setMaxRetries(MAX_RETRIES);
+            msg.setField(REAL_TIME_FIELD, REAL_TIME_VALUE);
             return msg;
         }
     }
@@ -428,6 +455,8 @@ public class FCPCommandRunner {
             msg.setDontCompress(DONT_COMPRESS);
             msg.setPriority(PRIORITY);
             msg.setGetCHKOnly(true); // Also works for SSKs.
+            msg.setField(REAL_TIME_FIELD, REAL_TIME_VALUE);
+            msg.setMaxRetries(MAX_RETRIES);
             return msg;
         }
     }

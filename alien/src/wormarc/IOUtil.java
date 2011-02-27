@@ -37,6 +37,7 @@ import java.io.OutputStream;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.DigestInputStream;
 
 import java.util.Random;
 
@@ -83,27 +84,38 @@ public class IOUtil {
         }
     }
 
+    public final static DigestInputStream getSha1DigestInputStream(InputStream fromStream)
+        throws IOException {
+        try {
+            MessageDigest sha1 = MessageDigest.getInstance("SHA");
+            return new DigestInputStream(fromStream, sha1);
+        }
+        catch (NoSuchAlgorithmException nsae) {
+            fromStream.close();
+            throw new IOException("Couldn't load SHA1 algorithm.");
+        }
+    }
+
+    private static class NullOutputStream extends OutputStream {
+        public void write(int b) throws IOException {}
+        public void write(byte[] b,
+                          int off,
+                          int len)
+            throws IOException {
+            if (b == null) throw new NullPointerException();
+            if (off < 0 || len < 0 || off + len > b.length) {
+                throw new IndexOutOfBoundsException();
+            }
+        }
+    }
+
+    // Hmmm... old code was probably faster.
     // Closes stream.
     public final static LinkDigest getFileDigest(InputStream fromStream) throws IOException {
-        MessageDigest sha1 = null;
+        DigestInputStream inputStream = getSha1DigestInputStream(fromStream);
         try {
-            try {
-                sha1 = MessageDigest.getInstance("SHA");
-            }
-            catch (NoSuchAlgorithmException nsae) {
-                throw new IOException("Couldn't load SHA1 algorithm.");
-            }
-
-            // DCI: Better to use a wrapper stream filter from the java crypto lib?
-            byte[] buffer = new byte[BUF_LEN];
-            while (true) {
-                int bytesRead = fromStream.read(buffer);
-                if (bytesRead == -1) {
-                    break;
-                }
-                sha1.update(buffer, 0, bytesRead);
-            }
-            return new LinkDigest(sha1.digest());
+            copyAndClose(inputStream, new NullOutputStream());
+            return new LinkDigest(inputStream.getMessageDigest().digest());
         }
         finally {
             fromStream.close();

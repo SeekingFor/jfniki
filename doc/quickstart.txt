@@ -11,14 +11,24 @@
 # Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.
 # Click the "Done" button to save the configuration changes.
 
-=== Finding Other Versions===
+=== Finding Other Versions Of the testwiki===
 Click the "Discover" link below to search for other versions of the wiki.
+
+If you don't see anything read the  "FMS configuration" section below.
 
 === Submitting ===
 Use the "Submit" link below to submit your changes.  It may take a long time for other people to see them.
 
+=== There are other wikis! ===
+With the default settings you load the "testwiki" I have been using for testing.
+
+There are other wikis out there.
+
+Try entering "freenetdocwiki" in for the "Wiki Name" on the configuration page, then doing "Discover".
+
 === Known Limitations ===
 # There is no merging or rebasing (yet).
+# The only way to start an empty wiki from scratch is by loading and unloading the plugin (or running stand alone from the command line).
 
 ----
 === Finding Your Private SSK ===
@@ -44,3 +54,16 @@ SSK@YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
    <PublishFreesite>false</PublishFreesite>
 </Identity>
 }}}
+
+----
+===FMS Configuration===
+
+By default the prototype uses the "biss.test000" FMS group.
+Make sure FMS is configured to save messages to this group.
+
+On the FMS Boards maintenance page:
+http://127.0.0.1:18080/boards.htm
+
+Search for "biss.test000" and make sure "Save Received Messages" is checked.
+
+If you can't find the group, add it.

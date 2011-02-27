@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>%s</title>
+<style type="text/css">div.indent{margin-left:20px;} div.center{text-align:center;} blockquote{margin-left:20px;background-color:#e0e0e0;} span.underline{text-decoration:underline;}
+</style>
+</head>
+<body>
+<h1>%s</h1>
+<hr/>
+<form method="post"
+      action="%s"
+      enctype="multipart/form-data"
+      accept-charset="UTF-8">
+  <input type=hidden name="savepage" value="%s"/>
+  <textarea wrap="virtual" name="savetext" rows="17" cols="120">%s</textarea>
+  <br/>
+  <input type=submit value="Save"/>
+  <input type=hidden name=formPassword value="%s"/>
+  <input type=reset value="Reset"/>
+  <br/>
+</form>
+<hr/>
+</body>
+</html>
+

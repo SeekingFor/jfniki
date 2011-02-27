@@ -66,6 +66,12 @@ public class ArchiveManager {
     // Base64 SSK public key hash to FMS name. i.e. the part before '@'.
     Map<String, String> mNymLut = new HashMap<String, String>();
 
+    // LATER: Revisit. This was HACK to work around the fact that GetCHKOnly=true
+    //        is broken for splitfiles.
+    //
+    // Block hex digest to CHK key map.
+    Map<String, String> mSha1ToChk = new HashMap<String, String>();
+
     String mParentUri;
     Archive mArchive;
     FileManifest mFileManifest;
@@ -89,7 +95,7 @@ public class ArchiveManager {
 
     public String invertPrivateSSK(String value, int timeoutMs) throws IOException {
         validatePrivateSSK(value);
-        return (new FreenetIO(mFcpHost, mFcpPort)).invertPrivateSSK(value, timeoutMs);
+        return makeIO().invertPrivateSSK(value, timeoutMs);
     }
 
     public String getPrivateSSK() { return mPrivateSSK; }
@@ -125,7 +131,7 @@ public class ArchiveManager {
 
     // DCI: Fix this to roll back state on exceptions.
     public void load(String uri) throws IOException {
-        FreenetIO io = new FreenetIO(mFcpHost, mFcpPort);
+        FreenetIO io = makeIO();
         io.setRequestUri(uri);
         Archive archive = Archive.load(io);
         validateUriHashes(archive, uri, true);
@@ -147,6 +153,10 @@ public class ArchiveManager {
         public UpToDateException() {
             super("There are no local changes to submit.");
         }
+    }
+
+    private FreenetIO makeIO() {
+        return new FreenetIO(mFcpHost, mFcpPort, null, mSha1ToChk);
     }
 
     // The name of a jfniki archive includes the hash of the
@@ -259,10 +269,8 @@ public class ArchiveManager {
         out.println("Insert URI: " + insertUri);
 
         // Push the updated version into Freenet.
-        FreenetIO io = new FreenetIO(mFcpHost, mFcpPort);
+        FreenetIO io = makeIO();
         io.setInsertUri(insertUri);
-        out.println("Trying to read previous top key if possible...");
-        io.maybeLoadPreviousTopKey(copy);
         out.println("Writing to Freenet...");
         copy.write(io);
 
@@ -300,7 +308,7 @@ public class ArchiveManager {
         ExternalRefs.Reference head =
             new ExternalRefs.Reference(ExternalRefs.KIND_FREENET, mParentUri);
 
-        FreenetIO freenetResolver = new FreenetIO(mFcpHost, mFcpPort);
+        FreenetIO freenetResolver = makeIO();
         Archive archive = freenetResolver.resolve(head);
         AuditArchive.getManifestChangeLog(head, archive, freenetResolver, callback);
     }

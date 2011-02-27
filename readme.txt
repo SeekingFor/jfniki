@@ -1,4 +1,4 @@
-201102020
+20110227
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -73,3 +73,15 @@ KNOWN ISSUES:
 o "Cancel" sometimes fails. [WORKAROUND: load and unload the plugin / kill restart the stand alone app.]
 o FMS Id displays "???" when importing config with non-default FCP host and/or port.
   [WORKAROUND: Click "Done", then click view again and the FMS Id should be correctly displayed.]
+
+---
+Dev notes
+---
+IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
+IDEA: Support links to other wikis. e.g.: fniki://fms/group/name
+IDEA: Why isn't this file in Creole?
+
+BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
+BUG: No way to create an empty wiki from the UI. [requested by a real user]
+BUG: Default FCP port wrong for CLI client. [requested by a real user]
+

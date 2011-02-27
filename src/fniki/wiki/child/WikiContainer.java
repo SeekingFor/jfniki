@@ -43,6 +43,8 @@ import fniki.wiki.ChildContainerException;
 import fniki.wiki.Query;
 
 import wormarc.FileManifest;
+import wormarc.IOUtil;
+
 import fniki.wiki.FreenetWikiTextParser;
 import static fniki.wiki.HtmlUtils.*;
 import static fniki.wiki.Validations.*;
@@ -226,50 +228,34 @@ public class WikiContainer implements ChildContainer {
     }
 
     private String getEditorHtml(WikiContext context, String name) throws IOException {
-        StringBuilder buffer = new StringBuilder();
-        addHeader(name, buffer);
-
-        String href = makeHref(context.makeLink("/" +name),
-                               "save", null, null, null);
-
-
-        buffer.append("<form method=\"post\" action=\"" +
-                      href +
-                      "\" enctype=\"");
-
-        // IMPORTANT: Only multipart/form-data encoding works in plugins.
-        // IMPORTANT: Must be multipart/form-date even for standalone because
-        //            the Freenet ContentFilter rewrites the encoding in all forms
-        //            to this value.
-        buffer.append("multipart/form-data");
-        buffer.append("\" accept-charset=\"UTF-8\">\n");
-
-        buffer.append("<input type=hidden name=\"savepage\" value=\"");
-        buffer.append(escapeHTML(name));
-        buffer.append("\">\n");
-
-        buffer.append("<textarea wrap=\"virtual\" name=\"savetext\" rows=\"17\" cols=\"120\">\n");
-
-        if (context.getStorage().hasPage(name)) {
-            buffer.append(escapeHTML(context.getStorage().getPage(name)));
-        } else {
-            buffer.append(escapeHTML("Page doesn't exist in the wiki yet."));
+        String template = null;
+        try {
+            // IMPORTANT: Only multipart/form-data encoding works in plugins.
+            // IMPORTANT: Must be multipart/form-data even for standalone because
+            //            the Freenet ContentFilter rewrites the encoding in all forms
+            //            to this value.
+            template = IOUtil.readUtf8StringAndClose(SettingConfig.class.getResourceAsStream("/edit_form.html"));
+        } catch (IOException ioe) {
+            return "Couldn't load edit_form.html template from jar???";
         }
 
-        buffer.append("</textarea>\n");
-        buffer.append("<br><input type=submit value=\"Save\">\n");
-        buffer.append("<input type=hidden name=formPassword value=\"");
+        String escapedName = escapeHTML(unescapedTitleFromName(name));
+        String href = makeHref(context.makeLink("/" +name),
+                               "save", null, null, null);
+        String wikiText = "Page doesn't exist in the wiki yet.";
+        if (context.getStorage().hasPage(name)) {
+            wikiText = context.getStorage().getPage(name);
+        }
 
-        // IMPORTANT: Required by Freenet Plugin.
-        buffer.append(context.getString("form_password", "FORM_PASSWORD_NOT_SET"));  // Doesn't need escaping.
-        buffer.append("\"/>\n");
-        buffer.append("<input type=reset value=\"Reset\">\n");
-        buffer.append("<br></form>");
-
-        buffer.append("<hr>\n");
-        buffer.append("</body></html>\n");
-
-        return buffer.toString();
+        return String.format(template,
+                             escapedName,
+                             escapedName,
+                             href,
+                             escapeHTML(name), // i.e. with '_' chars
+                             escapeHTML(wikiText),
+                             // IMPORTANT: Required by Freenet Plugin.
+                             // Doesn't need escaping.
+                             context.getString("form_password", "FORM_PASSWORD_NOT_SET"));
     }
 
     public String renderXHTML(WikiContext context, String wikiText) {

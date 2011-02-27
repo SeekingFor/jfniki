@@ -56,14 +56,14 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
         private final String readAsUtf8(HTTPServer.MultipartIterator.Part part) throws IOException {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            while (part.body.available() > 0) { // Do better? Does it matter?
+            while (true) { // Do better? Does it matter?
                 int oneByte = part.body.read();
                 if (oneByte == -1) {
-                    throw new IOException("Unexpected EOF???");
+                    break;
                 }
                 baos.write(oneByte);
             }
-
+            System.err.println("read part bytes: " +  baos.toByteArray().length);
             return new String(baos.toByteArray(), "utf8");
         }
 
@@ -90,8 +90,10 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                         continue;
                     }
                     mParamTable.put(part.name, readAsUtf8(part));
-                    System.err.println("Set multipart Param: " + part.name + " : " +
-                                       mParamTable.get(part.name));
+                    System.err.println(String.format("Set multipart Param: %s[%d]:\n%s",
+                                                     part.name,
+                                                     mParamTable.get(part.name).length(),
+                                                     mParamTable.get(part.name)));
                 }
                 mParent.consumeBody();
             }

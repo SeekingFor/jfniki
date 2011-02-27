@@ -30,8 +30,10 @@ import java.io.PrintStream;
 
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import wormarc.Archive;
@@ -48,6 +50,7 @@ import wormarc.RootObjectKind;
 
 public class FreenetIO implements Archive.IO, ArchiveResolver {
     private LinkCache mCache;
+    private Map<String, String> mSha1ToChk;
 
     // Transient
     private HistoryLinkMap mLinkMap;
@@ -62,16 +65,31 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
 
     private String mInsertUri;
     private String mRequestUri;
+
+    // DCI: REMOVE THIS, NO LONGER USED?
     private FreenetTopKey mPreviousTopKey;
 
     private static PrintStream sDebugOut = System.err;
 
+    protected void debug(String msg) {
+        synchronized(sDebugOut) {
+            sDebugOut.println(msg);
+        }
+    }
+
     // Cache can be null.
     // When it is non-null all links read from Freenet are dumped to the cache.
-    public FreenetIO(String host, int port, LinkCache cache) {
+    // sha1ToChk can be null.
+    // When it is non-null entries are added to the table for all blocks that are read or written.
+    public FreenetIO(String host, int port, LinkCache cache, Map<String, String> sha1ToChk) {
         mHost = host;
         mPort = port;
         mCache = cache;
+        mSha1ToChk = sha1ToChk;
+    }
+
+    public FreenetIO(String host, int port, LinkCache cache) {
+        this(host, port, cache, null);
     }
 
     public FreenetIO(String host, int port) {
@@ -171,38 +189,46 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
                                           mClientName +
                                           IOUtil.randomHexString(12));
 
-            // Precompute the block CHKs so we can skip blocks that
-            // are already in Freenet.
+            // Contains full descriptions for blocks that are known
+            // to exist in Freenet.
             List<FreenetTopKey.BlockDescription> descriptions =
-                precomputeDescriptions(runner, linkMap, blocks);
+                precomputeDescriptions(linkMap, blocks);
 
             if (blocks.size() != descriptions.size()) {
                 throw new RuntimeException("Assertion Failure: blocks.size() != descriptions.size()");
             }
 
-            Set<String> previousChks =  new HashSet<String>();
-            if (mPreviousTopKey != null) {
-                for (FreenetTopKey.BlockDescription desc : mPreviousTopKey.mBlockDescriptions) {
-                    for (int subIndex = 0; subIndex < desc.mCHKs.size(); subIndex++) {
-                        previousChks.add(desc.getCHK(subIndex));
-                    }
-                }
-            }
-
             List<FCPCommandRunner.PutBlock> puts = new ArrayList<FCPCommandRunner.PutBlock>();
             for (int index = 0; index < descriptions.size(); index++) {
                 FreenetTopKey.BlockDescription desc = descriptions.get(index);
-                if (previousChks.contains(desc.getCHK(0))) {
-                    // i.e. the block was already inserted, so skip it.
+                if (desc != null) {
+                    // i.e. the block was already inserted, so skip it, but add a place holder.
+                    puts.add(null);
                     continue;
                 }
+                // Need to insert the block.
                 puts.add(runner.sendPutBlock(index, linkMap, blocks.get(index)));
             }
 
             runner.waitUntilAllFinished();
 
+            int pos = 0;
             for (FCPCommandRunner.PutBlock put : puts) {
-                put.raiseOnFailure();
+                if (put != null) {
+                    put.raiseOnFailure();
+                    List<String> chks = Arrays.asList(put.getUri());
+                    descriptions.set(pos,
+                                     FreenetTopKey.makeDescription(put.getLength(),
+                                                                   chks));
+                }
+                pos++;
+            }
+
+            // Hmmm... really should only update the block sha1 -> CHK cache after full success.
+            for (FCPCommandRunner.PutBlock put : puts) {
+                if (put != null) {
+                    cacheBlockChk(put.getHexDigest(), put.getUri());
+                }
             }
 
             FreenetTopKey topKey = new FreenetTopKey(rootObjects, descriptions);
@@ -214,6 +240,7 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             runner.waitUntilAllFinished();
             putTopKey.raiseOnFailure();
             mRequestUri = putTopKey.getUri();
+
         } catch (InterruptedException ie) {
             throw new IOException("Write timed out.", ie);
         } catch (IllegalBase64Exception ibe) {
@@ -281,9 +308,9 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             List<FCPCommandRunner.GetBlock> gets = new ArrayList<FCPCommandRunner.GetBlock>();
             for (FreenetTopKey.BlockDescription desc : topKey.mBlockDescriptions ) {
                 // LATER: Handle redundant block fetches.
-                sDebugOut.println(String.format("Requesting[%d]: %s",
-                                                desc.mLength,
-                                                desc.getCHK(0)));
+                debug(String.format("Requesting[%d]: %s",
+                                    desc.mLength,
+                                    desc.getCHK(0)));
                 gets.add(runner.sendGetBlock(desc.getCHK(0), desc.mLength, count++, this));
             }
             runner.waitUntilAllFinished();
@@ -293,9 +320,12 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             for (FCPCommandRunner.GetBlock get : gets) {
                 get.raiseOnFailure();
                 blocks.add(get.getBlock());
+
+                // Save, so that we know we don't need to insert this block
+                // when inserting the update.
+                cacheBlockChk(get.getHexDigest(), get.getUri());
             }
             return new Archive.ArchiveData(blocks, topKey.mRootObjects);
-
         } catch (InterruptedException ie) {
             throw new IOException("Read timed out.", ie);
         } catch (IllegalBase64Exception ibe) {
@@ -304,7 +334,7 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             mLinkMap = null;
             mLinkDataFactory = null;
             if (runner != null) {
-                sDebugOut.println("FCP Connection -- DISCONNECTING!");
+                debug("FCP Connection -- DISCONNECTING!");
                 runner.disconnect();
             }
         }
@@ -332,29 +362,40 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
     }
 
     ////////////////////////////////////////////////////////////
-    private List<FreenetTopKey.BlockDescription> precomputeDescriptions(FCPCommandRunner runner,
-                                                                        HistoryLinkMap linkMap,
+    private void cacheBlockChk(String hexDigest, String chk) {
+        synchronized(mSha1ToChk) {
+            debug(String.format("cached: %s -> %s", hexDigest, chk));
+            mSha1ToChk.put(hexDigest, chk);
+        }
+    }
+
+    private String getCachedChk(String hexDigest) {
+        synchronized(mSha1ToChk) {
+            if (hexDigest == null) {
+                return null;
+            }
+            return mSha1ToChk.get(hexDigest);
+        }
+    }
+
+    private List<FreenetTopKey.BlockDescription> precomputeDescriptions(HistoryLinkMap linkMap,
                                                                         List<Block> blocks)
         throws IllegalBase64Exception,
                InterruptedException,
                IOException {
 
-        // Use the Freenet node to tell us the CHKs for the new blocks without
-        // inserting them.
-        int count = 0;
-        List<FCPCommandRunner.GetBlockChk> getChks = new ArrayList<FCPCommandRunner.GetBlockChk>();
-        for (Block block : blocks) {
-            getChks.add(runner.sendGetBlockChk(count++, linkMap, block));
-        }
-
-        runner.waitUntilAllFinished();
-
-        int index = 0;
         List<FreenetTopKey.BlockDescription> descriptions = new ArrayList<FreenetTopKey.BlockDescription>();
-        for (FCPCommandRunner.GetBlockChk get : getChks) {
-            get.raiseOnFailure();
-            descriptions.add(FreenetTopKey.makeDescription(get.getLength(), Arrays.asList(get.getUri())));
-            index++;
+        for (Block block : blocks) {
+            String hexDigest = IOUtil.getFileDigest(linkMap.getBinaryRep(block)).toString();
+            String chk = getCachedChk(hexDigest);
+            if (chk != null) {
+                // Don't need to insert.
+                long length = linkMap.getLength(block); // LATER: do better. Shouldn't be making multiple passes.
+                descriptions.add(FreenetTopKey.makeDescription(length, Arrays.asList(chk)));
+                continue;
+            }
+            // Do need to insert. Add placeholder.
+            descriptions.add(null);
         }
         return descriptions;
     }
@@ -367,7 +408,7 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             if (fromReference.mKind != ExternalRefs.KIND_FREENET) {
                 throw new IOException("Reference is not a Freenet URI");
             }
-            sDebugOut.println("resolving Archive from: " + fromReference.mExternalKey);
+            debug("resolving Archive from: " + fromReference.mExternalKey);
             mRequestUri = fromReference.mExternalKey;
             Archive loaded = Archive.load(this); // Hmmmm... slurps stuff into the cache. ???
             if (!loaded.getRootObject(RootObjectKind.ARCHIVE_MANIFEST).isNullDigest()) {
