@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 
+// DCI: Pull the MessageDigest out of this interface by using a DigestInputStream?
 // INTENT: decouple rep of link data from presentation implementation (BinaryRep).
 //        e.g. RAM storage, single file storage, multiple file storage.
 public interface LinkDataFactory {

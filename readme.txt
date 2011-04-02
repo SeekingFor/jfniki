@@ -80,8 +80,25 @@ Dev notes
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
 IDEA: Support links to other wikis. e.g.: fniki://fms/group/name
 IDEA: Why isn't this file in Creole?
-
-BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
+IDEA: Caching in FreenetIO
+      Make LinkCache and interface
+      FreenetLinkCache extends LinkCache
+        SSK -> topkey byte[] hash
+        CHK -> CHK content SHA1
+        CHK content SHA1 ->  CHK
+        void cacheTopKey(SSK, InputStream)
+        FreenetTopKey getTopKey(ssk)
+        SHA1 cacheBlock(CHK, InputStream)
+        boolean isCached(CHK)
+IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
+      http://selenic.com/repo/hg-stable/file/4ec34de8bbb1/hgext/graphlog.py
+IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
+      SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
+      let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics]
 BUG: No way to create an empty wiki from the UI. [requested by a real user]
 BUG: Default FCP port wrong for CLI client. [requested by a real user]
 
+BUG: fix the discover UI to correctly handle posts from a different nym than the insert
+BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
+BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
+BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter?
