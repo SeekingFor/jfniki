@@ -330,7 +330,6 @@ public class ArchiveManager {
                 fields[1] = fields[1].substring(0, fields[1].lastIndexOf(".freetalk"));
             }
 
-            System.err.println("SETTING: " + fields[1] + "->" + fields[0]);
             mNymLut.put(fields[1].trim(), fields[0].trim());
         }
 
