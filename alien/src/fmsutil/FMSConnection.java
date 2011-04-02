@@ -1,3 +1,4 @@
+// LATER: Rename this file. It is used for both FMS and Freetalk.
 /* Subclass the GNU inetlib NNTPClass to support FMS XGETTRUST.
  *
  *  Copyright (C) 2010, 2011 Darrell Karbott
@@ -50,11 +51,18 @@ class FMSConnection extends NNTPConnection {
         super(host, port);
     }
 
+    public boolean supportsXGETTRUST() {
+        if (getWelcome() == null) {
+            return false;
+        }
+        return getWelcome().indexOf("Freetalk") == -1;
+    }
+
     // Hmmmm... would be better to raise NNTPExceptions here.
     // Returns -1 for 'null' trust.
     public int xgettrust(int kind, String fmsId) throws IOException {
-        if (fmsId.indexOf("@") != -1) {
-            return -1;
+        if (!supportsXGETTRUST()) {
+            return -1; // Freetalk doesn't support trust extensions.
         }
         send(String.format("XGETTRUST %s %s", trustKindToString(kind), fmsId));
         String reply = read();

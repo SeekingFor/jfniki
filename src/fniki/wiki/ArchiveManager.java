@@ -323,6 +323,14 @@ public class ArchiveManager {
             if (fields.length != 2) {
                 continue;
             }
+
+            if (fields[1].endsWith(".freetalk")) {
+                // Scrub .freetalk suffix. i.e. we want only the raw public hash part
+                // so we can lookup from public SSK's.
+                fields[1] = fields[1].substring(0, fields[1].lastIndexOf(".freetalk"));
+            }
+
+            System.err.println("SETTING: " + fields[1] + "->" + fields[0]);
             mNymLut.put(fields[1].trim(), fields[0].trim());
         }
 
