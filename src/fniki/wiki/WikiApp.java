@@ -46,6 +46,7 @@ import fniki.wiki.child.LoadingArchive;
 import fniki.wiki.child.LoadingChangeLog;
 import fniki.wiki.child.LoadingVersionList;
 import fniki.wiki.child.QueryError;
+import fniki.wiki.child.ResetToEmptyWiki;
 import fniki.wiki.child.SettingConfig;
 import fniki.wiki.child.Submitting;
 import fniki.wiki.child.WikiContainer;
@@ -81,6 +82,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     private final ChildContainer mGotoRedirect;
     private final ChildContainer mQueryError;
     private final ChildContainer mWikiContainer;
+    private final ChildContainer mResetToEmptyWiki;
 
     // ChildContainers for modal UI states.
     private final ChildContainer mSettingConfig;
@@ -118,6 +120,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         mGotoRedirect = new GotoRedirect();
         mQueryError = new QueryError();
         mWikiContainer = new WikiContainer();
+        mResetToEmptyWiki = new ResetToEmptyWiki(archiveManager);
 
         mSettingConfig = new SettingConfig();
         mLoadingVersionList = new LoadingVersionList(archiveManager);
@@ -237,6 +240,8 @@ public class WikiApp implements ChildContainer, WikiContext {
             return setState(request, mLoadingVersionList);
         } else if (path.equals("fniki/loadarchive")) {
             return setState(request, mLoadingArchive);
+        } else if (path.equals("fniki/resettoempty")) {
+            return setState(request, mResetToEmptyWiki);
         } else if (path.equals("")) {
             return mDefaultRedirect;
         } else if (slashCount != 0) {

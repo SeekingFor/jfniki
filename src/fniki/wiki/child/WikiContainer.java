@@ -220,6 +220,9 @@ public class WikiContainer implements ChildContainer {
         buffer.append(makeLocalLink(context, "fniki/config", "view", "View"));
         buffer.append(" configuration.<p/>\n");
 
+        buffer.append(makeLocalLink(context, "fniki/resettoempty", "view", "Create Wiki!"));
+        buffer.append(" (<em>careful:</em> This deletes all content and history without confirmation.)<p/>\n");
+
         buffer.append(gotoPageFormHtml(context.makeLink("/" + name),
                                        context.getString("default_page", "Front_Page")));
 
