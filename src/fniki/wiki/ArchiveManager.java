@@ -102,7 +102,7 @@ public class ArchiveManager {
     public String getParentUri() { return mParentUri; }
 
     public void setFmsId(String value) {
-        if (value.indexOf("@") != -1) {
+        if (value.indexOf("@") != -1 && value.indexOf(".freetalk") == -1) {
             throw new IllegalArgumentException("FMS Id Should only include the part before the '@'!");
         }
 

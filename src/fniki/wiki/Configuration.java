@@ -106,7 +106,7 @@ public final class Configuration {
             throw new ConfigurationException("The private SSK value must start with 'SSK@' " +
                                              "and end with ',AQECAAE/'.");
         }
-        if (mFmsId.indexOf("@") != -1) {
+        if (mFmsId.indexOf("@") != -1 && mFmsId.indexOf(".freetalk") == -1) {
             throw new ConfigurationException("FMS Id Should only include the part before the '@'.");
         }
         if (!mFproxyPrefix.startsWith("http") || !mFproxyPrefix.endsWith("/")) {

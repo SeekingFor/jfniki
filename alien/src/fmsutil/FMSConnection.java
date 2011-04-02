@@ -53,6 +53,9 @@ class FMSConnection extends NNTPConnection {
     // Hmmmm... would be better to raise NNTPExceptions here.
     // Returns -1 for 'null' trust.
     public int xgettrust(int kind, String fmsId) throws IOException {
+        if (fmsId.indexOf("@") != -1) {
+            return -1;
+        }
         send(String.format("XGETTRUST %s %s", trustKindToString(kind), fmsId));
         String reply = read();
         StatusResponse response = parseResponse(reply, false);
