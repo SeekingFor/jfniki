@@ -36,7 +36,6 @@ Try entering "freenetdocwiki" in for the "Wiki Name" on the configuration page, 
 
 === Known Limitations ===
 # There is no merging or rebasing (yet).
-# The only way to start an empty wiki from scratch is by loading and unloading the plugin (or running stand alone from the command line).
 
 ----
 === Finding Your Private SSK in FMS===
