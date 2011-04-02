@@ -1,4 +1,4 @@
-20110227
+20110402
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -68,18 +68,28 @@ Click on the "View" Configuration link and set the "FMS Private SSK" and "FMS ID
 
 OTHER DOC:
 See quickstart.txt in the doc directory (The default page when an empty wiki is displayed).
+It has some notes on experimental support for Freetalk implemented by sethcg.
 
 KNOWN ISSUES:
 o "Cancel" sometimes fails. [WORKAROUND: load and unload the plugin / kill restart the stand alone app.]
 o FMS Id displays "???" when importing config with non-default FCP host and/or port.
   [WORKAROUND: Click "Done", then click view again and the FMS Id should be correctly displayed.]
 
+CONTRIBUTORS:
+---
+sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY  -- patch to make jfniki work with Freetalk.
+
 ---
 Dev notes
 ---
+BUG: Default FCP port wrong for CLI client. [requested by a real user]
+BUG: fix the discover UI to correctly handle posts from a different nym than the insert
+BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
+BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
+BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter?
+---
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
 IDEA: Support links to other wikis. e.g.: fniki://fms/group/name
-IDEA: Why isn't this file in Creole?
 IDEA: Caching in FreenetIO
       Make LinkCache and interface
       FreenetLinkCache extends LinkCache
@@ -95,10 +105,6 @@ IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
 IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
       SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
       let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics]
-BUG: No way to create an empty wiki from the UI. [requested by a real user]
-BUG: Default FCP port wrong for CLI client. [requested by a real user]
-
-BUG: fix the discover UI to correctly handle posts from a different nym than the insert
-BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
-BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
-BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter?
+---
+Fixed bugs:
+2ce3a4499a2c: BUG: No way to create an empty wiki from the UI. [requested by a real user]
