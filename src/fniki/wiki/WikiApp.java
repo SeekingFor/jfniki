@@ -270,99 +270,34 @@ public class WikiApp implements ChildContainer, WikiContext {
     }
 
     ////////////////////////////////////////////////////////////
-    private static class LocalParserDelegate implements FreenetWikiTextParser.ParserDelegate {
-        // Pedantic.  Explictly copy references instead of making this class non-static
-        // so that the code uses well defined interfaces.
+    private static class LocalParserDelegate extends WikiParserDelegate {
         final WikiContext mContext;
-        final ArchiveManager mArchiveManager;
 
         LocalParserDelegate(WikiContext context, ArchiveManager archiveManager) {
+            super(archiveManager);
             mContext = context;
-            mArchiveManager = archiveManager;
         }
 
-        public boolean processedMacro(StringBuilder sb, String text) {
-            if (text.equals("LocalChanges")) {
-                try {
-                    FileManifest.Changes changes  = mArchiveManager.getLocalChanges();
-                    if (changes.isUnmodified()) {
-                        sb.append("<br>No local changes.<br>");
-                        return true;
-                    }
-                    appendChangesHtml(changes, containerPrefix(), sb);
-                    return true;
-                } catch (IOException ioe) {
-                    sb.append("{ERROR PROCESSING LOCALCHANGES MACRO}");
-                    return true;
-                }
-            } else if (text.equals("TitleIndex")) {
-                try {
-                    for (String name : mArchiveManager.getStorage().getNames()) {
-                        appendPageLink(containerPrefix(), sb, name, null, true);
-                        sb.append("<br>");
-                    }
-                } catch (IOException ioe) {
-                    sb.append("{ERROR PROCESSING TITLEINDEX MACRO}");
-                    return true;
-                }
-                return true;
-            }
-
-            return false;
+        // Implement base class abstract methods to supply the functionality
+        // specific to live wikis, mostly by delegating to the WikiContext.
+        protected String getContainerPrefix() {
+            return containerPrefix(); // LATER: revisit.
         }
 
-        // CHK, SSK, USK freenet links.
-        public void appendLink(StringBuilder sb, String text) {
-            String fproxyPrefix = mContext.getString("fproxy_prefix", null);
-
-            String[] link=split(text, '|');
-            if (fproxyPrefix != null &&
-                isValidFreenetUri(link[0])) {
-                sb.append("<a href=\""+ makeFproxyHref(fproxyPrefix, link[0].trim()) +"\" rel=\"nofollow\">");
-                sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
-                sb.append("</a>");
-                return;
-            }
-            if (isAlphaNumOrUnder(link[0])) {
-                // Link to an internal wiki page.
-                sb.append("<a href=\""+ makeHref(mContext.makeLink("/" + link[0].trim())) +"\" rel=\"nofollow\">");
-                sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
-                sb.append("</a>");
-                return;
-            }
-
-            sb.append("<a href=\"" + makeHref(mContext.makeLink("/ExternalLink")) +"\" rel=\"nofollow\">");
-            sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
-            sb.append("</a>");
+        protected String getFproxyPrefix() {
+            return mContext.getString("fproxy_prefix", null);
         }
 
-        // Only CHK and SSK freenet links.
-        public void appendImage(StringBuilder sb, String text) {
-            boolean allowed = mContext.getInt("allow_images", 0) != 0;
-            if (!allowed) {
-                sb.append("{IMAGES DISABLED. IMAGE WIKITEXT IGNORED}");
-                return;
-            }
+        protected boolean getImagesAllowed() {
+            return mContext.getInt("allow_images", 0) != 0;
+        }
 
-            String fproxyPrefix = mContext.getString("fproxy_prefix", null);
-            if (fproxyPrefix == null) {
-                sb.append("{FPROXY PREFIX NOT SET. IMAGE WIKITEXT IGNORED}");
-                return;
-            }
-
-            String[] link=split(text, '|');
-            if (fproxyPrefix != null &&
-                isValidFreenetUri(link[0]) &&
-                !link[0].startsWith("freenet:USK@")) {
-                String alt=escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0]));
-                sb.append("<img src=\"" + makeFproxyHref(fproxyPrefix, link[0].trim())
-                          + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
-                return;
-            }
-            sb.append("{ERROR PROCESSING IMAGE WIKITEXT}");;
+        protected String makeLink(String containerRelativePath) {
+            return mContext.makeLink(containerRelativePath);
         }
     }
 
+    // Hrrmm.. kind of weird. I can't remember why I used this static method instead of a constant.
     // NO trailing slash.
     private static String containerPrefix() { return "/plugins/fniki.freenet.plugin.Fniki"; }
 

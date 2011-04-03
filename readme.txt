@@ -89,7 +89,8 @@ BUG: MUST show in the UI when edited wikitext has been truncated because it's to
 BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter?
 ---
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
-IDEA: Support links to other wikis. e.g.: fniki://fms/group/name
+IDEA: Support links to other wikis. e.g.:b fniki://fms/group/name
+      [Not quite. Should be able to support mutliple transports (fms, ft, freemail?, fproxy usk?) in same url]
 IDEA: Caching in FreenetIO
       Make LinkCache and interface
       FreenetLinkCache extends LinkCache
@@ -105,6 +106,10 @@ IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
 IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
       SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
       let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics]
+IDEA: Staking.  add a biss message that says "I say this version is good"
+      not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
+IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the latest and
+      send a "Stake" biss message for it.
 ---
 Fixed bugs:
 2ce3a4499a2c: BUG: No way to create an empty wiki from the UI. [requested by a real user]
