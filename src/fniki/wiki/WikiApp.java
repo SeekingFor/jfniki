@@ -284,8 +284,8 @@ public class WikiApp implements ChildContainer, WikiContext {
             return containerPrefix(); // LATER: revisit.
         }
 
-        protected String getFproxyPrefix() {
-            return mContext.getString("fproxy_prefix", null);
+        protected boolean getFreenetLinksAllowed(){
+            return mContext.getString("fproxy_prefix", null) != null;
         }
 
         protected boolean getImagesAllowed() {
@@ -295,9 +295,17 @@ public class WikiApp implements ChildContainer, WikiContext {
         protected String makeLink(String containerRelativePath) {
             return mContext.makeLink(containerRelativePath);
         }
+
+        protected String makeFreenetLink(String uri) {
+            String prefix = mContext.getString("fproxy_prefix", null);
+            if (prefix == null) {
+                throw new RuntimeException("fproxy_prefix is null!");
+            }
+            return makeFproxyHref(prefix, uri);
+        }
     }
 
-    // Hrrmm.. kind of weird. I can't remember why I used this static method instead of a constant.
+    // Hmmmm... kind of weird. I can't remember why I used this static method instead of a constant.
     // NO trailing slash.
     private static String containerPrefix() { return "/plugins/fniki.freenet.plugin.Fniki"; }
 
