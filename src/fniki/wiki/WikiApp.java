@@ -334,7 +334,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         } else if (keyName.equals("form_password") && mFormPassword != null) {
             return mFormPassword;
         } else if (keyName.equals("default_wikitext")) {
-            return getDefaultWikiText();
+            return getString("/quickstart.txt", "Couldn't load default wikitext from jar???");
         } else if (keyName.equals("wikiname")) {
             if (mArchiveManager.getBissName() != null) {
                 return mArchiveManager.getBissName();
@@ -342,6 +342,13 @@ public class WikiApp implements ChildContainer, WikiContext {
         } else if (keyName.equals("fms_group")) {
             if (mArchiveManager.getFmsGroup() != null) {
                 return mArchiveManager.getFmsGroup();
+            }
+        } else if (keyName.startsWith("/")) {
+            // Assume any name starting with a "/" is a UTF-8 encoded file in the jar.
+            try {
+                return IOUtil.readUtf8StringAndClose(WikiApp.class.getResourceAsStream(keyName));
+            } catch (IOException ioe) {
+                /* NOP: Caller gets default */
             }
         }
 
@@ -480,13 +487,5 @@ public class WikiApp implements ChildContainer, WikiContext {
             throw new IllegalArgumentException("request == null");
         }
         mRequest = request;
-    }
-
-    private static String getDefaultWikiText() {
-        try {
-            return IOUtil.readUtf8StringAndClose(WikiApp.class.getResourceAsStream("/quickstart.txt"));
-        } catch (IOException ioe) {
-            return "Couldn't load default wikitext from jar???";
-        }
     }
 }

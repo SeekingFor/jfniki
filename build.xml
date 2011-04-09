@@ -5,6 +5,7 @@
   <property name="classes" value="./build/classes" />
   <property name="doc" value="./doc" />
   <property name="templates" value="./templates" />
+  <property name="style" value="./style" />
   <property name="jars" value="./build/jar" />
 
   <target name="clean">
@@ -50,6 +51,8 @@
       </manifest>
       <fileset dir="${doc}" includes="quickstart.txt"/>
       <fileset dir="${templates}" includes="*.html"/>
+      <!-- A place to stash snippets of .css -->
+      <fileset dir="${style}" includes="*.css"/>
     </jar>
   </target>
 

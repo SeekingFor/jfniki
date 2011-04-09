@@ -147,7 +147,7 @@ public class WikiContainer implements ChildContainer {
 
     private String getPageHtml(WikiContext context, String name) throws IOException {
         StringBuilder buffer = new StringBuilder();
-        addHeader(name, buffer);
+        addHeader(context, name, buffer);
         if (context.getStorage().hasPage(name)) {
             buffer.append(renderXHTML(context, context.getStorage().getPage(name)));
         } else {
@@ -166,7 +166,7 @@ public class WikiContainer implements ChildContainer {
         return buffer.toString();
     }
 
-    private void addHeader(String name, StringBuilder buffer) throws IOException {
+    private void addHeader(WikiContext context, String name, StringBuilder buffer) throws IOException {
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
                       "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
@@ -174,10 +174,11 @@ public class WikiContainer implements ChildContainer {
         buffer.append("<head><title>\n");
         buffer.append(escapeHTML(unescapedTitleFromName(name)));
         buffer.append("</title>\n");
-        buffer.append("<style type=\"text/css\">div.indent{margin-left:20px;} " +
-                      "div.center{text-align:center;} " +
-                      "blockquote{margin-left:20px;background-color:#e0e0e0;} " +
-                      "span.underline{text-decoration:underline;}</style>\n");
+        buffer.append("<style type=\"text/css\">\n");
+        // CAREFUL: MUST audit .css files built into .jar to make sure they are safe.
+        // Load .css snippet from jar. Names can only have 1 '/' and must be globally unique.
+        buffer.append(context.getString("/add_header.css", ""));
+        buffer.append("</style>\n");
         buffer.append("</head>\n");
         buffer.append("<body>\n");
         buffer.append("<h1>\n");
