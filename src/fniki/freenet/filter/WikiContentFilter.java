@@ -59,6 +59,11 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * @throws CommentException If the URI is nvalid or unacceptable in some way.
      */
     public String processURI(String uri, String overrideType) throws CommentException {
+        if (uri.startsWith("#")) {
+            // Allow  anchor links to id values created by WikiParser.generateTOCAnchorId.
+            return "#" + uri.substring(1).replaceAll("[^a-zA-Z0-9_-]", "");
+        }
+
         if (!(uri.startsWith(mContainerPrefix) || uri.startsWith(mFproxyPrefix))) {
             System.err.println("processURI(0): " + uri + " : " + overrideType);
             System.err.println("processURI(0): REJECTED URI");
