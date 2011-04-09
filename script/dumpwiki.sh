@@ -7,4 +7,4 @@
 export set SCRIPT_DIR=`dirname $0`
 . "${SCRIPT_DIR}/setup_env.sh"
 
-${JAVA_CMD} -classpath ${JAR_FILE}:${FN_JAR_FILE} fniki.standalone.ServeHttp $1 $2
+${JAVA_CMD} -classpath ${JAR_FILE}:${FN_JAR_FILE} fniki.standalone.DumpWiki "$@"
