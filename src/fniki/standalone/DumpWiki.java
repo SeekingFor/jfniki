@@ -1,3 +1,29 @@
+/* Command line utility to dump a jfniki wiki as html.
+ *
+ * Copyright (C) 2011 sethcg
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ * Author: sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
+ *
+ * This is a derived work based on ServeHttp.java
+ * written by djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
+ *
+ *  This file was developed as component of
+ * "fniki" (a wiki implementation running over Freenet).
+ */
 package fniki.standalone;
 
 import java.io.IOException;
@@ -17,115 +43,90 @@ import wormarc.IOUtil;
 
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.FreenetWikiTextParser;
+import fniki.wiki.WikiParserDelegate;
 
 public class DumpWiki {
 
     private final static String HELP_TEXT =
-        "DumpWiki: Experimental distributed anonymous wiki over Freenet + FMS\n" +
-        "written as part of the fniki Freenet Wiki project\n\n" +
         "SUMMARY:\n" +
-        "Dumps a wiki version into a format suitable for inserting as a Freesite.\n" +
+        "Dumps a wiki version in a format suitable for inserting as a Freesite.\n" +
         "This is experimental code. Use it at your own peril.\n\n" +
         "USAGE:\n" +
-        "java -jar jfniki.jar <dump_path> SSK@/XXX...XXX/0123456789abcdef [template_file]\n\n" +
-        "NOTE:\nfreenet.jar MUST be in your classpath.\n\n" +
+        "java fniki.standalone.DumpWiki <dump_path> SSK@/XXX...XXX/0123456789abcdef \\\n" +
+        "     [[template_file] [[fcp_port] [fcp_host]]]\n\n" +
+        "NOTE:\nfreenet.jar and jfniki.jar MUST be in your classpath.\n\n" +
         "The <dump_path> directory must already exist and any files in it will be overwritten.\n\n" +
         "The template_file should contain 3 %s place holders. The first two will be replaced \n"+
-        "with the title and the third will be replaced with the wiki content.\n\n";
+        "with the title and the third will be replaced with the wiki content.\n"+
+        "You can use the literal value 'default' to get the built in template file.\n\n"+
+        "DumpWiki was written as part of the fniki Freenet Wiki project\n\n";
 
     ////////////////////////////////////////////////////////////
-    private static class LocalParserDelegate implements FreenetWikiTextParser.ParserDelegate {
-        // Pedantic.  Explictly copy references instead of making this class non-static
-        // so that the code uses well defined interfaces.
-        final ArchiveManager mArchiveManager;
-
+    private static class LocalParserDelegate extends WikiParserDelegate {
         LocalParserDelegate(ArchiveManager archiveManager) {
-            mArchiveManager = archiveManager;
+            super(archiveManager);
         }
 
-        public boolean processedMacro(StringBuilder sb, String text) {
-            if (text.equals("LocalChanges")) {
-                try {
-                    FileManifest.Changes changes  = mArchiveManager.getLocalChanges();
-                    if (changes.isUnmodified()) {
-                        sb.append("<br />No local changes.<br />");
-                        return true;
-                    }
-                    appendChangesHtml(changes, "", sb);
-                    return true;
-                } catch (IOException ioe) {
-                    sb.append("{ERROR PROCESSING LOCALCHANGES MACRO}");
-                    return true;
-                }
-            } else if (text.equals("TitleIndex")) {
-                try {
-                    for (String name : mArchiveManager.getStorage().getNames()) {
-                        sb.append("<a href=\"" + makeHref(name) + ".html\">" + escapeHTML(name.replace("_", " ")) + "</a>");
-                        sb.append("<br />");
-                    }
-                } catch (IOException ioe) {
-                    sb.append("{ERROR PROCESSING TITLEINDEX MACRO}");
-                    return true;
-                }
-                return true;
-            }
+        // Implement base class abstract methods to supply the functionality
+        // specific to dumping a wiki as html.
+        protected String getContainerPrefix() { return ""; }
+        protected boolean getFreenetLinksAllowed() { return true; }
+        protected boolean getImagesAllowed() { return true; }
 
-            return false;
+        protected String makeLink(String containerRelativePath) {
+            while (containerRelativePath.startsWith("/")) {
+                containerRelativePath = containerRelativePath.substring(1);
+            }
+            try {
+                if (!mArchiveManager.getStorage().hasPage(containerRelativePath)) {
+                    containerRelativePath = "PageDoesNotExist";
+                }
+            } catch (IOException ioe) {
+                throw new RuntimeException("ArchiveManager.getStorage() failed???", ioe);
+            }
+            return containerRelativePath + ".html";
         }
 
-        // CHK, SSK, USK freenet links.
-        public void appendLink(StringBuilder sb, String text) {
-
-            String[] link=split(text, '|');
-            if ( isValidFreenetUri(link[0])) {
-                sb.append("<a href=\"/"+makeHref(link[0].trim().substring("freenet:".length()))+"\">");
-                sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
-                sb.append("</a>");
-                return;
+       protected String makeFreenetLink(String uri) {
+            if (!uri.startsWith("freenet:")) {
+                throw new RuntimeException("uri doesn't start with 'freenet:'");
             }
-            if (isAlphaNumOrUnder(link[0])) {
-                // Link to an internal wiki page.
-                String pageName = link[0].trim();
-                try {
-                    if ( ! mArchiveManager.getStorage().hasPage(pageName) ) {
-                        pageName = "PageDoesNotExist";
-                    }
-                } catch (IOException ioe) {
-
-                    sb.append("{ERROR VALIDATING INTERNAL LINK}");
-                    return;
-                }
-                sb.append("<a href=\""+makeHref(pageName)+".html\">");
-                sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
-                sb.append("</a>");
-                return;
-            }
-
-            sb.append("<a href=\"ExternalLink.html\">");
-            sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
-            sb.append("</a>");
+            return "/" + uri.substring("freenet:".length());
         }
 
-        // Only CHK and SSK freenet links.
-        public void appendImage(StringBuilder sb, String text) {
-
-            String[] link=split(text, '|');
-            if ( isValidFreenetUri(link[0]) && !link[0].startsWith("freenet:USK@")) {
-                String alt=escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0]));
-                sb.append("<img src=\"/" + makeHref(link[0].trim().substring("freenet:".length())) + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
-                return;
+        // Override one pesky macro that requires a different implementation.
+        protected boolean processedTitleIndexMacro(StringBuilder sb, String text) {
+            try {
+                for (String name : mArchiveManager.getStorage().getNames()) {
+                    sb.append("<a href=\"" + makeHref(name) + ".html\">" + escapeHTML(name.replace("_", " ")) + "</a>");
+                    sb.append("<br />");
+                }
+            } catch (IOException ioe) {
+                sb.append("{ERROR PROCESSING TITLEINDEX MACRO}");
             }
-            sb.append("{ERROR PROCESSING IMAGE WIKITEXT}");
+            return true;
         }
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length > 3 || args.length < 2) {
+        if (args.length > 5 || args.length < 2) {
             System.err.println(HELP_TEXT);
             System.exit(-1);
         }
 
+        int fcpPort = 9481;
+        if (args.length > 3) {
+            fcpPort = Integer.parseInt(args[3]);
+        }
+        String fcpHost = "127.0.0.1";
+        if (args.length > 4) {
+            fcpHost = args[4];
+        }
+
         ArchiveManager archiveManager = new ArchiveManager();
+        archiveManager.setFcpHost(fcpHost);
+        archiveManager.setFcpPort(fcpPort);
+
         FreenetWikiTextParser.ParserDelegate mParserDelegate = new LocalParserDelegate(archiveManager);
 
         String ouputDirectory = args[0];
@@ -137,10 +138,11 @@ public class DumpWiki {
         }
 
         String wikiTemplate;
-        if ( args.length == 3 && new File(args[2]).exists() ) {
+        if ( args.length >= 3 && (!args[2].equals("default")) && new File(args[2]).exists()) {
+            System.err.println("Using template!");
             wikiTemplate = IOUtil.readUtf8StringAndClose(new FileInputStream(args[2]));
         } else {
-            wikiTemplate = IOUtil.readUtf8StringAndClose(ServeHttp.class.getResourceAsStream("/wiki_dump_template.html"));
+            wikiTemplate = IOUtil.readUtf8StringAndClose(DumpWiki.class.getResourceAsStream("/wiki_dump_template.html"));
         }
 
         // Dump this archive and quit
@@ -159,8 +161,8 @@ public class DumpWiki {
                 FileOutputStream out = new FileOutputStream(ouputDirectory + "/" + name + ".html");
                 PrintStream p = new PrintStream(out);
                 cleanName = unescapeHTML(name.replace("_", " "));
-                p.printf(wikiTemplate, cleanName, cleanName, 
-                        ( archiveManager.getStorage().hasPage(name) ) ?
+                p.printf(wikiTemplate, cleanName, cleanName,
+                        (archiveManager.getStorage().hasPage(name)) ?
                         new FreenetWikiTextParser(archiveManager.getStorage().getPage(name), mParserDelegate).toString() :
                         "Page doesn't exist in the wiki yet."
                         );

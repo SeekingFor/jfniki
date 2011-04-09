@@ -156,7 +156,8 @@ public class WikiContainer implements ChildContainer {
                                           context.getString("default_wikitext",
                                                             "Page doesn't exist in the wiki yet.")));
             } else if (context.getStorage().hasPage("PageDoesNotExist")) {
-                buffer.append(renderXHTML(context, context.getStorage().getPage("PageDoesNotExist")));	
+                // LATER: Revisit. Also, ExternalLink. Evil submissions can change this to something confusing.
+                buffer.append(renderXHTML(context, context.getStorage().getPage("PageDoesNotExist")));
             } else {
                 buffer.append("Page doesn't exist in the wiki yet.");
             }
