@@ -385,7 +385,8 @@ public class WikiApp implements ChildContainer, WikiContext {
     public Configuration getDefaultConfiguration() { return DEFAULT_CONFIG; }
 
     public String getPublicFmsId(String fmsId, String privateSSK) {
-        if (fmsId == null || privateSSK == null || fmsId.indexOf("@") != -1) {
+        if (fmsId == null || privateSSK == null ||
+            (fmsId.indexOf("@") != -1 && (!fmsId.endsWith(".freetalk")))) {
             return "???";
         }
         try {
@@ -395,7 +396,23 @@ public class WikiApp implements ChildContainer, WikiContext {
                 if (pos == -1 || pos < 5) {
                     return "???";
                 }
-                return fmsId + publicKey.substring("SSK".length(), pos);
+
+                if (!fmsId.endsWith(".freetalk")) {
+                    return fmsId + publicKey.substring("SSK".length(), pos);
+                } else {
+                    int atPos = fmsId.indexOf("@");
+                    if (atPos == -1) {
+                        return "???";
+                    }
+
+                    // LATER: Fix config to take only human readable id for Freetalk.
+                    String invertedFmsId  = fmsId.substring(0, atPos) +
+                        publicKey.substring("SSK".length(), pos) + ".freetalk";
+                    if (!invertedFmsId.equals(fmsId)) {
+                        return "???";
+                    }
+                    return invertedFmsId;
+                }
 
             } catch (IllegalArgumentException iae) {
                 // Was called with an invalid privateSSK value

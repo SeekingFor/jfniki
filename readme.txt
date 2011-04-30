@@ -1,4 +1,4 @@
-20110409
+20110429
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -88,7 +88,7 @@ BUG: Default FCP port wrong for CLI client. [requested by a real user]
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
-
+BUG: Make Freetalk configuration work like fms configuration. i.e. no need for public key.
 ---
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
 *IDEA: Support links to other wikis. e.g.:b fniki://nntp/group/name[/SSK@some_version]
@@ -115,7 +115,7 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 IDEA: Freetalk vs Freenet interop
       0) Group naming convention. anythingbutmul.foo.bar.baz -> mul.anythingbutmul.foo.bar.baz in freetalk
-      1) fniki://groupname/wikiname -- same for both. Freetalk smtp code prefixes mul. to group
+      1) fniki://groupname/wikiname -- same for both. Freetalk nntp code prefixes mul. to group
       2) In config UI. add freetalk config and enable checkboxes for freeetalk and fms
       3) Conventiton or config to choose which private key is used for SSK insertion.
       Hmmm... not sure if people would use this feature because of the correlation of ids.
