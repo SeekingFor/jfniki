@@ -83,7 +83,7 @@ public class FMSUtil {
     }
 
     // Set true to data written to / read from the nntp server to stdout.
-    public static boolean sNNTPDebugging = true;
+    public static boolean sNNTPDebugging = false;
 
     public final static String SUBJECT_PREFIX = "BISS|";
 
@@ -91,9 +91,14 @@ public class FMSUtil {
         return key.startsWith("SSK@"); // DCI: do much better.
     }
 
+    private static void debug(String text) {
+        if (!sNNTPDebugging) { return; }
+        System.err.println("FMSUtil: " + text);
+    }
+
     // Read the first non-header line of an NNTP article.
     private static String getFirstLine(FMSConnection connection, int articleId) throws IOException {
-        System.err.println("Trying to read article: " + articleId);
+        debug("Trying to read article: " + articleId);
         ArticleResponse response = connection.article(articleId);
 
         // MUST be on the first line of the message body.
@@ -117,7 +122,7 @@ public class FMSUtil {
             firstLine = line;
             break;
         }
-        System.err.println("GOT LINE: " + firstLine);
+        debug("GOT LINE: " + firstLine);
         while (reader.readLine() != null) { /* Must consume all data */ }
         return firstLine;
     }
@@ -203,7 +208,7 @@ public class FMSUtil {
             while(overviews.hasNext()) {
                 Overview overview = (Overview)(overviews.next());
                 for (int index = 0; index < 6; index++) {
-                    System.err.println(String.format("%d: [%s]", index, overview.getHeader(index).toString()));
+                    debug(String.format("%d: [%s]", index, overview.getHeader(index).toString()));
                 }
                 if (((String)overview.getHeader(4)).length() > 0) {
                     continue; // Skip replies.
@@ -289,7 +294,7 @@ public class FMSUtil {
                 String msg = String.format(MSG_TEMPLATE, user, group, SUBJECT_PREFIX + name,
                                            String.format("%s|%s", name, value));
                 byte[] rawBytes = msg.getBytes(UTF8);
-                System.err.println("Writing post bytes: " + rawBytes.length);
+                debug("Writing post bytes: " + rawBytes.length);
                 out.write(rawBytes);
                 out.flush();
             } finally {

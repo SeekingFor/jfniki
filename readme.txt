@@ -91,8 +91,9 @@ BUG: MUST show in the UI when edited wikitext has been truncated because it's to
 
 ---
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
-IDEA: Support links to other wikis. e.g.:b fniki://fms/group/name
+*IDEA: Support links to other wikis. e.g.:b fniki://nntp/group/name[/SSK@some_version]
       [Not quite. Should be able to support mutliple transports (fms, ft, freemail?, fproxy usk?) in same url]
+      [See notes below on ft fms interop. one NNTP to rule them all]
 IDEA: Caching in FreenetIO
       Make LinkCache and interface
       FreenetLinkCache extends LinkCache
@@ -103,15 +104,21 @@ IDEA: Caching in FreenetIO
         FreenetTopKey getTopKey(ssk)
         SHA1 cacheBlock(CHK, InputStream)
         boolean isCached(CHK)
-IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
+*IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
       http://selenic.com/repo/hg-stable/file/4ec34de8bbb1/hgext/graphlog.py
 IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
       SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
       let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics]
-IDEA: Staking.  add a biss message that says "I say this version is good"
+*IDEA: Staking.  add a biss message that says "I say this version is good"
       not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
 IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the latest and
       send a "Stake" biss message for it.
+IDEA: Freetalk vs Freenet interop
+      0) Group naming convention. anythingbutmul.foo.bar.baz -> mul.anythingbutmul.foo.bar.baz in freetalk
+      1) fniki://groupname/wikiname -- same for both. Freetalk smtp code prefixes mul. to group
+      2) In config UI. add freetalk config and enable checkboxes for freeetalk and fms
+      3) Conventiton or config to choose which private key is used for SSK insertion.
+      Hmmm... not sure if people would use this feature because of the correlation of ids.
 ---
 Fixed bugs:
 2ce3a4499a2c: BUG: No way to create an empty wiki from the UI. [requested by a real user]
