@@ -66,7 +66,9 @@ public class WikiContainer implements ChildContainer {
                 // a link from a finished task page. e.g. changelog.
                 action = "view";
             }
-            String title = context.getTitle();
+            // Convert spaces to '_' so you can type titles with spaces into
+            // the "Goto or Create Page" box.
+            String title = context.getTitle().trim().replace(" ", "_");
             if (!isAlphaNumOrUnder(title)) {
                 // Titles must be legal page names.
                 context.raiseAccessDenied("Couldn't work out query.");
