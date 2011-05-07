@@ -88,7 +88,11 @@ BUG: Default FCP port wrong for CLI client. [requested by a real user]
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
-BUG: Make Freetalk configuration work like fms configuration. i.e. no need for public key.
+*BUG: Make Freetalk configuration work like fms configuration. i.e. no need for public key.
+---
+CHORE: Write a script to cut releases and insert them into freeneet.
+CHORE: Fix references to "FMS" to reflect the fact that either Freetalk or FMS may be used.
+
 ---
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
 *IDEA: Support links to other wikis. e.g.:b fniki://nntp/group/name[/SSK@some_version]
@@ -104,8 +108,6 @@ IDEA: Caching in FreenetIO
         FreenetTopKey getTopKey(ssk)
         SHA1 cacheBlock(CHK, InputStream)
         boolean isCached(CHK)
-*IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
-      http://selenic.com/repo/hg-stable/file/4ec34de8bbb1/hgext/graphlog.py
 IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
       SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
       let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics]
@@ -115,11 +117,27 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 IDEA: Freetalk vs Freenet interop
       0) Group naming convention. anythingbutmul.foo.bar.baz -> mul.anythingbutmul.foo.bar.baz in freetalk
-      1) fniki://groupname/wikiname -- same for both. Freetalk nntp code prefixes mul. to group
+      1) fniki://groupname/wikiname/[optional SSK] -- same for both. Freetalk nntp code prefixes mul. to group
       2) In config UI. add freetalk config and enable checkboxes for freeetalk and fms
-      3) Conventiton or config to choose which private key is used for SSK insertion.
+      3) Convention or config to choose which private key is used for SSK insertion.
       Hmmm... not sure if people would use this feature because of the correlation of ids.
 ---
 Fixed bugs:
 2ce3a4499a2c: BUG: No way to create an empty wiki from the UI. [requested by a real user]
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
+
+Added features:
+08d1b85d8ddd: IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
+      from  http://selenic.com/repo/hg-stable/file/4ec34de8bbb1/hgext/graphlog.py
+      ISSUES:
+      0) It doesn't draw arbitary DAGs, only DAGS that could have reasonably constructed
+         from an ORDERED sequence of commits.
+      1) I implemented construction of DAGS from an unsorted list of (child, parent) pairs
+         BUT it depends CRITICALLY on:
+         a) being able to find the root nodes. (i.e. the nodes for which no parents are available).
+         b) being able to find the child nodes. (i.e. nodes without children)
+      2) This theoretically leaves the drawing code vulnerable to attack.
+         ATTACK: Create a cycle so that there are no root or child nodes.
+         PUNT: Don't worry about it. Attacker has to break SHA1 to create a cycle
+               because of the way the version is string is generated.
+

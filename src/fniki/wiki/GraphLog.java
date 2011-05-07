@@ -1,3 +1,4 @@
+// KNOWN LIMITATION: Doesn't handle 'octopus merges'. Suppports at most 2 parents per rev.
 /* Class to draw the revision graph.
  *
  * Changes Copyright (C) 2010, 2011 Darrell Karbott (see below).
@@ -610,6 +611,7 @@ public class GraphLog {
         return reversed_graph;
     }
 
+    // DCI: fix name
     public static ParentInfo getParentInfo(Map<String, Set<String>> graph) {
         Set<String> allParents = new HashSet<String>();
         for (Set<String> parents : graph.values()) {
