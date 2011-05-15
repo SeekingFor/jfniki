@@ -56,7 +56,7 @@ FMS_ID = 'djk'
 FMS_GROUP = 'test'
 
 # REQUIRES: must match name in freesite.cfg. LATER: fix.
-SITE_NAME = 'jfniki_releases_tst000'
+SITE_NAME = 'jfniki_releases_tst002'
 
 PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
               "2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/%s/%%d/" % \
@@ -117,7 +117,7 @@ def stage_release():
                      rev='', no_decode=None, prefix='', exclude=[], include=[], type='')
 
 
-    # remove origin tarballs  to save space
+    # remove origin tarballs to save space
     shutil.rmtree("%s/alien/origins/" % dest)
 
     # tar up source
@@ -128,8 +128,8 @@ def stage_release():
     #    tarinfo.uname = tarinfo.gname = "root"
     #    return tarinfo
     # LATER: Use line after upgrading python. Keeps uid, gid, uname out of tar.
-    # tgz_file.add("%s/%s" % (STAGING_DIR, export_dir_name),  filter=reset) # python 2.7
-    tgz_file.add("%s/%s" % (STAGING_DIR, export_dir_name))
+    # tgz_file.add("%s/%s" % (STAGING_DIR, export_dir_name), arcname=export_dir_name, filter=reset) # python 2.7
+    tgz_file.add("%s/%s" % (STAGING_DIR, export_dir_name), arcname=export_dir_name)
     tgz_file.close()
 
     # cp freenet.jar required for build
@@ -227,6 +227,8 @@ def insert_freesite():
     target_index = latest_site_index(repo)
     assert target_index >= 0
 
+    # BUG: There are case when this can fail with error code == 0
+    #      e.g. when private key can't be read.
     # DCI: Test. does fn-putsite set error code on failure?
     subprocess.check_call(["/usr/bin/hg",
                            "-R",
@@ -263,11 +265,17 @@ def release():
     print "with this script, now might be a good time to hit Ctrl-C."
     print
     print
+    print "RELEASE NOTES:"
+    print open(RELEASE_NOTES).read()
+    print
+    print "------------------------------------------------------------"
+
     head, jar_file, tgz_file = stage_release()
     jar_chk, tgz_chk = insert_files(FCP_HOST, FCP_PORT, [jar_file, tgz_file])
     update_html(head, jar_chk, tgz_chk)
     site_uri, target_index = insert_freesite()
     send_fms_notification(site_uri, target_index, head, jar_chk, tgz_chk)
+
     print
     print "Success!"
 
