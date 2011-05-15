@@ -1,4 +1,4 @@
-20110429
+20110515
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -84,13 +84,13 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
+BUG: Header links to discussion pages. [requested by a real user]
 BUG: Default FCP port wrong for CLI client. [requested by a real user]
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
 *BUG: Make Freetalk configuration work like fms configuration. i.e. no need for public key.
 ---
-CHORE: Write a script to cut releases and insert them into freeneet.
 CHORE: Fix references to "FMS" to reflect the fact that either Freetalk or FMS may be used.
 
 ---
@@ -141,3 +141,5 @@ Added features:
          PUNT: Don't worry about it. Attacker has to break SHA1 to create a cycle
                because of the way the version is string is generated.
 
+Finished Chores:
+cce3742a46d6: CHORE: Write a script to cut releases and insert them into freeneet.

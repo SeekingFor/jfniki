@@ -1,0 +1,9 @@
+I added explicit support for "Discussion" links in page headers.
+The special page, "TalkPageDoesNotExist" is displayed if no talk page exists yet.
+
+I had to modify the DumpWiki CLI client to handle the new page header format.
+You need to handle a new %s for the talk page href.
+See ./templates/wiki_dump_template.html for an example.
+
+
+

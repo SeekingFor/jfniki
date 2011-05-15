@@ -22,7 +22,7 @@
 """
 
 # This script isn't really for public consumption.
-#
+# It is brittle and not fully debugged.
 # It assumes you have hg infocalypse installed and configured.
 #
 # BUG: ANONYMITY ISSUE: This script currently leaks the *nix user id
@@ -53,10 +53,10 @@ FMS_HOST = '127.0.0.1'
 FMS_PORT =  11119
 
 FMS_ID = 'djk'
-FMS_GROUP = 'test'
+FMS_GROUP = 'sites'
 
 # REQUIRES: must match name in freesite.cfg. LATER: fix.
-SITE_NAME = 'jfniki_releases_tst002'
+SITE_NAME = 'jfniki_releases'
 
 PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
               "2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/%s/%%d/" % \
@@ -67,7 +67,7 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 
 FREENET_DOC_WIKI_IDX = 30
 FNIKI_IDX = 81
-REPO_IDX = 13
+REPO_IDX = 14
 
 ############################################################
 

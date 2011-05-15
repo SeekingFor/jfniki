@@ -56,8 +56,9 @@ public class DumpWiki {
         "     [[template_file] [[fcp_port] [fcp_host]]]\n\n" +
         "NOTE:\nfreenet.jar and jfniki.jar MUST be in your classpath.\n\n" +
         "The <dump_path> directory must already exist and any files in it will be overwritten.\n\n" +
-        "The template_file should contain 3 %s place holders. The first two will be replaced \n"+
-        "with the title and the third will be replaced with the wiki content.\n"+
+        "The template_file should contain 4 %s place holders. The first two will be replaced \n"+
+        "with the title. The third will be replaced by the href value for the discusion page.\n" +
+        "The fourth will be replaced with the wiki content.\n"+
         "You can use the literal value 'default' to get the built in template file.\n\n"+
         "DumpWiki was written as part of the fniki Freenet Wiki project\n\n";
 
@@ -161,7 +162,10 @@ public class DumpWiki {
                 FileOutputStream out = new FileOutputStream(ouputDirectory + "/" + name + ".html");
                 PrintStream p = new PrintStream(out);
                 cleanName = unescapeHTML(name.replace("_", " "));
+                String talkName = (archiveManager.getStorage().hasPage("Talk_" + name)) ? "Talk_" + name  + ".html":
+                    "PageDoesNotExist.html";
                 p.printf(wikiTemplate, cleanName, cleanName,
+                         talkName,
                         (archiveManager.getStorage().hasPage(name)) ?
                         new FreenetWikiTextParser(archiveManager.getStorage().getPage(name), mParserDelegate).toString() :
                         "Page doesn't exist in the wiki yet."

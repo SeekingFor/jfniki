@@ -144,31 +144,56 @@ public class WikiContainer implements ChildContainer {
     }
 
     private String unescapedTitleFromName(String name) {
+        if (name.startsWith("Talk_")) {
+            // LATER: Localization.
+            name = "Talk:" + name.substring("Talk_".length());
+        }
         return name.replace("_", " ");
+    }
+
+    private String getTalkPage(WikiContext context, String name) throws IOException {
+        if (name.startsWith("Talk_") || (!context.getStorage().hasPage(name))) {
+            return null;
+        }
+        // LATER: Localization
+        return "Talk_" + name;
     }
 
     private String getPageHtml(WikiContext context, String name) throws IOException {
         StringBuilder buffer = new StringBuilder();
-        addHeader(context, name, buffer);
+        addHeader(context, name, getTalkPage(context, name), buffer);
         if (context.getStorage().hasPage(name)) {
             buffer.append(renderXHTML(context, context.getStorage().getPage(name)));
         } else {
+            // Hmmmm... too branchy
             if (name.equals(context.getString("default_page", "Front_Page"))) {
                 buffer.append(renderXHTML(context,
                                           context.getString("default_wikitext",
                                                             "Page doesn't exist in the wiki yet.")));
-            } else if (context.getStorage().hasPage("PageDoesNotExist")) {
-                // LATER: Revisit. Also, ExternalLink. Evil submissions can change this to something confusing.
-                buffer.append(renderXHTML(context, context.getStorage().getPage("PageDoesNotExist")));
             } else {
-                buffer.append("Page doesn't exist in the wiki yet.");
+                if (name.startsWith("Talk_")) {
+                    if (context.getStorage().hasPage("TalkPageDoesNotExist")) {
+                        // LATER: Revisit. Also, ExternalLink. Evil submissions can change this to something confusing.
+                        buffer.append(renderXHTML(context, context.getStorage().getPage("TalkPageDoesNotExist")));
+                    } else {
+                        buffer.append("Discussion page doesn't exist in the wiki yet.");
+                    }
+                } else {
+                    if (context.getStorage().hasPage("PageDoesNotExist")) {
+                        // LATER: as above.
+                        buffer.append(renderXHTML(context, context.getStorage().getPage("PageDoesNotExist")));
+                    } else {
+                        buffer.append("Page doesn't exist in the wiki yet.");
+                    }
+                }
             }
         }
         addFooter(context, name, buffer);
         return buffer.toString();
     }
 
-    private void addHeader(WikiContext context, String name, StringBuilder buffer) throws IOException {
+    private void addHeader(WikiContext context, String name, String talkName,
+                           StringBuilder buffer) throws IOException {
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
                       "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
@@ -183,8 +208,17 @@ public class WikiContainer implements ChildContainer {
         buffer.append("</style>\n");
         buffer.append("</head>\n");
         buffer.append("<body>\n");
-        buffer.append("<h1>\n");
+        buffer.append("<h1 class=\"pagetitle\">\n");
         buffer.append(escapeHTML(unescapedTitleFromName(name)));
+        buffer.append("</h1>\n");
+        if (talkName != null) {
+            String talkClass = context.getStorage().hasPage(talkName) ? "talktitle" : "notalktitle";
+            buffer.append(String.format("<h4 class=\"%s\">\n", talkClass));
+            String href = makeHref(context.makeLink("/" + talkName), null, talkName, null, null);
+            buffer.append(String.format("<a class=\"%s\" href=\"%s\">%s</a>",
+                                        talkClass, href, escapeHTML("Discussion")));
+            buffer.append("</h4>\n");
+        }
         buffer.append("</h1><hr>\n");
     }
 
