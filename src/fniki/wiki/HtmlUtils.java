@@ -177,7 +177,7 @@ public class HtmlUtils {
     public static String gotoPageFormHtml(String basePath, String defaultPage) {
         final String fmt =
             "<form method=\"get\" action=\"%s\" accept-charset=\"UTF-8\"> \n" +
-            "   <input type=submit value=\"Goto or Create Page\"> \n" +
+            "   <input type=submit value=\"Goto or Create Page\"/> \n" +
             "   <input type=\"text\" name=\"title\" value=\"%s\"/> \n" +
             "</form> \n";
         return String.format(fmt, makeHref(basePath), defaultPage);

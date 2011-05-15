@@ -259,15 +259,23 @@ public class WikiContainer implements ChildContainer {
 
         buffer.append(makeLocalLink(context, "fniki/config", "view", "View"));
         buffer.append(" configuration.<p/>\n");
-
-        buffer.append(makeLocalLink(context, "fniki/resettoempty", "view", "Create Wiki!"));
-        buffer.append(" (<em>careful:</em> This deletes all content and history without confirmation.)<p/>\n");
-
         buffer.append(gotoPageFormHtml(context.makeLink("/" + name),
                                        context.getString("default_page", "Front_Page")));
 
+        buffer.append("<hr>\n");
+        buffer.append(makeLocalLink(context, "fniki/resettoempty", "view", "Create Wiki!"));
+        buffer.append(" (<em>careful:</em> This deletes all content and history without confirmation.)<p/>\n");
 
-        buffer.append("</body></html>");
+        // LATER: Quick hack. Clean this up.
+        buffer.append(String.format("<p><form method=\"get\" action=\"%s\" accept-charset=\"UTF-8\">\n",
+                                    context.makeLink("/fniki/loadarchive"), null, null, null, null));
+        buffer.append("   <table><tr>\n");
+        buffer.append("   <td><input type=submit value=\"Load Archive\"/></td>\n");
+        buffer.append("   <td><input style=\"font-size:60%;\" type=text name=\"uri\" size=\"140\" value=\"\"/></td>\n");
+        buffer.append("   </tr></table>\n");
+        buffer.append("</form>\n");
+
+        buffer.append("</body></html>\n");
     }
 
     private String getEditorHtml(WikiContext context, String name) throws IOException {
