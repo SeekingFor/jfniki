@@ -1,0 +1,13 @@
+jfniki has been updated to version: __HEAD__
+
+freesite:
+__SITE_USK__
+
+plugin jar:
+__JAR_CHK__
+
+source code:
+__SRC_CHK__
+
+summary:
+__RELEASE_NOTES__
