@@ -33,6 +33,7 @@ public interface WikiContext extends Request {
     String getTitle(); // hmmm
 
     WikiTextStorage getStorage() throws IOException;
+    WikiTextChanges getRemoteChanges() throws IOException;
     FreenetWikiTextParser.ParserDelegate getParserDelegate();
 
     // Client must deal with url escaping.

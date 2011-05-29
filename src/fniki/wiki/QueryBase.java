@@ -39,6 +39,7 @@ public abstract class QueryBase implements Query {
     protected final static String PARAMS[] = new String[] {
         "action", "title",
         "uri", "goto",
+        "secondary",
         "savepage", "savetext",
         "formPassword",
         // Configuration stuff.

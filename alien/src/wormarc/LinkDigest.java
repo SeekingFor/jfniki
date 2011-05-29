@@ -26,6 +26,8 @@ package wormarc;
 
 import java.util.Arrays;
 
+// DCI: Should this just be called digest, since I use it for other stuff
+//      e.g. file digests in FileManifest?
 // !^*&^$#&^*&^%  no immutable byte[] values in Java!
 public final class LinkDigest implements Comparable<LinkDigest> {
     private final byte[] mBytes = new byte[20];

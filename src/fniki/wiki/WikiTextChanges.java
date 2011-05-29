@@ -1,4 +1,4 @@
-/* Interface for the wiki's backing store.
+/* Interface for read only changes to the primary wikitext.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -25,21 +25,9 @@
 package fniki.wiki;
 
 import java.io.IOException;
-import java.util.List;
 
-public interface WikiTextStorage {
-    boolean hasPage(String name) throws IOException;
+public interface WikiTextChanges {
+    boolean hasChange(String name) throws IOException;
+    boolean wasDeleted(String name) throws IOException;
     String getPage(String name) throws IOException;
-    void putPage(String name, String text) throws IOException;
-    List<String> getNames() throws IOException;
-    void deletePage(String name) throws IOException;
-
-    // DCI: local changes stuff corrupting original design
-    boolean hasLocalChange(String name);
-    boolean wasLocallyDeleted(String name);
-    // Reverting changes on a page that has no changes is allowed.
-    void revertLocalChange(String name);
-
-    boolean hasUnmodifiedPage(String name) throws IOException;
-    String  getUnmodifiedPage(String name) throws IOException;
 }

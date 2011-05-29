@@ -27,8 +27,10 @@ package fniki.wiki;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -72,10 +74,17 @@ public class ArchiveManager {
     // Block hex digest to CHK key map.
     Map<String, String> mSha1ToChk = new HashMap<String, String>();
 
+    // Main version
     String mParentUri;
     Archive mArchive;
     FileManifest mFileManifest;
     LocalWikiChanges mOverlay;
+
+    // Read only secondary version to rebase into main version.
+    String mSecondaryUri;
+    Archive mSecondaryArchive;
+    FileManifest mSecondaryFileManifest;
+    WikiTextChanges mSecondaryChanges;
 
     public void setDebugOutput(PrintStream out) {
         FreenetIO.setDebugOutput(out);
@@ -129,18 +138,42 @@ public class ArchiveManager {
     public void setBissName(String value) { mBissName= value; }
     public String getBissName() { return mBissName; }
 
-    // DCI: Fix this to roll back state on exceptions.
-    public void load(String uri) throws IOException {
+    public String getSecondaryUri() { return mSecondaryUri; }
+
+    public void load(String uri, boolean isSecondary) throws IOException {
+        if (isSecondary && mFileManifest == null) {
+            throw new IOException("Can't load secondary archive because no primary archive is loaded yet!");
+        }
         FreenetIO io = makeIO();
         io.setRequestUri(uri);
         Archive archive = Archive.load(io);
         validateUriHashes(archive, uri, true);
+        FileManifest manifest = FileManifest.fromArchiveRootObject(archive);
 
+        if (isSecondary) {
+            WikiTextChanges remoteChanges = new RemoteWikiTextChanges(mFileManifest, archive, manifest);
+            // Survived possible exceptions.
+            mSecondaryArchive = archive;
+            mSecondaryFileManifest = manifest;
+            mSecondaryChanges = remoteChanges;
+            mSecondaryUri = uri;
+            return;
+        }
+
+        LocalWikiChanges localChanges = new LocalWikiChanges(archive, manifest);
+        // Survived possible exceptions.
         mArchive = archive;
-        mFileManifest = FileManifest.fromArchiveRootObject(mArchive);
-        mOverlay = new LocalWikiChanges(mArchive, mFileManifest); // DCI: why copy ?
+        mFileManifest = manifest;
+        mOverlay = localChanges;
         mParentUri = uri;
+
+        // Loading primary resets secondary.
+        mSecondaryArchive = null;
+        mSecondaryFileManifest = null;
+        mSecondaryChanges = null;
+        mSecondaryUri = null;
     }
+    public void load(String uri) throws IOException { load(uri, false); }
 
     public void createEmptyArchive() throws IOException {
         mArchive = new Archive();
@@ -159,33 +192,40 @@ public class ArchiveManager {
         return new FreenetIO(mFcpHost, mFcpPort, null, mSha1ToChk);
     }
 
-    // The name of a jfniki archive includes the hash of the
-    // full archive manifest file, and hashes of the SSK of
-    // it's parent(s).
-    //
-    // use '_' instead of '|' because '|' gets percent escaped.
-    // <sha1_of_am_file>[<underbar>sha1_of_parent_ssk]
-    private static String makeUriNamePart(Archive archive) throws IOException {
-        // Generate a unique SSK.
-        LinkDigest digest = archive.getRootObject(RootObjectKind.ARCHIVE_MANIFEST);
-        // The hash of the actual file, not just the chain head SHA.
-        LinkDigest fileHash = IOUtil.getFileDigest(archive.getFile(digest));
 
-        String parentKeyHashes = "";
-        LinkDigest refsDigest = archive.getRootObject(RootObjectKind.PARENT_REFERENCES);
+    private static String getExternalRefDigest(Archive archive, int kind) throws IOException {
+        String value = "";
+        LinkDigest refsDigest = archive.getRootObject(kind);
         if (!refsDigest.isNullDigest()) {
             ExternalRefs refs = ExternalRefs.fromBytes(archive.getFile(refsDigest));
             for (ExternalRefs.Reference ref : refs.mRefs) {
                 if (ref.mKind != ExternalRefs.KIND_FREENET) {
                     continue;
                 }
-                parentKeyHashes += "_";
-                parentKeyHashes += IOUtil.getFileDigest(IOUtil.toStreamAsUtf8(ref.mExternalKey))
+                value += "_";
+                value += IOUtil.getFileDigest(IOUtil.toStreamAsUtf8(ref.mExternalKey))
                     .hexDigest(8);
             }
         }
+        return value;
+    }
 
-        return fileHash.hexDigest(8) + parentKeyHashes;
+    // The name of a jfniki archive includes the hash of the
+    // full archive manifest file, and hashes of the SSK of
+    // it's parent(s) including an optional rebase parent.
+    //
+    // use '_' instead of '|' because '|' gets percent escaped.
+    // <sha1_of_am_file>[[<underbar>sha1_of_parent_ssk] [<underbar>sha1_of_rebase_ssk]]
+    private static String makeUriNamePart(Archive archive) throws IOException {
+        // Generate a unique SSK.
+        LinkDigest digest = archive.getRootObject(RootObjectKind.ARCHIVE_MANIFEST);
+        // The hash of the actual file, not just the chain head SHA.
+        LinkDigest fileHash = IOUtil.getFileDigest(archive.getFile(digest));
+
+        return
+            fileHash.hexDigest(8) +
+            getExternalRefDigest(archive, RootObjectKind.PARENT_REFERENCES) +
+            getExternalRefDigest(archive, RootObjectKind.REBASE_REFERENCES);
     }
 
     private static void validateUriHashes(Archive archive,
@@ -244,6 +284,7 @@ public class ArchiveManager {
 
         // Commit local changes to the Archive.
         copy.unsetRootObject(RootObjectKind.PARENT_REFERENCES);
+        copy.unsetRootObject(RootObjectKind.REBASE_REFERENCES);
 
         // Update the archive
         copy.startUpdate();
@@ -258,6 +299,15 @@ public class ArchiveManager {
                 copy.updateRootObject(ExternalRefs.create(keys, ExternalRefs.KIND_FREENET)
                                       .toBytes(),
                                       RootObjectKind.PARENT_REFERENCES);
+        }
+
+        if (mSecondaryUri != null) {
+            out.println("Set REBASE_REFERENCES: " + mSecondaryUri);
+            List<String> keys = Arrays.asList(mSecondaryUri);
+            LinkDigest refs =
+                copy.updateRootObject(ExternalRefs.create(keys, ExternalRefs.KIND_FREENET)
+                                      .toBytes(),
+                                      RootObjectKind.REBASE_REFERENCES);
         }
 
         copy.commitUpdate();
@@ -296,6 +346,17 @@ public class ArchiveManager {
 
     public FileManifest.Changes getLocalChanges() throws IOException {
         return mFileManifest.diffTo(mArchive, mOverlay);
+    }
+
+    public List<RebaseStatus.Record> getRebaseStatus() throws IOException {
+        if (mSecondaryFileManifest == null) {
+            System.err.println("No rebased changes!");
+            return new ArrayList<RebaseStatus.Record>();
+        }
+
+        return RebaseStatus.getStatus(mOverlay.getFiles(),
+                                      mFileManifest.getMap(),
+                                      mSecondaryFileManifest.getMap());
     }
 
     public void readChangeLog(PrintStream out,
@@ -341,6 +402,13 @@ public class ArchiveManager {
             throw new IllegalStateException("No archive loaded!");
         }
         return mOverlay;
+    }
+
+    public WikiTextChanges getRemoteChanges() throws IOException {
+        if (mSecondaryChanges == null) {
+            return RemoteWikiTextChanges.NO_REMOTE_CHANGES;
+        }
+        return mSecondaryChanges;
     }
 
     public String getNym(String sskRequestUri, boolean showPublicKey) {

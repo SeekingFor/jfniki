@@ -471,9 +471,16 @@ public class CLI {
                 LinkDigest digest = archive.getRootObject(RootObjectKind.PARENT_REFERENCES);
                 if (!digest.isNullDigest()) {
                     ExternalRefs parents = ExternalRefs.fromBytes(archive.getFile(digest));
-                    sOut.println(parents.pretty());
+                    sOut.println(parents.pretty("parent "));
                 } else {
                     sOut.println("No PARENT_REFERENCES in the root objects!");
+                }
+                digest = archive.getRootObject(RootObjectKind.REBASE_REFERENCES);
+                if (!digest.isNullDigest()) {
+                    ExternalRefs parents = ExternalRefs.fromBytes(archive.getFile(digest));
+                    sOut.println(parents.pretty("rebase "));
+                } else {
+                    sOut.println("No REBASE_REFERENCES in the root objects!");
                 }
             }
         },

@@ -304,7 +304,12 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 String versionLink = getShortVersionLink(mContainerPrefix, "/jfniki/loadarchive",
                                                          references.get(0).mKey); // All the same.
 
-                lines.add(versionLink);
+                String rebaseLink = getRebaseLink(mContainerPrefix, "/jfniki/loadarchive",
+                                                  references.get(0).mKey, "finished",
+                                                  "[rebase]", false);
+
+                lines.add(versionLink + " " + rebaseLink);
+
                 for (FMSUtil.BISSRecord reference : references) {
                     // DCI: Sort by date
                     lines.add(String.format("user: %s (%s, %s, %s, %s)",

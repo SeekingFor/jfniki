@@ -40,6 +40,7 @@ import fniki.wiki.WikiContext;
 
 public class LoadingArchive extends AsyncTaskContainer {
     private String mUri;
+    private boolean mSecondary = false;
     public LoadingArchive(ArchiveManager archiveManager) {
         super(archiveManager);
     }
@@ -49,6 +50,11 @@ public class LoadingArchive extends AsyncTaskContainer {
             if (context.getQuery().get("uri") != null && mUri == null) {
                 mUri = context.getQuery().get("uri");
                 System.err.println("handle -- set uri: " + mUri);
+            }
+
+            if (context.getQuery().get("secondary") != null) {
+                mSecondary = context.getQuery().get("secondary").toLowerCase().equals("true");
+                System.err.println("handle -- set secondary true");
             }
 
             if (context.getAction().equals("confirm")) {
@@ -103,7 +109,8 @@ public class LoadingArchive extends AsyncTaskContainer {
             }
             body.println("<h3>" + escapeHTML(title) + "</h3>");
             if (showUri) {
-                body.println(escapeHTML("Load Version: " + getVersionHex(mUri)));
+                String secondary = mSecondary ? "Secondary Archive " : "";
+                body.println(escapeHTML(String.format("Load %sVersion: %s", secondary, getVersionHex(mUri))));
                 body.println("<br>");
                 body.println(escapeHTML("from: " + mUri));
                 body.println("<p>Clicking Load will discard any unsubmitted local changes.</p>");
@@ -137,8 +144,10 @@ public class LoadingArchive extends AsyncTaskContainer {
         }
 
         try {
-            out.println("Loading. Please be patient...");
-            mArchiveManager.load(mUri);
+            String msg = "";
+            if (mSecondary) { msg = " secondary archive."; }
+            out.println(String.format("Loading%s. Please be patient...", msg));
+            mArchiveManager.load(mUri, mSecondary);
             out.println("Loaded " + mUri);
             return true;
         } catch (IOException ioe) {
@@ -148,8 +157,8 @@ public class LoadingArchive extends AsyncTaskContainer {
     }
 
     public void entered(WikiContext context) {
-        System.err.println("DCI: entered called, reset mUri");
         mUri = null;
+        mSecondary = false;
     }
 
 }

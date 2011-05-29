@@ -1,9 +1,25 @@
-I added explicit support for "Discussion" links in page headers.
-The special page, "TalkPageDoesNotExist" is displayed if no talk page exists yet.
+I added preliminary support for rebasing changes from other wiki versions.
 
-I had to modify the DumpWiki CLI client to handle the new page header format.
-You need to handle a new %s for the talk page href.
-See ./templates/wiki_dump_template.html for an example.
+You can load a "secondary" archive to rebase from either by using
+the "[rebase]" links in the "Discover" page or by explictly entering
+an archive uri at the bottom of a page and checking the "rebase"
+radio button.
 
+The new macro:
 
+<<<RebasedChanges>>> shows a directory level diff between the
+parent version and the rebased version.
 
+There have been a lot of changes and this release may be buggier
+than previous releases.
+
+If all else fails go back to the previous version:
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/0/
+
+KNOWN LIMITATIONS:
+o There is no file level diffing yet (probably for a while yet)
+o You can't rebase into an empty archive.
+o There is no support in the changelog or discover UI for rebased
+  versions yet.
+o Submitted versions are INCOMPATIBLE with all earlier versions and
+  will cause spurious scary validation error. Sorry.

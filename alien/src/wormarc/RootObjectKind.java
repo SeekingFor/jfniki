@@ -36,6 +36,7 @@ public class RootObjectKind {
     // Otherwise the root objects don't fit in a topkey.
     public final static int SINGLE_FILE = 3;
     public final static int PARENT_REFERENCES = 4;
+    public final static int REBASE_REFERENCES = 5; // hmmm application specfic code creeping into wormarc.
 
     public static LinkContainer getContainer(Archive archive,
                                              Archive.RootObject obj) throws IOException {

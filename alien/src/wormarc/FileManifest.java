@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Set;
 
 public class FileManifest implements LinkContainer {
+    public final static Changes NO_CHANGES = new FileManifest.Changes();
+
     // Map the digest of a file to the head of the file chain it is stored in.
     Map<LinkDigest, LinkDigest> mFileDigestToChainHeadDigest = new HashMap<LinkDigest, LinkDigest>();
     // Map a human readable name to the digest of a file
@@ -349,7 +351,7 @@ public class FileManifest implements LinkContainer {
         public final Set<String> mDeleted;
         public final Set<String> mAdded;
         public final Set<String> mModified;
-        public final Set<String> mUnmodified;
+        public final Set<String> mUnmodified; // DCI: GET RID OF THIS?
 
         // PUNT for now. takes a little work.
         // The LinkDigest -> name inverse map isn't guaranteed to be one to one.
@@ -360,6 +362,14 @@ public class FileManifest implements LinkContainer {
             mAdded = added;
             mModified = modified;
             mUnmodified = unmodified;
+        }
+
+        protected Changes() { // For NO_CHANGES
+            this(new HashSet<String>(),
+                 new HashSet<String>(),
+                 new HashSet<String>(),
+                 new HashSet<String>() // Not correct. LATER: get rid of unmodified?
+                 );
         }
 
         public boolean isUnmodified() {

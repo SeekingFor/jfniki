@@ -125,15 +125,17 @@ public final class ExternalRefs {
         return new ExternalRefs(refs);
     }
 
-    public String pretty() {
+    public String pretty(String labelWithTrailingSpace) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("--- ExternalRefs ---\n");
+        buffer.append(String.format("--- %sExternalRefs ---\n", labelWithTrailingSpace));
         for (Reference ref: mRefs) {
             buffer.append(String.format("   [%d]:%s\n", ref.mKind, ref.mExternalKey));
         }
         buffer.append("---");
         return buffer.toString();
     }
+    public String pretty() { return pretty(""); }
+
 
     public static ExternalRefs create(List<String> keys, int kind) {
         List<Reference> refs = new ArrayList<Reference>();

@@ -42,8 +42,10 @@ public class GotoRedirect implements ChildContainer {
         }
         if (context.getQuery().get("uri") != null) {
             target = context.makeLink("/fniki/loadarchive?uri=" + context.getQuery().get("uri"));
+            if (context.getQuery().get("secondary") != null) {
+                target += "&secondary=" + context.getQuery().get("secondary");
+            }
         }
-
         context.raiseRedirect(target, "Redirecting...");
 
         return "unreachable code";

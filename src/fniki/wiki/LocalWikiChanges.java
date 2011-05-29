@@ -110,6 +110,11 @@ public class LocalWikiChanges implements WikiTextStorage, FileManifest.IO {
         return mMap.containsKey(pageName);
     }
 
+    public boolean wasLocallyDeleted(String pageName) {
+        LocalChange change = mMap.get(pageName);
+        return (change != null) && change.mDeleted;
+    }
+
     public void revertLocalChange(String pageName) {
         if (!mMap.containsKey(pageName)) {
             return;
@@ -117,14 +122,31 @@ public class LocalWikiChanges implements WikiTextStorage, FileManifest.IO {
         mMap.remove(pageName);
     }
 
+    public boolean hasUnmodifiedPage(String pageName) throws IOException {
+        return mBaseVersion.getMap().containsKey(pageName);
+    }
+
+    public String getUnmodifiedPage(String name) throws IOException {
+        return IOUtil.readUtf8StringAndClose(mBaseVersion.getFile(mArchive, name));
+    }
+
     ////////////////////////////////////////////////////////////
     // FileManifest.IO implementation
+
+    // Implement optional digest so we can use the return value from this
+    // function in FileManifest.diff().
     public Map<String, LinkDigest> getFiles() throws IOException {
-        Map<String, LinkDigest> files = new HashMap<String, LinkDigest>();
-        for (String name : getNames()) {
-            files.put(name, LinkDigest.NULL_DIGEST);
+        // DCI: Test carefully. Might hit untested code paths in FileManifest.
+        Map<String, LinkDigest> map = new HashMap<String, LinkDigest>(mBaseVersion.getMap()); // Must copy!
+
+        for (String name : mMap.keySet()) {
+            if (mMap.get(name).mDeleted) {
+                map.remove(name);
+            } else { // Either added or modified.
+                map.put(name, IOUtil.getFileDigest(getFile(name)));
+            }
         }
-        return files;
+        return map;
     }
 
     public InputStream getFile(String name) throws IOException {

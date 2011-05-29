@@ -168,7 +168,7 @@ public class SettingConfig implements ModalContainer {
             // Causes the routing logic in WikiApp.routeRequest to transition
             // out of this modal ui state.
             String redirectHref = makeHref(context.makeLink("/fniki/config"),
-                                           "finished", null, null, null);
+                                           "finished", null, null, null, null);
             context.raiseRedirect(redirectHref, "Redirecting...");
         }
     }
@@ -177,7 +177,7 @@ public class SettingConfig implements ModalContainer {
         handlePost(context);
 
         String href = makeHref(context.makeLink("/fniki/config"),
-                               null, null, null, null);
+                               null, null, null, null, null);
 
         // Html escape CDATA
         // http://www.w3.org/TR/html401/types.html#type-cdata

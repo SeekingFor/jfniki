@@ -42,7 +42,8 @@ public class HtmlUtils {
 
     public static String makeHref(String fullPath,
                                   String actionValue, String titleValue,
-                                  String uriValue, String gotoValue) {
+                                  String uriValue, String gotoValue,
+                                  String secondaryValue) {
 
         String query = "";
         if (actionValue != null) {
@@ -64,6 +65,11 @@ public class HtmlUtils {
             query += "goto=" + gotoValue;
         }
 
+        if (secondaryValue != null) {
+            if (query.length() > 0) { query += "&"; }
+            query += "secondary=" + secondaryValue;
+        }
+
         if (query.length() == 0) {
             query = null;
         }
@@ -82,7 +88,7 @@ public class HtmlUtils {
     }
 
     public static String makeHref(String fullPath) {
-        return makeHref(fullPath, null, null, null, null);
+        return makeHref(fullPath, null, null, null, null, null);
     }
 
     public static String makeFproxyHref(String fproxyPrefix, String freenetUri) {
@@ -100,10 +106,11 @@ public class HtmlUtils {
         }
 
         String href = makeHref(prefix + '/' + name,
-                               action, null, null, name);
+                               action, null, null, name, null);
 
         sb.append("<a href=\"" + href + "\">" + escapeHTML(title) + "</a>");
     }
+
 
     public static void appendChangesSet(String prefix, StringBuilder sb, String label, Set<String> values) {
         if (values.size() == 0) {
@@ -129,6 +136,41 @@ public class HtmlUtils {
         appendChangesSet(prefix, sb, "Modified", changes.mModified);
     }
 
+    private static final String opName(int op) {
+        switch (op) {
+        case RebaseStatus.OP_ADDED: return "Added";
+        case RebaseStatus.OP_DELETED: return "Missing";
+        case RebaseStatus.OP_MODIFIED: return "Modified";
+        default: throw new IllegalArgumentException();
+        }
+    }
+
+    private static final String statusName(int status) {
+        switch (status) {
+        case RebaseStatus.LOCALLY_MODIFIED: return "Locally Modified";
+        case RebaseStatus.PARENT: return "Parent";
+        case RebaseStatus.REBASE: return "Rebase";
+        default: throw new IllegalArgumentException();
+        }
+    }
+
+    public static void appendRebaseStatusHtml(List<RebaseStatus.Record> records, String prefix, StringBuilder sb) {
+        sb.append("<table border=\"1\">\n");
+        sb.append("<tr> <th>Page</th> <th>Rebase Change</th> <th>Local Copy</th> </tr> \n");
+        for (RebaseStatus.Record record : records) {
+            sb.append("<tr> <td><a href=\"");
+            sb.append(makeHref(prefix + "/" + record.mName, "view", null, null, null, null));
+            sb.append("\">");
+            sb.append(escapeHTML(record.mName)); // Paranoid.
+            sb.append("</a></td> <td>");
+            sb.append(escapeHTML(opName(record.mDiffOp))); // Paranoid.
+            sb.append("</td> <td>");
+            sb.append(escapeHTML(statusName(record.mStatus))); // Paranoid.
+            sb.append("</td> </tr>\n");
+        }
+        sb.append("</table>\n");
+    }
+
     // Path is the ony variable that has potentially dangerous data.
     public static String buttonHtml(String fullPath, String label, String action) {
         final String fmt =
@@ -150,13 +192,28 @@ public class HtmlUtils {
         }
     }
 
+    // DCI: Change name: getLoadVersionLink
     public static String getVersionLink(String prefix, String name, String uri, String action,
                                         boolean hexLabel) {
         String label = uri;
         if (hexLabel) {
             label = getVersionHex(uri);
         }
-        String href = makeHref(prefix + name, action, null, uri, null);
+        String href = makeHref(prefix + name, action, null, uri, null, null);
+
+        return String.format("<a href=\"%s\">%s</a>", href, escapeHTML(label));
+    }
+
+    // DCI: Think through arguments
+    public static String getRebaseLink(String prefix, String name, String uri, String action, String label,
+                                       boolean hexLabel) {
+
+        if (label == null) { label = uri; }
+
+        if (hexLabel) {
+            label = getVersionHex(uri);
+        }
+        String href = makeHref(prefix + name, action, null, uri, null, "true");
 
         return String.format("<a href=\"%s\">%s</a>", href, escapeHTML(label));
     }

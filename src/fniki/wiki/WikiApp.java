@@ -312,6 +312,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     ////////////////////////////////////////////////////////////
     // Wiki context implementations.
     public WikiTextStorage getStorage() throws IOException { return mArchiveManager.getStorage(); }
+    public WikiTextChanges getRemoteChanges() throws IOException { return mArchiveManager.getRemoteChanges(); }
 
     public FreenetWikiTextParser.ParserDelegate getParserDelegate() { return mParserDelegate; }
 
@@ -329,6 +330,12 @@ public class WikiApp implements ChildContainer, WikiContext {
                 return defaultValue;
             }
             return mArchiveManager.getParentUri();
+        } else if (keyName.equals("secondary_uri")) {
+            if (mArchiveManager.getSecondaryUri() == null) {
+                // Can be null
+                return defaultValue;
+            }
+            return mArchiveManager.getSecondaryUri();
         } else if (keyName.equals("container_prefix")) {
             return containerPrefix();
         } else if (keyName.equals("form_password") && mFormPassword != null) {

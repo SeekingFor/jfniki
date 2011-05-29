@@ -29,6 +29,7 @@ package fniki.wiki;
 import static ys.wikiparser.Utils.*; // DCI: clean up
 
 import java.io.IOException;
+import java.util.List;
 
 import wormarc.FileManifest;
 
@@ -49,14 +50,36 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
     protected abstract String makeFreenetLink(String uri);
 
     protected boolean processedLocalChangesMacro(StringBuilder sb, String text) {
-        try { // Should never happen while dumping and existing archive to html.
+        try {
             FileManifest.Changes changes =  mArchiveManager.getLocalChanges();
             if (changes.isUnmodified()) {
                 sb.append("<br>No local changes.<br>");
+                return true;
             }
+             // Should never be reached while dumping an existing archive to html.
             appendChangesHtml(changes, getContainerPrefix(), sb);
         } catch (IOException ioe) {
             sb.append("{ERROR PROCESSING LOCALCHANGES MACRO}");
+        }
+        return true;
+    }
+
+    protected boolean processedRebasedChangesMacro(StringBuilder sb, String text) {
+        try {
+            List<RebaseStatus.Record> records = mArchiveManager.getRebaseStatus();
+            if (records.isEmpty()) {
+                sb.append("<br>No rebased changes.<br>");
+                return true;
+            }
+            // Should never be reached while dumping an existing archive to html.
+            sb.append(String.format("Displaying changes from version: %s to version: %s<br>",
+                                    getVersionHex(mArchiveManager.getParentUri()),
+                                    getVersionHex(mArchiveManager.getSecondaryUri())
+                                    ));
+
+            appendRebaseStatusHtml(records, getContainerPrefix(), sb);
+        } catch (IOException ioe) {
+            sb.append("{ERROR PROCESSING REBASEDCHANGES MACRO}");
         }
         return true;
     }
@@ -77,6 +100,8 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
     public boolean processedMacro(StringBuilder sb, String text) {
         if (text.equals("LocalChanges")) {
             return processedLocalChangesMacro(sb, text);
+        } else if (text.equals("RebasedChanges")) {
+            return processedRebasedChangesMacro(sb, text);
         } else if (text.equals("TitleIndex")) {
             return processedTitleIndexMacro(sb, text);
         }
