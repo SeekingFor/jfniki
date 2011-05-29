@@ -2,41 +2,57 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>jfniki version: 710d700bc7a1</title>
+<title>jfniki version: 67724663687a</title>
 </head>
 <body>
-<h4>jfniki version: 710d700bc7a1</h4>
+<h4>jfniki version: 67724663687a</h4>
 <div>
 <code>jfniki plugin.jar</code>:<br/>
-<pre><code><a href="/CHK@TMz1eC~kPMmZ~COO0h4iDfNwghz1F-WACDBMOsQjYxM,WkSw3lxEbsrJl~YTzpqSaJzONl4Mqw8oisWbM~rouYg,AAIC--8/jfniki.710d700bc7a1.jar">CHK@TMz1eC~kPMmZ~COO0h4iDfNwghz1F-WACDBMOsQjYxM,WkSw3lxEbsrJl~YTzpqSaJzONl4Mqw8oisWbM~rouYg,AAIC--8/jfniki.710d700bc7a1.jar</a></code></pre><p/>
+<pre><code><a href="/CHK@L15mskL1skeO8Ia9U5lbs99eEXIN26Fbc4uCkLz8NbQ,lV9idCAZxInA4kFk7Rk1pqemrdhTKa9sawAHGHAePS8,AAIC--8/jfniki.67724663687a.jar">CHK@L15mskL1skeO8Ia9U5lbs99eEXIN26Fbc4uCkLz8NbQ,lV9idCAZxInA4kFk7Rk1pqemrdhTKa9sawAHGHAePS8,AAIC--8/jfniki.67724663687a.jar</a></code></pre><p/>
 <code>source code tarball:</code><br/>
-<pre><code><a href="/CHK@LNijcx3H~JIBdXIlY~-TmM5XVzW9a6V4V4~ilXB7th4,qx1K6dYVb0vvW7RXEhEtT8ECYnioQl~U3ErJMc8SL-s,AAIC--8/jfniki.710d700bc7a1.tgz">CHK@LNijcx3H~JIBdXIlY~-TmM5XVzW9a6V4V4~ilXB7th4,qx1K6dYVb0vvW7RXEhEtT8ECYnioQl~U3ErJMc8SL-s,AAIC--8/jfniki.710d700bc7a1.tgz</a></code></pre><p/>
-<a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/81/HgInfocalypse">hg infocalpse</a> repo:<br/>
+<pre><code><a href="/CHK@npPB462CA2s7CvpeHn3k4nDG8RN7GwshtGaLZH0XHAw,MAxAgnj9L4tYyYCxoHsGCHLbKHJpQZ4mjgWOdc-PCl4,AAIC--8/jfniki.67724663687a.tgz">CHK@npPB462CA2s7CvpeHn3k4nDG8RN7GwshtGaLZH0XHAw,MAxAgnj9L4tYyYCxoHsGCHLbKHJpQZ4mjgWOdc-PCl4,AAIC--8/jfniki.67724663687a.tgz</a></code></pre><p/>
+<a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/84/HgInfocalypse">hg infocalpse</a> repo:<br/>
 <code>
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/14
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/15
 </code>
 </div>
 <div>
 <h4>release notes</h4>
-<pre><code>I added explicit support for &quot;Discussion&quot; links in page headers.
-The special page, &quot;TalkPageDoesNotExist&quot; is displayed if no talk page exists yet.
+<pre><code>I added preliminary support for rebasing changes from other wiki versions.
 
-I had to modify the DumpWiki CLI client to handle the new page header format.
-You need to handle a new %s for the talk page href.
-See ./templates/wiki_dump_template.html for an example.
+You can load a &quot;secondary&quot; archive to rebase from either by using
+the &quot;[rebase]&quot; links in the &quot;Discover&quot; page or by explictly entering
+an archive uri at the bottom of a page and checking the &quot;rebase&quot;
+radio button.
 
+The new macro:
 
+&lt;&lt;&lt;RebasedChanges&gt;&gt;&gt; shows a directory level diff between the
+parent version and the rebased version.
 
+There have been a lot of changes and this release may be buggier
+than previous releases.
+
+If all else fails go back to the previous version:
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/0/
+
+KNOWN LIMITATIONS:
+o There is no file level diffing yet (probably for a while yet)
+o You can&apos;t rebase into an empty archive.
+o There is no support in the changelog or discover UI for rebased
+  versions yet.
+o Submitted versions are INCOMPATIBLE with all earlier versions and
+  will cause spurious scary validation error. Sorry.
 </code></pre>
 <h4>about jfniki</h4>
 <ul>
-  <li>The <a href = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/30/">Freenet Doc Wiki Mirror</a>
+  <li>The <a href = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/34/">Freenet Doc Wiki Mirror</a>
 has good documentation on jfniki. Activelink: <br/>
-  <img src = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/30/activelink.png" alt = "[FWDM activelink]"
+  <img src = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/34/activelink.png" alt = "[FWDM activelink]"
        width="108" height="36"/>
   </li>
   <li> The
-  <a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/81/JfnikiProtoType">JfnikiProtoType</a> page in the old wikibot based wiki
+  <a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/84/JfnikiProtoType">JfnikiProtoType</a> page in the old wikibot based wiki
   has some technical info.
   </li>
   <li> author: <code>djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks</code> </li>
@@ -51,7 +67,7 @@ has good documentation on jfniki. Activelink: <br/>
 <h4>site info</h4>
 <img src="activelink.png" alt="[jfniki releases activelink.png]" width="108" height="36"/>
 <p>
-<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/0/&amp;desc=jfniki releases">[bookmark!]</a>
+<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/1/&amp;desc=jfniki releases">[bookmark!]</a>
 </div>
 </body>
 </html>
