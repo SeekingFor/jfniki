@@ -52,7 +52,17 @@ import wormarc.io.FreenetTopKey;
 public class CLI {
     private static final PrintStream sOut = System.out;
     private final static String FCP_HOST = "127.0.0.1";
-    private final static int FCP_PORT = 19481;
+    private final static int FCP_PORT = 9481;
+
+    private static String getFcpHost() {
+        return System.getProperty("wormarc.cli.fms.host", FCP_HOST);
+    }
+
+    private static int getFcpPort() {
+        // This reads an integer System property. wtf?
+        // Whoever designed this API was hitting the pipe hard.
+        return Integer.getInteger("wormarc.cli.fms.port", FCP_PORT);
+    }
 
     private static CLICache getCache(boolean createCache) throws IOException {
         String cwd = (new File(".")).getCanonicalPath();
@@ -370,7 +380,7 @@ public class CLI {
 
                 sOut.println(String.format("Searching for %d links... ", chain.size()));
 
-                FreenetIO freenetResolver = new FreenetIO(FCP_HOST, FCP_PORT, cache);
+                FreenetIO freenetResolver = new FreenetIO(getFcpHost(), getFcpPort(), cache);
 
                 List<ExternalRefs.Reference> refs =
                     AuditArchive.history(archive,
@@ -396,7 +406,7 @@ public class CLI {
                     sOut.println("Couldn't read remote. Don't know what version to start from.");
                 }
 
-                FreenetIO freenetResolver = new FreenetIO(FCP_HOST, FCP_PORT, cache);
+                FreenetIO freenetResolver = new FreenetIO(getFcpHost(), getFcpPort(), cache);
                 Archive archive = freenetResolver.resolve(remote);
                 AuditArchive.ChangeLogCallback callback = new AuditArchive.ChangeLogCallback () {
                         public boolean onChangeEntry(ExternalRefs.Reference oldVer,
@@ -507,7 +517,7 @@ public class CLI {
                     }
                 }
 
-                FreenetIO io = new FreenetIO(FCP_HOST, FCP_PORT, cache);
+                FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
                 io.setInsertUri(insertUri);
                 sOut.println(String.format("Pushing version: %s to Freenet Insert URI:", cache.getName()));
                 sOut.println(insertUri);
@@ -523,7 +533,7 @@ public class CLI {
             public boolean canParse(String[] args) { return args.length == 2; }
             public void invoke(String[] args, CLICache cache) throws Exception {
                 String requestUri = args[1];
-                FreenetIO io = new FreenetIO(FCP_HOST, FCP_PORT, cache);
+                FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
                 io.setRequestUri(requestUri);
                 sOut.println(String.format("Reading: %s", requestUri));
                 Archive archive = Archive.load(io);
@@ -539,7 +549,7 @@ public class CLI {
             public boolean canParse(String[] args) { return args.length == 2; }
             public void invoke(String[] args, CLICache cache) throws Exception {
                 String requestUri = args[1];
-                FreenetIO io = new FreenetIO(FCP_HOST, FCP_PORT, cache);
+                FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
                 sOut.println(String.format("Reading Top Key: %s", requestUri));
                 FreenetTopKey topKey = io.readTopKey(requestUri);
                 sOut.println(String.format("Version: %s", topKey.mVersion));

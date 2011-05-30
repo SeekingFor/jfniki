@@ -50,7 +50,8 @@ import wormarc.RootObjectKind;
 
 public class FreenetIO implements Archive.IO, ArchiveResolver {
     private LinkCache mCache;
-    private Map<String, String> mSha1ToChk;
+    // Final on purpose. Look at sleazy threading code before making non-final!
+    private final Map<String, String> mSha1ToChk;
 
     // Transient
     private HistoryLinkMap mLinkMap;
@@ -363,6 +364,9 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
 
     ////////////////////////////////////////////////////////////
     private void cacheBlockChk(String hexDigest, String chk) {
+        if (mSha1ToChk == null) {
+            return;
+        }
         synchronized(mSha1ToChk) {
             debug(String.format("cached: %s -> %s", hexDigest, chk));
             mSha1ToChk.put(hexDigest, chk);
@@ -370,6 +374,9 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
     }
 
     private String getCachedChk(String hexDigest) {
+        if (mSha1ToChk == null) {
+            return null;
+        }
         synchronized(mSha1ToChk) {
             if (hexDigest == null) {
                 return null;
