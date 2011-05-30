@@ -84,7 +84,6 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
-BUG: Default FCP port wrong for CLI client. [requested by a real user]
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
@@ -122,6 +121,8 @@ IDEA: Freetalk vs Freenet interop
       Hmmm... not sure if people would use this feature because of the correlation of ids.
 ---
 Fixed bugs:
+8cfb2f3e7c38  BUG: Default FCP port wrong for CLI client. [requested by a real user]
+              [The default port is set to 9481 now and can be set via Java System properties. See ./script/wa.sh]
 710d700bc7a1: BUG: Header links to discussion pages. [requested by a real user]
 2ce3a4499a2c: BUG: No way to create an empty wiki from the UI. [requested by a real user]
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
@@ -142,4 +143,4 @@ Added features:
                because of the way the version is string is generated.
 
 Finished Chores:
-cce3742a46d6: CHORE: Write a script to cut releases and insert them into freeneet.
+cce3742a46d6: CHORE: Write a script to cut releases and insert them into freenet.

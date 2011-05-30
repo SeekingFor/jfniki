@@ -1,3 +1,8 @@
+Fix bug that kept submissions with rebased changes from showing up in the
+"Discover" page in the 67724663687a version.
+
+
+67724663687a:
 I added preliminary support for rebasing changes from other wiki versions.
 
 You can load a "secondary" archive to rebase from either by using

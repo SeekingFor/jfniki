@@ -166,7 +166,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
         }
 
         fields = fields[1].split("_");
-        if (fields.length != 2) { // LATER. handle multiple parents
+        if (fields.length < 2) { // LATER. handle multiple parents
             if (fields.length == 1 && fields[0].length() == 16) {
                 // Assume the entry is the first version.
                 return "0000000000000000";
@@ -175,7 +175,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
             return "???";
         }
 
-        return fields[1];
+        return fields[1]; // LATER: tighten up.
     }
 
     final static class DAGData implements Comparable<DAGData> {
