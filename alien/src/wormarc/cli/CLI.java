@@ -46,6 +46,7 @@ import wormarc.LinkDigest;
 import wormarc.ExternalRefs;
 import wormarc.RootObjectKind;
 
+import wormarc.io.FileIO;
 import wormarc.io.FreenetIO;
 import wormarc.io.FreenetTopKey;
 
@@ -585,6 +586,46 @@ public class CLI {
             public void invoke(String[] args, CLICache cache) throws Exception {
                 FMSUtil.sendBISSMsg("127.0.0.1", 11119, args[1], args[2], args[3], args[4]);
                 sOut.println("Sent message.");
+            }
+        },
+
+        new Command("load", true, false, " <file_name>",
+                    "Reads an archive version from a blob file.") {
+            public boolean canParse(String[] args) { return args.length == 2; }
+            public void invoke(String[] args, CLICache cache) throws Exception {
+                String fileName = args[1];
+                FileIO io = new FileIO();
+                io.setFile(fileName);
+                sOut.println(String.format("Reading: %s", fileName));
+                Archive archive = Archive.load(io);
+                cache.setName("lastloaded.0");
+                archive.write(cache);
+                cache.saveHead(cache.getName());
+                sOut.println(String.format("Read and switched head to: %s", cache.getName()));
+                sOut.println(String.format("File metadata: %s", io.getMetaData()));
+            }
+        },
+
+        new Command("save", true, false, " <file_name>",
+                    "Writes an archive version to a blob file.") {
+            public boolean canParse(String[] args) { return args.length >= 2; }
+            public void invoke(String[] args, CLICache cache) throws Exception {
+                Archive archive = null;
+                try {
+                    archive = loadHead(cache);
+                } catch (IOException ioe) {
+                    sOut.println("No head found!");
+                    return;
+                }
+                String fileName = args[1];
+                FileIO io = new FileIO();
+                io.setFile(fileName);
+                if (args.length > 2) {
+                    sOut.println(String.format("Metadata: %s", args[2]));
+                    io.setMetaData(args[2]);
+                }
+                sOut.println(String.format("Writing: %s", fileName));
+                archive.write(io);
             }
         },
 

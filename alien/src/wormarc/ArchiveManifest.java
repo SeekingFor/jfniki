@@ -169,7 +169,8 @@ public class ArchiveManifest {
             outputStream.writeInt(linkCount);
         }
 
-        // Placeholder for archive manifest topkey.
+        // ALWAYS write placeholder for archive manifest topkey.
+        // See shouldSkipOne below for the non-sentinel case.
         outputStream.write(LinkDigest.NULL_DIGEST.getBytes());
 
         boolean shouldSkipOne = (!insertSentinel);
@@ -187,8 +188,8 @@ public class ArchiveManifest {
         return new ByteArrayInputStream(buffer.toByteArray());
     }
 
-    // Always closes stream.
-    public static ArchiveManifest fromBytes(InputStream rawBytes, LinkDigest chainHeadFixup) throws IOException {
+    public static ArchiveManifest fromBytes(InputStream rawBytes, LinkDigest chainHeadFixup,
+                                            boolean closeStream) throws IOException {
         try {
             if (chainHeadFixup == null || chainHeadFixup.isNullDigest()) {
                 throw new IOException("chainHeadFixup is null or NULL_DIGEST!");
@@ -235,14 +236,20 @@ public class ArchiveManifest {
                 }
                 blocks.add(new Block(digests));
             }
-            inputStream.close();
+            if (closeStream) {
+                inputStream.close();
+            }
             rawBytes = null;
             return new ArchiveManifest(rootObjects, blocks);
         } finally {
-            if (rawBytes != null) {
+            if (rawBytes != null && closeStream) {
                 rawBytes.close();
             }
         }
+    }
+    public static ArchiveManifest fromBytes(InputStream rawBytes, LinkDigest chainHeadFixup)
+        throws IOException {
+        return fromBytes(rawBytes, chainHeadFixup, true);
     }
 
     // Hmmmm... Move?
