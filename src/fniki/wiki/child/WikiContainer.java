@@ -335,7 +335,7 @@ public class WikiContainer implements ChildContainer {
 
         if (!readOnly) {
             buffer.append(makeLocalLink(context, name, "edit", "Edit"));
-            buffer.append(" this page.<br>");
+            buffer.append(" this page. (shows diffs) <br>");
             buffer.append(makeLocalLink(context, name, "delete", "Delete"));
             buffer.append(" this page without confirmation!<br>");
             if (showRevert) {
@@ -426,9 +426,16 @@ public class WikiContainer implements ChildContainer {
         buffer.append("</body></html>\n");
     }
 
+    private static String nullToNone(String value) {
+        if (value == null) { return "none"; }
+        return value;
+    }
+
     private String getEditorHtml(WikiContext context, String name) throws IOException {
         String template = null;
         try {
+            // NOTE: There is CSS in this template. Keep it in sync with the add_header.css file.
+            //
             // IMPORTANT: Only multipart/form-data encoding works in plugins.
             // IMPORTANT: Must be multipart/form-data even for standalone because
             //            the Freenet ContentFilter rewrites the encoding in all forms
@@ -446,20 +453,23 @@ public class WikiContainer implements ChildContainer {
             wikiText = context.getStorage().getPage(name);
         }
 
-        String parentWikiText = "none";
+        String parentWikiText = null;
         if (context.getStorage().hasUnmodifiedPage(name)) {
             parentWikiText = context.getStorage().getUnmodifiedPage(name);
         }
-        String rebaseWikiText = "none";
-        // System.err.println(String.format("hasChange: %s wasDeleted: %s len:%d",
-        //                                  "" + context.getRemoteChanges().hasChange(name),
-        //                                  "" + context.getRemoteChanges().wasDeleted(name),
-        //                                  context.getRemoteChanges().getPage(name).length()));
+        String rebaseWikiText = null;
 
         if (context.getRemoteChanges().hasChange(name) &&
             !context.getRemoteChanges().wasDeleted(name)) {
             rebaseWikiText = context.getRemoteChanges().getPage(name);
         }
+
+        // Escaping should be OK.
+        String diffsFromParentToLocal = getDiffHtml(parentWikiText, wikiText);
+        String diffsFromParentToRebase = getDiffHtml(parentWikiText, rebaseWikiText);
+
+        parentWikiText = nullToNone(parentWikiText);
+        rebaseWikiText = nullToNone(rebaseWikiText);
 
         return String.format(template,
                              escapedName,
@@ -470,6 +480,8 @@ public class WikiContainer implements ChildContainer {
                              // IMPORTANT: Required by Freenet Plugin.
                              // Doesn't need escaping.
                              context.getString("form_password", "FORM_PASSWORD_NOT_SET"),
+                             diffsFromParentToLocal,
+                             diffsFromParentToRebase,
                              escapeHTML(parentWikiText),
                              escapeHTML(rebaseWikiText));
     }

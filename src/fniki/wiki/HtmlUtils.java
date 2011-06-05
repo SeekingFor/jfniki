@@ -30,8 +30,11 @@ import java.net.URISyntaxException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import name.fraser.neil.plaintext.diff_match_patch; // <-- This is a class.
 
 import static ys.wikiparser.Utils.*;
 
@@ -238,5 +241,25 @@ public class HtmlUtils {
             "   <input type=\"text\" name=\"title\" value=\"%s\"/> \n" +
             "</form> \n";
         return String.format(fmt, makeHref(basePath), defaultPage);
+    }
+
+    // Returns a pretty html diff of the wikitext.
+    public static String getDiffHtml(String fromWikiText, String toWikiText) {
+        if (fromWikiText == null) {
+            return "Nothing to diff.";
+        }
+        if (toWikiText == null) {
+            return "Nothing to diff.";
+        }
+
+        if (fromWikiText.equals(toWikiText)) {
+            return "No changes.";
+        }
+
+        diff_match_patch dmp = new diff_match_patch();
+        LinkedList<diff_match_patch.Diff> diff = dmp.diff_main(fromWikiText, toWikiText);
+        dmp.diff_cleanupSemantic(diff);
+        dmp.diff_cleanupEfficiency(diff);
+        return dmp.diff_prettyHtmlUsingCss(diff, "diffins", "diffdel", "diffequal");
     }
 }
