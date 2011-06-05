@@ -1,30 +1,18 @@
-Fix bug that kept submissions with rebased changes from showing up in the
-"Discover" page in the 67724663687a version.
+Fixed the "Discover" page to draw lines for rebased versions.
 
+Added preliminary support for file diffs on the "Edit" page.
+It needs layout / CSS cleanup but it works.
 
-67724663687a:
-I added preliminary support for rebasing changes from other wiki versions.
+Added <<<ArchiveVersion>>> macro to print the 16 digit hex version
+of the current archive.
 
-You can load a "secondary" archive to rebase from either by using
-the "[rebase]" links in the "Discover" page or by explictly entering
-an archive uri at the bottom of a page and checking the "rebase"
-radio button.
+Added <<<ArchiveUri>>> macro to print a link to the archive SSK
+that the current wiki version was loaded from.
 
-The new macro:
+These macros where added so that people viewing dumped wiki
+freesites can tell which version / uri the wiki was
+dumped from.
 
-<<<RebasedChanges>>> shows a directory level diff between the
-parent version and the rebased version.
+Release notes for previous version:
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/2/
 
-There have been a lot of changes and this release may be buggier
-than previous releases.
-
-If all else fails go back to the previous version:
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/0/
-
-KNOWN LIMITATIONS:
-o There is no file level diffing yet (probably for a while yet)
-o You can't rebase into an empty archive.
-o There is no support in the changelog or discover UI for rebased
-  versions yet.
-o Submitted versions are INCOMPATIBLE with all earlier versions and
-  will cause spurious scary validation error. Sorry.

@@ -97,6 +97,33 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         return true;
     }
 
+    // Depends on CSS in add_header.css
+    protected boolean processedArchiveUriMacro(StringBuilder sb, String text) {
+        String uri = mArchiveManager.getParentUri();
+        if (uri == null) {
+            sb.append("???");
+            return true;
+        }
+
+        sb.append("<a class=\"archiveuri\" href=\""+ makeFreenetLink("freenet:" + uri) +"\">");
+        sb.append(escapeHTML(uri));
+        sb.append("</a>");
+        return true;
+    }
+
+    // Depends on CSS in add_header.css
+    protected boolean processedArchiveVersionMacro(StringBuilder sb, String text) {
+        String uri = mArchiveManager.getParentUri();
+        if (uri == null) {
+            sb.append("???");
+            return true;
+        }
+        sb.append("<span class=\"archivever\">");
+        sb.append(escapeHTML(getVersionHex(uri)));
+        sb.append("</span>");
+        return true;
+    }
+
     public boolean processedMacro(StringBuilder sb, String text) {
         if (text.equals("LocalChanges")) {
             return processedLocalChangesMacro(sb, text);
@@ -104,6 +131,10 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
             return processedRebasedChangesMacro(sb, text);
         } else if (text.equals("TitleIndex")) {
             return processedTitleIndexMacro(sb, text);
+        } else if (text.equals("ArchiveUri")) {
+            return processedArchiveUriMacro(sb, text);
+        } else if (text.equals("ArchiveVersion")) {
+            return processedArchiveVersionMacro(sb, text);
         }
         return false;
     }

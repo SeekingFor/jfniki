@@ -34,9 +34,6 @@ There are other wikis out there.
 
 Try entering "freenetdocwiki" in for the "Wiki Name" on the configuration page, then doing "Discover".
 
-=== Known Limitations ===
-# There is no merging or rebasing (yet).
-
 ----
 === Finding Your Private SSK in FMS===
 # Go to http://127.0.0.1:18080/localidentities.htm in the FMS web interface and click the "Export Identities" button
@@ -102,6 +99,6 @@ To subscribe to this board, got to your Freetalk "Select Boards" page (http://12
 
 If you can't find the group, add it.
 
-Also, Freetalk does not have the NNTP server enabled by default. You can do that in the Freetalk settings page (http://127.0.0.1:8888/Freetalk/Settings) by setting the "Enable NNTP server?" option to "true" in the "Global settings" section. 
+Also, Freetalk does not have the NNTP server enabled by default. You can do that in the Freetalk settings page (http://127.0.0.1:8888/Freetalk/Settings) by setting the "Enable NNTP server?" option to "true" in the "Global settings" section.
 
 It claims that you have to restart your node for the settings to take effect, but you can just go to your Freenet plugins page and click the "Reload" button for the Freetalk plugin to make these settings take effect.
