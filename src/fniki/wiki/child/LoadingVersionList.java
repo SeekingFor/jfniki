@@ -57,6 +57,12 @@ public class LoadingVersionList extends AsyncTaskContainer {
     private StringBuilder mListHtml = new StringBuilder();
     private String mName = "";
     private String mContainerPrefix;
+
+    // Has no parent.
+    private final static String BASE_VERSION = "0000000000000000";
+    // We don't know parent.
+    private final static String UNKNOWN_VERSION = "???";
+
     public LoadingVersionList(ArchiveManager archiveManager) {
         super(archiveManager);
     }
@@ -156,27 +162,38 @@ public class LoadingVersionList extends AsyncTaskContainer {
         return Integer.toString(value);
     }
 
-    public static String getParentVersion(FMSUtil.BISSRecord record) {
+    // LATER: move and document better.
+    // uri format:
+    // <sha1_hash_of_manifest><underbar><sha1_hash_of_parent_uri>[<underbar><sha1_hash_of_rebase_uri>]
+    //
+    // First is parent version, optional second is rebase version.
+    public static String[] getParentVersions(FMSUtil.BISSRecord record) {
         if (record.mKey == null) {
-            return "???";
+            return new String[] {UNKNOWN_VERSION};
         }
         String[] fields = record.mKey.split("/");
         if (fields.length != 2) {
-            return "???";
+            return new String[] {UNKNOWN_VERSION};
         }
 
         fields = fields[1].split("_");
         if (fields.length < 2) { // LATER. handle multiple parents
             if (fields.length == 1 && fields[0].length() == 16) {
                 // Assume the entry is the first version.
-                return "0000000000000000";
+                return new String[] {BASE_VERSION};
             }
 
-            return "???";
+            return new String[] {UNKNOWN_VERSION};
         }
 
-        return fields[1]; // LATER: tighten up.
+        // LATER: tighten up.
+        if (fields.length > 2) {
+            return new String[] {fields[1], fields[2]};
+        }
+
+        return new String[] {fields[1]};
     }
+
 
     final static class DAGData implements Comparable<DAGData> {
         public final int mSize;
@@ -188,7 +205,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
             mDag = dag;
         }
 
-        public int compareTo(DAGData o) { // DCI: test!
+        public int compareTo(DAGData o) {
             if (o == null) { throw new NullPointerException(); }
             if (o == this) { return 0; }
             if (o.mSize - mSize != 0) { // first by descending size.
@@ -258,15 +275,16 @@ public class LoadingVersionList extends AsyncTaskContainer {
         Map<String, List<FMSUtil.BISSRecord>> lut = new HashMap<String, List<FMSUtil.BISSRecord>>();
         for (FMSUtil.BISSRecord record : records) {
             String child = getVersionHex(record.mKey);
-            String parent = getParentVersion(record);
-            if (child.equals("???") || parent.equals("???")) {
-                System.err.println(String.format("Skipping: (%s, %s)", child, parent));
+            String[] parents = getParentVersions(record);
+            if (child.equals(UNKNOWN_VERSION) || parents[0].equals(UNKNOWN_VERSION)) {
+                System.err.println(String.format("Skipping: (%s, %s)", child, parents[0]));
                 System.err.println("  " + record.mKey);
                 continue;
             }
 
-            if (child.equals("0000000000000000")) { // DCI: srsly? use constant.
-                System.err.println(String.format("Attempted attack? Skipping: (%s, %s)", child, parent));
+            if (child.equals(BASE_VERSION)) {
+                // INTENT: cycles in the DAG (i.e. non-dag) break the drawing code. Catch sleazy stuff.
+                System.err.println(String.format("Attempted attack? Skipping: (%s, %s)", child, parents[0]));
                 System.err.println("  " + record.mKey);
                 continue;
             }
@@ -279,15 +297,20 @@ public class LoadingVersionList extends AsyncTaskContainer {
             if (!lut.get(child).contains(record)) {
                 lut.get(child).add(record);
             }
-            GraphLog.GraphEdge edge = new GraphLog.GraphEdge(parent, child); // DCI: DOCUMENT ORDER
-            if (!edges.contains(edge)) { // hmmmm.... O(n) search.
-                edges.add(edge);
+
+            for (String parent : parents) { // add edges for both parent and rebase versions
+                // Think of the graph as going from the bottom "up".
+                // Edges point from parent version to child version.
+                GraphLog.GraphEdge edge = new GraphLog.GraphEdge(parent, child);
+                if (!edges.contains(edge)) { // hmmmm.... O(n) search. Dude, that's the least of your worries.
+                    edges.add(edge);
+                }
             }
         }
 
-        // Passing "0000000000000000" keep the drawing code from drawing '|'
+        // Passing BASE_VERSION keep the drawing code from drawing '|'
         // below root nodes.
-        List<List<GraphLog.DAGNode>> dags = GraphLog.build_dags(edges, "0000000000000000");
+        List<List<GraphLog.DAGNode>> dags = GraphLog.build_dags(edges, BASE_VERSION);
         sortBySizeAndDate(dags, lut);
 
         // Draw the revision graph(s).
@@ -308,10 +331,12 @@ public class LoadingVersionList extends AsyncTaskContainer {
                                                   references.get(0).mKey, "finished",
                                                   "[rebase]", false);
 
+
                 lines.add(versionLink + " " + rebaseLink);
 
                 for (FMSUtil.BISSRecord reference : references) {
-                    // DCI: Sort by date
+
+                    // LATER: Sort by date
                     lines.add(String.format("user: %s (%s, %s, %s, %s)",
                                             reference.mFmsId,
                                             trustString(reference.msgTrust()),
@@ -321,6 +346,11 @@ public class LoadingVersionList extends AsyncTaskContainer {
                                             ));
                     lines.add(String.format("date: %s", reference.mDate)); // Reliable?
                 }
+                String[] parentsAgain  = getParentVersions(references.get(0));
+                if (parentsAgain.length == 2) {
+                    lines.add(escapeHTML(String.format("rebased: %s (UNVERIFIED!)", parentsAgain[1])));
+                }
+
                 lines.add("");
 
                 GraphLog.ascii(out, state, "o", lines, GraphLog.asciiedges(seen, value.mId, value.mParentIds));
@@ -333,7 +363,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
 
     public boolean doWork(PrintStream out) throws Exception {
         synchronized (this) {
-            mListHtml = new StringBuilder(); // DCI: why list html?
+            mListHtml = new StringBuilder();
         }
         try {
             out.println("Reading versions from FMS...");
