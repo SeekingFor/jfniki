@@ -2,52 +2,40 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>jfniki version: 5d8db3e1e33e</title>
+<title>jfniki version: 34194b24d92a</title>
 </head>
 <body>
-<h4>jfniki version: 5d8db3e1e33e</h4>
+<h4>jfniki version: 34194b24d92a</h4>
 <div>
 <code>jfniki plugin.jar</code>:<br/>
-<pre><code><a href="/CHK@yn36z4t8nZ2HDiLyGInQvMUBu4Qld~iFSMiNfV8Yl28,TuPP1SHVuI4c5c9893Sbvyn6ABi-F3DV61XFaszn5qc,AAIC--8/jfniki.5d8db3e1e33e.jar">CHK@yn36z4t8nZ2HDiLyGInQvMUBu4Qld~iFSMiNfV8Yl28,TuPP1SHVuI4c5c9893Sbvyn6ABi-F3DV61XFaszn5qc,AAIC--8/jfniki.5d8db3e1e33e.jar</a></code></pre><p/>
+<pre><code><a href="/CHK@hSvXSiWFUJshzLQM6i5Ugsf7Sq8mgDaqbDlWiXsxpk0,cf4XXojKnOsCr0jYLk~jcCQbhK5Xd-lBoOkvjKcXm7A,AAIC--8/jfniki.34194b24d92a.jar">CHK@hSvXSiWFUJshzLQM6i5Ugsf7Sq8mgDaqbDlWiXsxpk0,cf4XXojKnOsCr0jYLk~jcCQbhK5Xd-lBoOkvjKcXm7A,AAIC--8/jfniki.34194b24d92a.jar</a></code></pre><p/>
 <code>source code tarball:</code><br/>
-<pre><code><a href="/CHK@9ThCwSBoH1mqCdlfy9h4pbuLEa~l9zRWlOBxDR8ifZ0,OLyzMpsOpz3y0HXQy3-K9pSM3AO7~2KHv-te4ws4LxI,AAIC--8/jfniki.5d8db3e1e33e.tgz">CHK@9ThCwSBoH1mqCdlfy9h4pbuLEa~l9zRWlOBxDR8ifZ0,OLyzMpsOpz3y0HXQy3-K9pSM3AO7~2KHv-te4ws4LxI,AAIC--8/jfniki.5d8db3e1e33e.tgz</a></code></pre><p/>
+<pre><code><a href="/CHK@uR-TNIVTjN~hcaa26-RnFjnlPQVu5qd15osLMq901EY,UQEL2o3GZmAEP0Ppkc2B~~JY8CMiT8nCybmgepIe-v0,AAIC--8/jfniki.34194b24d92a.tgz">CHK@uR-TNIVTjN~hcaa26-RnFjnlPQVu5qd15osLMq901EY,UQEL2o3GZmAEP0Ppkc2B~~JY8CMiT8nCybmgepIe-v0,AAIC--8/jfniki.34194b24d92a.tgz</a></code></pre><p/>
 <a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/84/HgInfocalypse">hg infocalpse</a> repo:<br/>
 <code>
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/15
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/17
 </code>
 </div>
 <div>
 <h4>release notes</h4>
-<pre><code>Fix bug that kept submissions with rebased changes from showing up in the
-&quot;Discover&quot; page in the 67724663687a version.
+<pre><code>Fixed the &quot;Discover&quot; page to draw lines for rebased versions.
 
+Added preliminary support for file diffs on the &quot;Edit&quot; page.
+It needs layout / CSS cleanup but it works.
 
-67724663687a:
-I added preliminary support for rebasing changes from other wiki versions.
+Added &lt;&lt;&lt;ArchiveVersion&gt;&gt;&gt; macro to print the 16 digit hex version
+of the current archive.
 
-You can load a &quot;secondary&quot; archive to rebase from either by using
-the &quot;[rebase]&quot; links in the &quot;Discover&quot; page or by explictly entering
-an archive uri at the bottom of a page and checking the &quot;rebase&quot;
-radio button.
+Added &lt;&lt;&lt;ArchiveUri&gt;&gt;&gt; macro to print a link to the archive SSK
+that the current wiki version was loaded from.
 
-The new macro:
+These macros where added so that people viewing dumped wiki
+freesites can tell which version / uri the wiki was
+dumped from.
 
-&lt;&lt;&lt;RebasedChanges&gt;&gt;&gt; shows a directory level diff between the
-parent version and the rebased version.
+Release notes for previous version:
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/2/
 
-There have been a lot of changes and this release may be buggier
-than previous releases.
-
-If all else fails go back to the previous version:
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/0/
-
-KNOWN LIMITATIONS:
-o There is no file level diffing yet (probably for a while yet)
-o You can&apos;t rebase into an empty archive.
-o There is no support in the changelog or discover UI for rebased
-  versions yet.
-o Submitted versions are INCOMPATIBLE with all earlier versions and
-  will cause spurious scary validation error. Sorry.
 </code></pre>
 <h4>about jfniki</h4>
 <ul>
@@ -72,7 +60,7 @@ has good documentation on jfniki. Activelink: <br/>
 <h4>site info</h4>
 <img src="activelink.png" alt="[jfniki releases activelink.png]" width="108" height="36"/>
 <p>
-<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/2/&amp;desc=jfniki releases">[bookmark!]</a>
+<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/3/&amp;desc=jfniki releases">[bookmark!]</a>
 </div>
 </body>
 </html>
