@@ -25,8 +25,8 @@
 # It is brittle and not fully debugged.
 # It assumes you have hg infocalypse installed and configured.
 #
-# BUG: ANONYMITY ISSUE: This script currently leaks the *nix user id
-#      into the inserted .tgz and .jar files.
+# POSSIBLE BUG: ANONYMITY ISSUE: This script may leak the *nix user id into the .jar file.
+#      Need to audit.
 #      DO NOT RUN IT if this concerns you.
 #
 import os
@@ -42,6 +42,10 @@ from insert_files import insert_files
 from minimalfms import get_connection, send_msgs
 
 ############################################################
+
+# For testing this script.
+#JUST_STAGE = True
+JUST_STAGE = False
 
 # CAUTION: This directory is recursively deleted!
 STAGING_DIR = '/tmp/staging'
@@ -63,11 +67,11 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
               SITE_NAME
 
 ############################################################
-# Indexes of refereneced USK sites
+# Indexes of referenced USK sites
 
 FREENET_DOC_WIKI_IDX = 40
 FNIKI_IDX = 84
-REPO_IDX = 17
+REPO_IDX = 18
 
 ############################################################
 
@@ -82,6 +86,15 @@ FMS_MESSAGE_TEMPLATE = os.path.abspath(os.path.join(THIS_FILES_DIR, 'fms_message
 
 ############################################################
 
+def zip_source(staging_dir, source_dir, zip_file_name):
+    subprocess.check_call(['/usr/bin/zip',
+                           '-r',
+                           '-9', # best compression
+                           zip_file_name,
+                           source_dir],
+                          # LATER: Better way to supress full path in zip?
+                          cwd=staging_dir)
+
 def stage_release():
     # LATER: check for uncommitted changes
     ui_ = ui.ui()
@@ -93,10 +106,10 @@ def stage_release():
     head = heads[0]
 
     jar_name = "jfniki.%s.jar" % head
-    tgz_name = "jfniki.%s.tgz" % head
+    zip_name = "jfniki.%s.zip" % head
     export_dir_name = "jfniki.%s" % head
 
-    tgz_file_name = "%s/%s" % (STAGING_DIR, tgz_name)
+    zip_file_name = "%s/%s" % (STAGING_DIR, zip_name)
     jar_file_name = "%s/%s" % (STAGING_DIR, jar_name)
 
     # scrub staging directory
@@ -120,17 +133,8 @@ def stage_release():
     # remove origin tarballs to save space
     shutil.rmtree("%s/alien/origins/" % dest)
 
-    # tar up source
-    tgz_file = tarfile.open(tgz_file_name, 'w:gz')
-
-    #def reset(tarinfo):
-    #    tarinfo.uid = tarinfo.gid = 0
-    #    tarinfo.uname = tarinfo.gname = "root"
-    #    return tarinfo
-    # LATER: Use line after upgrading python. Keeps uid, gid, uname out of tar.
-    # tgz_file.add("%s/%s" % (STAGING_DIR, export_dir_name), arcname=export_dir_name, filter=reset) # python 2.7
-    tgz_file.add("%s/%s" % (STAGING_DIR, export_dir_name), arcname=export_dir_name)
-    tgz_file.close()
+    # zip up the source.
+    zip_source(STAGING_DIR, export_dir_name, zip_file_name)
 
     # cp freenet.jar required for build
     os.makedirs("%s/%s/%s" % (STAGING_DIR, export_dir_name, "alien/libs"))
@@ -148,9 +152,9 @@ def stage_release():
     print
     print "SUCCESSFULLY STAGED:"
     print jar_file_name
-    print tgz_file_name
+    print zip_file_name
     print
-    return (head, jar_file_name, tgz_file_name)
+    return (head, jar_file_name, zip_file_name)
 
 
 def simple_templating(text, substitutions):
@@ -188,7 +192,7 @@ def html_escape(text):
 
 ############################################################
 
-def update_html(head, jar_chk, tgz_chk):
+def update_html(head, jar_chk, zip_chk):
     ui_ = ui.ui()
     repo = hg.repository(ui_, REPO_DIR)
     site_usk = PUBLIC_SITE % (latest_site_index(repo) + 1)
@@ -196,7 +200,7 @@ def update_html(head, jar_chk, tgz_chk):
     html = simple_templating(open(INDEX_HTML_TEMPLATE).read(),
                              {'__HEAD__':head,
                               '__JAR_CHK__': jar_chk,
-                              '__SRC_CHK__': tgz_chk,
+                              '__SRC_CHK__': zip_chk,
                               '__RELEASE_NOTES__' : html_escape(open(RELEASE_NOTES).read()),
                               '__SITE_USK__': site_usk,
                               '__INDEX_FDW__': FREENET_DOC_WIKI_IDX,
@@ -240,14 +244,14 @@ def insert_freesite():
     # LATER: Do better. Parse request URI from output.
     return PUBLIC_SITE % target_index, target_index
 
-def send_fms_notification(site_uri, target_index, head, jar_chk, tgz_chk):
+def send_fms_notification(site_uri, target_index, head, jar_chk, zip_chk):
 
     connection = get_connection(FMS_HOST, FMS_PORT, FMS_ID)
 
     msg = simple_templating(open(FMS_MESSAGE_TEMPLATE).read(),
                              {'__HEAD__':head,
                               '__JAR_CHK__': jar_chk,
-                              '__SRC_CHK__': tgz_chk,
+                              '__SRC_CHK__': zip_chk,
                               '__SITE_USK__' : site_uri,
                               '__RELEASE_NOTES__' : open(RELEASE_NOTES).read(),
                               })
@@ -270,11 +274,15 @@ def release():
     print
     print "------------------------------------------------------------"
 
-    head, jar_file, tgz_file = stage_release()
-    jar_chk, tgz_chk = insert_files(FCP_HOST, FCP_PORT, [jar_file, tgz_file])
-    update_html(head, jar_chk, tgz_chk)
+    head, jar_file, zip_file = stage_release()
+
+    if JUST_STAGE:
+        return
+
+    jar_chk, zip_chk = insert_files(FCP_HOST, FCP_PORT, [jar_file, zip_file])
+    update_html(head, jar_chk, zip_chk)
     site_uri, target_index = insert_freesite()
-    send_fms_notification(site_uri, target_index, head, jar_chk, tgz_chk)
+    send_fms_notification(site_uri, target_index, head, jar_chk, zip_chk)
 
     print
     print "Success!"
