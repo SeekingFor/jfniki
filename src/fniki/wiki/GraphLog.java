@@ -374,7 +374,7 @@ public class GraphLog {
     }
 
     // A directed graph node.
-    public static class DAGNode {
+    public static class DAGNode implements Comparable<DAGNode> {
         public final String mTag;
         public final int mId;
         public final List<Integer> mParentIds;
@@ -382,6 +382,9 @@ public class GraphLog {
             mTag = tag;
             mId = id;
             mParentIds = parentIds;
+        }
+        public int compareTo(DAGNode other) {
+            return other.mId - mId; // Descending order of integer id.
         }
 
         public String asString() {
@@ -459,13 +462,10 @@ public class GraphLog {
 
     static class ParentInfo {
         public final Set<String> mAllParents;
-        public final Set<String> mUnseenParents;
         public final Set<String> mRootIds;
         public ParentInfo(Set<String> allParents,
-                          Set<String> unseenParents,
                           Set<String> rootIds) {
             mAllParents = allParents;
-            mUnseenParents = unseenParents;
             mRootIds = rootIds;
         }
     }
@@ -489,6 +489,19 @@ public class GraphLog {
             for (String key : keys) {
                 System.err.println(String.format("%s -> %d", key, mLut.get(key)));
             }
+        }
+    }
+
+    static void remove_edges(List<GraphEdge> edges, String matchingFrom) {
+        while (true) {
+            top_of_while:
+            for (int index = 0; index < edges.size(); index++) {
+                if (edges.get(index).mFrom.equals(matchingFrom)) {
+                    edges.remove(index);
+                    continue top_of_while; // for
+                }
+            }
+            break; // while
         }
     }
 
@@ -578,39 +591,6 @@ public class GraphLog {
         return graph;
     }
 
-    // IMPORTANT: The "reversed" graph is what you need to traverse to build the DAG.
-    // Take a graph which maps node ids -> set of parents and create a graph
-    // which maps node ids -> set of children from it.
-    static Map<String, Set<String>> get_reversed_graph(Map<String, Set<String>> graph,
-                                                       Set<String> root_ids,
-                                                       OrdinalMapper ordinals) {
-        Map<String, Set<String>> reversed_graph = new HashMap<String, Set<String>>();
-
-        for(Map.Entry<String, Set<String>> entry : graph.entrySet()) {
-            String key = entry.getKey();
-            Set<String> parents = entry.getValue();
-
-            for (String parent : parents) {
-                if (!graph.keySet().contains(parent)) {
-                    continue;
-                }
-
-                if (!reversed_graph.keySet().contains(parent)) {
-                    reversed_graph.put(parent, new HashSet<String>());
-                }
-
-                //# i.e. is a child of the parent
-                reversed_graph.get(parent).add(key);
-            }
-
-            //# For leaf nodes.
-            if (!reversed_graph.keySet().contains(key)) {
-                reversed_graph.put(key, new HashSet<String>());
-            }
-        }
-        return reversed_graph;
-    }
-
     // DCI: fix name
     public static ParentInfo getParentInfo(Map<String, Set<String>> graph) {
         Set<String> allParents = new HashSet<String>();
@@ -645,107 +625,96 @@ public class GraphLog {
             }
         }
 
-        return new ParentInfo(allParents, unseenParents, rootIds);
+        return new ParentInfo(allParents, rootIds);
     }
 
-    // LATER: Grok harder. Possible to get rid of this?
-    //# Breadth first traversal of the graph to force creation of ordinals
-    //# in an order that won't freak out the drawing code.
-    static void traverse_in_plausible_commit_order(Map<String, Set<String>> reversed_graph,
-                                                   Set<String> root_ids,
-                                                   OrdinalMapper ordinals) {
+    // Graph maps from child -> list of parents (i.e. like a commit DAG).
+    static void set_ordinals_in_plausible_commit_order(Map<String, Set<String>> graph,
+                                                       OrdinalMapper ordinals) {
 
-        LinkedList<String> queue = new LinkedList<String>();
-        queue.addAll(root_ids);
-        Collections.sort(queue);
-
-        //# Force creation of ordinals for root nodes
-        for (String id_value : queue) {
-            ordinals.ordinal(id_value);
-        }
-
-        Set<String> seen = new HashSet<String>();
-        while (queue.size() > 0) {
-            String id_value = queue.removeFirst();
-            if (seen.contains(id_value)) {
+        // Make a list of all  parent to child edges.
+        // Each edge represents the constraint "the ordinal of this parent is less
+        // than the ordinal of this child".
+        List<GraphEdge> edges = new ArrayList<GraphEdge>();
+        Set<String> leaf_nodes = new HashSet<String>();
+        for (Map.Entry<String, Set<String>> entry : graph.entrySet()) {
+            String child = entry.getKey();
+            Set<String> parents = entry.getValue();
+            if (parents.size() == 0) {
+                leaf_nodes.add(child);
                 continue;
             }
-            seen.add(id_value);
 
-            // Tricky: Sort to force creation of new ordinals in "natural order"
-            //         of child ids.
-            List<String> child_ids = new ArrayList<String>();
-            child_ids.addAll(reversed_graph.get(id_value));
-            Collections.sort(child_ids);
-
-            for (String child_id : child_ids) {
-                ordinals.ordinal(child_id);
-                queue.add(child_id);
+            for (String parent : parents) {
+                edges.add(new GraphEdge(parent, child));
             }
+        }
+
+        while (!edges.isEmpty()) {
+            // Find edges to vertices that no other edges reference.
+            Set<String> candidates = new HashSet<String>();
+            Set<String> referenced = new HashSet<String>();
+            for (GraphEdge edge : edges) {
+                candidates.add(edge.mFrom);
+                referenced.add(edge.mTo);
+            }
+            // i.e. "the parents which no remaining children reference."
+            // Implies must have lower ordinals than all unprocessed children.
+            candidates.removeAll(referenced);
+            assert_(candidates.size() > 0);
+
+            List<String> sorted = new ArrayList<String>(candidates);
+            Collections.sort(sorted);
+            for (String candidate : sorted) {
+                // Set the ordinal.
+                ordinals.ordinal(candidate);
+                // Remove any unreferenced edges from the list.
+                 // LATER: fix crappy code. do in one pass outside loop.
+                remove_edges(edges, candidate);
+            }
+        }
+
+        // Set the ordinals for nodes which have no children.
+        List<String> sorted_leaf_nodes = new ArrayList<String>(leaf_nodes);
+        Collections.sort(sorted_leaf_nodes);
+        for (String leaf_node : sorted_leaf_nodes) {
+            ordinals.ordinal(leaf_node);
         }
     }
 
     // Create a list of graph nodes in the correct order so that
     // they can be used to draw the graph with the ascii() function.
     static List<DAGNode> build_dag(Map<String, Set<String>> graph, String null_rev_name) {
-        ParentInfo parentInfo = getParentInfo(graph);
-        Set<String> all_parents = parentInfo.mAllParents;
-        Set<String> unseen_parents = parentInfo.mUnseenParents;
-        Set<String> root_ids = parentInfo.mRootIds;
+        assert_(!graph.keySet().contains(null_rev_name));
 
         OrdinalMapper ordinals = new OrdinalMapper();
 
-        Map<String, Set<String>> reversed_graph = get_reversed_graph(graph, root_ids, ordinals);
-
-        //# Important: This sets the graph ordinals correctly.
-        traverse_in_plausible_commit_order(reversed_graph, root_ids, ordinals);
-
         int null_rev_ordinal = ordinals.ordinal(null_rev_name);
 
-        LinkedList<String> queue = new LinkedList<String>();
-        queue.addAll(root_ids);
-        Collections.sort(queue);
+        //# Important: This sets the graph ordinals correctly.
+        set_ordinals_in_plausible_commit_order(graph, ordinals);
 
         List<DAGNode> dag = new ArrayList<DAGNode>();
-        Set<String> seen = new HashSet<String>();
-        while (queue.size() > 0) {
-            String id_value = queue.removeFirst();
-            if (seen.contains(id_value)) {
-                continue;
-            }
-            seen.add(id_value);
+        for(Map.Entry<String, Set<String>> entry : graph.entrySet()) {
+            String child = entry.getKey();
 
-            List<Integer> parents = new ArrayList<Integer>();
-            for (String parent_id : graph.get(id_value)) {
-                // This accesses ordinals in parent order, but the DAG requires them
-                // to be in child order.  That's why we need the call to
-                // traverse_in_plausible_commit_order above.
-                parents.add(ordinals.ordinal(parent_id));
+            List<Integer> parent_ids = new ArrayList<Integer>();
+            for (String parent : entry.getValue()) {
+                parent_ids.add(ordinals.ordinal(parent));
             }
-            Collections.sort(parents);
 
-            if (parents.size() == 1 && parents.get(0) == null_rev_ordinal) {
+            if (parent_ids.size() == 1 && parent_ids.get(0) == null_rev_ordinal) {
                 // Causes ascii() not to draw a line down from the 'o'.
-                parents = new ArrayList<Integer>();
+                parent_ids = new ArrayList<Integer>();
             }
 
-            dag.add(new DAGNode(id_value, ordinals.ordinal(id_value), parents));
-
-            if (!reversed_graph.keySet().contains(id_value)) {
-                continue;
-            }
-
-            // Tricky: Must traverse in order or the dag nodes won't be right.
-            List<String> child_ids = new ArrayList<String>();
-            child_ids.addAll(reversed_graph.get(id_value));
-            Collections.sort(child_ids);
-
-            for (String child_id : child_ids) {
-                queue.add(child_id);
-            }
+            dag.add(new DAGNode(child, ordinals.ordinal(child), parent_ids));
         }
 
-        Collections.reverse(dag);
+        //ordinals.dump();
+
+        // IMPORTANT: Sort in order of descending ordinal otherwise drawing code won't work.
+        Collections.sort(dag);
         return dag;
     }
 

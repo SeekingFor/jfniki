@@ -1,0 +1,40 @@
+# Used to diagnose a bug reported in the wild in version: 34194b24d92a.
+08c26c3ba8625fca 0b492241db429a63
+
+e76f3653fa8464c6 14d0b189ba3c9eb6
+
+0b492241db429a63 64d55b97a35bc07d
+
+14d0b189ba3c9eb6 26c56f1461beae7f
+
+64d55b97a35bc07d e76f3653fa8464c6
+
+64d55b97a35bc07d 7bbb7de37f88f49e
+
+26c56f1461beae7f 551458011a230904
+
+7bbb7de37f88f49e 0bd59cc84b2043ed
+
+551458011a230904 0bd59cc84b2043ed
+
+0bd59cc84b2043ed 0f5a714975290de4
+
+# --- dag ---
+# o  id: 08c26c3ba8625fca (10)
+# |
+# o  id: 0b492241db429a63 (9)
+# |
+# o    id: 64d55b97a35bc07d (8)
+# |\
+# | o  id: e76f3653fa8464c6 (7)
+# | |
+# | o  id: 14d0b189ba3c9eb6 (6)
+# | |
+# | o  id: 26c56f1461beae7f (5)
+# | |
+# o |  id: 7bbb7de37f88f49e (4)
+# | |
+# | o  id: 551458011a230904 (3)
+# |/
+# o  id: 0bd59cc84b2043ed (2)
+# |

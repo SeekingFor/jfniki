@@ -1,4 +1,4 @@
-20110605
+20110611
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -121,7 +121,9 @@ IDEA: Freetalk vs Freenet interop
       Hmmm... not sure if people would use this feature because of the correlation of ids.
 ---
 Fixed bugs:
-8cfb2f3e7c38  BUG: Default FCP port wrong for CLI client. [requested by a real user]
+238c7dcc5ae3: BUG: incorrect drawing of rebased changes on discover page (since b963650876a7).
+              [The plausable commit order code was just wrong. Fixed it I hope.]
+8cfb2f3e7c38: BUG: Default FCP port wrong for CLI client. [requested by a real user]
               [The default port is set to 9481 now and can be set via Java System properties. See ./script/wa.sh]
 710d700bc7a1: BUG: Header links to discussion pages. [requested by a real user]
 2ce3a4499a2c: BUG: No way to create an empty wiki from the UI. [requested by a real user]

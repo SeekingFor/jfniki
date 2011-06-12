@@ -63,7 +63,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                 }
                 baos.write(oneByte);
             }
-            System.err.println("read part bytes: " +  baos.toByteArray().length);
+            //System.err.println("read part bytes: " +  baos.toByteArray().length);
             return new String(baos.toByteArray(), "utf8");
         }
 
@@ -76,7 +76,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                 if (!parentParams.containsKey(name)) {
                     continue;
                 }
-                System.err.println("Set Param: " + name + " : " + parentParams.get(name));
+                //System.err.println("Set Param: " + name + " : " + parentParams.get(name));
                 mParamTable.put(name, parentParams.get(name));
             }
 
@@ -90,10 +90,10 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                         continue;
                     }
                     mParamTable.put(part.name, readAsUtf8(part));
-                    System.err.println(String.format("Set multipart Param: %s[%d]:\n%s",
-                                                     part.name,
-                                                     mParamTable.get(part.name).length(),
-                                                     mParamTable.get(part.name)));
+                    // System.err.println(String.format("Set multipart Param: %s[%d]:\n%s",
+                    //                                  part.name,
+                    //                                  mParamTable.get(part.name).length(),
+                    //                                  mParamTable.get(part.name)));
                 }
                 mParent.consumeBody();
             }
@@ -127,7 +127,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                 throw new RuntimeException("Request doesn't start with: " + containerPrefix);
             }
 
-            System.err.println("Raw path: " + path);
+            //System.err.println("Raw path: " + path);
 
             path = path.substring(containerPrefix.length());
             while(path.startsWith("/")) {

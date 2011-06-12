@@ -1,18 +1,6 @@
-Fixed the "Discover" page to draw lines for rebased versions.
+Fixed bug on the "Discover" page that caused lines to be drawn incorrectly
+in some cases for graphs with rebased versions.
 
-Added preliminary support for file diffs on the "Edit" page.
-It needs layout / CSS cleanup but it works.
+Use .zip instead of .tgz for source release.
 
-Added <<<ArchiveVersion>>> macro to print the 16 digit hex version
-of the current archive.
-
-Added <<<ArchiveUri>>> macro to print a link to the archive SSK
-that the current wiki version was loaded from.
-
-These macros where added so that people viewing dumped wiki
-freesites can tell which version / uri the wiki was
-dumped from.
-
-Release notes for previous version:
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/2/
 

@@ -147,17 +147,17 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
     protected void invokeWorkerMethod() {
         boolean failed = true;
         try {
-            System.err.println("Task started: " + mState);
+            //System.err.println("Task started: " + mState);
             PrintStream log = new PrintStream(mBuffer, true);
             mArchiveManager.setDebugOutput(log);
-           failed = !doWork(new PrintStream(mBuffer, true));
+            failed = !doWork(new PrintStream(mBuffer, true));
         } catch (Exception e) {
             e.printStackTrace();
             failed = true;
         } finally {
             synchronized (this) {
                 mState = failed ? STATE_FAILED : STATE_SUCCEEDED;
-                System.err.println("Task finished: " + mState);
+                //System.err.println("Task finished: " + mState);
                 mThread = null;
             }
         }

@@ -122,6 +122,17 @@ public class IOUtil {
         }
     }
 
+    public static String getHexDigest(String value, int numBytes) {
+        try {
+            if (value == null) {
+                return "???";
+            }
+            return IOUtil.getFileDigest(IOUtil.toStreamAsUtf8(value)).hexDigest(numBytes);
+        } catch (IOException ioe) {
+            return "???";
+        }
+    }
+
     public final static void copyAndClose(InputStream fromStream, String toFileName) throws IOException {
         copyAndClose(fromStream, new FileOutputStream(toFileName));
     }

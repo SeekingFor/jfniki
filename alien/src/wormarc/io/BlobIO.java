@@ -55,7 +55,7 @@ public class BlobIO implements Archive.IO {
     // REQUIRES: Length must not change.
     protected final static String VERSION_1 = "BLOB0001";
 
-    // Anything that you can read or write a BLOB to.
+    // Anything that you can read or write a BLOB from/to.
     public interface StreamFactory {
         InputStream getInputStream() throws IOException;
         OutputStream getOutputStream() throws IOException;

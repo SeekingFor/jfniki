@@ -105,7 +105,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
                     continue;
                 }
                 mParamTable.put(name, mParent.getParam(name));
-                System.err.println("Set Param: " + name + " : " + mParamTable.get(name));
+                //System.err.println("Set Param: " + name + " : " + mParamTable.get(name));
             }
 
             // Then read multipart params if there are any.
@@ -118,8 +118,8 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
 
                         String value = new String(mParent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
                         mParamTable.put(part, value);
-                        System.err.println("Set multipart Param: " + part + " : " +
-                                           mParamTable.get(part));
+                        // System.err.println("Set multipart Param: " + part + " : " +
+                        //                    mParamTable.get(part));
                     }
                 } catch (UnsupportedEncodingException ue) {
                     // Shouldn't happen.
@@ -157,7 +157,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
                 throw new RuntimeException("Request doesn't start with: " + containerPrefix);
             }
 
-            System.err.println("Raw path: " + path);
+            //System.err.println("Raw path: " + path);
             path = path.substring(containerPrefix.length());
 
             while(path.startsWith("/")) {
