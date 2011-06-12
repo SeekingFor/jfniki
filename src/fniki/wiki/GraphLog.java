@@ -152,7 +152,7 @@ public class GraphLog {
             } else {
                 nodeline.set(2 * edge.mEnd, "+");
                 if (edge.mStart > edge.mEnd) {
-                    edges.set(index, new AsciiEdge(edge.mEnd, edge.mStart));
+                    edge = new AsciiEdge(edge.mEnd, edge.mStart);
                 }
 
                 for (int j =  2 * edge.mStart + 1; j < 2 * edge.mEnd; j++) {
