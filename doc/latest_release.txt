@@ -1,3 +1,9 @@
+Fixed a bug in the display of '-' that was causing horizontal lines to
+be rendered incorrectly on the "Discover" page.
+
+Removed some unused files from the build. This should shrink the .jar and .zip.
+
+4f9255d698ae:
 Fixed bug on the "Discover" page that caused lines to be drawn incorrectly
 in some cases for graphs with rebased versions.
 
