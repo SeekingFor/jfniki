@@ -147,4 +147,8 @@ Added features:
                because of the way the version is string is generated.
 
 Finished Chores:
+
+d29fdea8222e: CHORE: Make cut_release.py use .zip files.  .tgz files are risky to extract.
+       http://stackoverflow.com/questions/458436/adding-folders-to-a-zip-file-using-python
+       (or just shell execute zip) [just executed in shell]
 cce3742a46d6: CHORE: Write a script to cut releases and insert them into freenet.
