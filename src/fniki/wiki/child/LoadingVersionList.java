@@ -1,4 +1,4 @@
-/* A UI subcomponent to load a list of other versions of this wiki via FMS.
+/* A UI subcomponent to load a list of other versions of this wiki via NNTP.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -97,19 +97,19 @@ public class LoadingVersionList extends AsyncTaskContainer {
             switch (getState()) {
             case STATE_WORKING:
                 showBuffer = true;
-                title = "Loading Wiki Version Info from FMS";
+                title = "Loading Wiki Version Info from Board";
                 cancelTitle = "Cancel";
                 break;
             case STATE_WAITING:
                 // Shouldn't hit this state.
                 showBuffer = false;
-                title = "Load Wiki Version Info from FMS";
+                title = "Load Wiki Version Info from Board";
                 confirmTitle = "Load";
                 cancelTitle = "Cancel";
                 break;
             case STATE_SUCCEEDED:
                 showBuffer = true;
-                title = "Loaded Wiki Version Info from FMS";
+                title = "Loaded Wiki Version Info from Board";
                 confirmTitle = null;
                 cancelTitle = "Done";
                 break;
@@ -132,7 +132,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
             body.println("</head><body>\n");
 
             body.println("<h3>" + escapeHTML(title) + "</h3>");
-            body.println(String.format("wikiname:%s<br>FMS group:%s<p>",
+            body.println(String.format("wikiname: %s<br>board: %s<p>",
                                     escapeHTML(context.getString("wikiname", "NOT_SET")),
                                     escapeHTML(context.getString("fms_group", "NOT_SET"))));
 
@@ -267,9 +267,10 @@ public class LoadingVersionList extends AsyncTaskContainer {
         }
     }
 
-    public synchronized String getRevisionGraphHtml(List<FMSUtil.BISSRecord> records)
+    public synchronized String getRevisionGraphHtml(PrintStream textLog, List<FMSUtil.BISSRecord> records)
         throws IOException {
 
+        textLog.println("Building graph...");
         // Build a list of revision graph edges from the NNTP notification records.
         List<GraphLog.GraphEdge> edges = new ArrayList<GraphLog.GraphEdge>();
         Map<String, List<FMSUtil.BISSRecord>> lut = new HashMap<String, List<FMSUtil.BISSRecord>>();
@@ -347,8 +348,10 @@ public class LoadingVersionList extends AsyncTaskContainer {
                     lines.add(String.format("date: %s", reference.mDate)); // Reliable?
                 }
                 String[] parentsAgain  = getParentVersions(references.get(0));
+
+                lines.add(escapeHTML(String.format("parent: [%s]", parentsAgain[0])));
                 if (parentsAgain.length == 2) {
-                    lines.add(escapeHTML(String.format("rebased: %s (UNVERIFIED!)", parentsAgain[1])));
+                    lines.add(escapeHTML(String.format("rebased: [%s] (UNVERIFIED!)", parentsAgain[1])));
                 }
 
                 lines.add("");
@@ -358,6 +361,8 @@ public class LoadingVersionList extends AsyncTaskContainer {
         }
         out.write("</pre>\n");
         out.flush();
+        textLog.println("Finished.");
+
         return out.toString();
     }
 
@@ -366,8 +371,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
             mListHtml = new StringBuilder();
         }
         try {
-            out.println("Reading versions from FMS...");
-            String graphHtml = getRevisionGraphHtml(mArchiveManager.getRecentWikiVersions(out));
+            String graphHtml = getRevisionGraphHtml(out, mArchiveManager.getRecentWikiVersions(out));
             synchronized (this) {
                 mListHtml.append(graphHtml);
             }

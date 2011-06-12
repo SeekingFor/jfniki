@@ -129,7 +129,8 @@ public final class ExternalRefs {
         StringBuilder buffer = new StringBuilder();
         buffer.append(String.format("--- %sExternalRefs ---\n", labelWithTrailingSpace));
         for (Reference ref: mRefs) {
-            buffer.append(String.format("   [%d]:%s\n", ref.mKind, ref.mExternalKey));
+            buffer.append(String.format("   [%d]:%s (%s)\n", ref.mKind, ref.mExternalKey,
+                                        IOUtil.getHexDigest(ref.mExternalKey, 8)));
         }
         buffer.append("---");
         return buffer.toString();

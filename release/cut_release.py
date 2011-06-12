@@ -65,7 +65,7 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 ############################################################
 # Indexes of refereneced USK sites
 
-FREENET_DOC_WIKI_IDX = 34
+FREENET_DOC_WIKI_IDX = 40
 FNIKI_IDX = 84
 REPO_IDX = 17
 

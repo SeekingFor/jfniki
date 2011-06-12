@@ -160,9 +160,9 @@ public class WikiApp implements ChildContainer, WikiContext {
             return mState;
         }
 
-        System.err.println(String.format("[%s] => [%s]",
-                                         mState.getClass().getName(),
-                                         container.getClass().getName()));
+        // System.err.println(String.format("[%s] => [%s]",
+        //                                  mState.getClass().getName(),
+        //                                  container.getClass().getName()));
         if (mState != null && mState instanceof ModalContainer) {
             ((ModalContainer)mState).exited();
         }
@@ -200,9 +200,9 @@ public class WikiApp implements ChildContainer, WikiContext {
             // Handle transitions out of modal UI states.
             ModalContainer state = (ModalContainer)mState;
             if (action.equals("finished")) {
-                System.err.println("finished");
+                //System.err.println("finished");
                 if (!state.isFinished()) {
-                    System.err.println("canceling");
+                    //System.err.println("canceling");
                     state.cancel();
                     try {
                         Thread.sleep(250); // HACK
@@ -212,7 +212,7 @@ public class WikiApp implements ChildContainer, WikiContext {
                 }
                 // No "else" because it might have finished while sleeping.
                 if (state.isFinished()) {
-                    System.err.println("finished");
+                    //System.err.println("finished");
                     setState(request, mWikiContainer);
                     return mGotoRedirect;
                 }
@@ -229,7 +229,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         }
 
         // DCI: Fix. Use a hashmap of paths -> instances for static paths
-        System.err.println("WikiApp.routeRequest: " + path);
+        //System.err.println("WikiApp.routeRequest: " + path);
         if (path.equals("fniki/config")) {
             return setState(request, mSettingConfig);
         } else if (path.equals("fniki/submit")) {
@@ -257,7 +257,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     public synchronized String handle(WikiContext context) throws ChildContainerException {
         try {
             ChildContainer childContainer = routeRequest(context);
-            System.err.println("Request routed to: " + childContainer.getClass().getName());
+            //System.err.println("Request routed to: " + childContainer.getClass().getName());
 
             return mFilter.filter(childContainer.handle(context));
         } catch (ChildContainerException cce) {
@@ -452,15 +452,15 @@ public class WikiApp implements ChildContainer, WikiContext {
         // Hacks to find bugs
         if (!containerRelativePath.startsWith("/")) {
             containerRelativePath = "/" + containerRelativePath;
-            System.err.println("WikiApp.makeLink -- added leading '/': " +
-                               containerRelativePath);
+            // System.err.println("WikiApp.makeLink -- added leading '/': " +
+            //                    containerRelativePath);
             (new RuntimeException("find missing /")).printStackTrace();
 
         }
         String full = containerPrefix() + containerRelativePath;
         while (full.indexOf("//") != -1) {
-            System.err.println("WikiApp.makeLink -- fixing  '//': " +
-                               full);
+            // System.err.println("WikiApp.makeLink -- fixing  '//': " +
+            //                    full);
             full = full.replace("//", "/");
             (new RuntimeException("find extra /")).printStackTrace();
         }

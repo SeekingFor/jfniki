@@ -375,9 +375,12 @@ public class ArchiveManager {
     }
 
     public List<FMSUtil.BISSRecord> getRecentWikiVersions(PrintStream out) throws IOException {
+        out.println("Reading version announcements via NNTP...");
+
         List<FMSUtil.BISSRecord> records =
             FMSUtil.getBISSRecords(mFmsHost, mFmsPort, mFmsId, mFmsGroup, mBissName, MAX_VERSIONS);
 
+        out.println("Finished reading. Processing...");
         // LATER: do better.
         for (FMSUtil.BISSRecord record : records) {
             String fields[] = record.mFmsId.split("@");
@@ -394,6 +397,7 @@ public class ArchiveManager {
             mNymLut.put(fields[1].trim(), fields[0].trim());
         }
 
+        out.println("Finished processing.");
         return records;
     }
 
