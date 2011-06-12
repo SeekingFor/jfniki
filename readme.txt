@@ -84,20 +84,52 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
-BUG: "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" in Discover for deleted
-      identities on FMS. [Already fixed.]
+*BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
-*BUG: Make Freetalk configuration work like fms configuration. i.e. no need for public key.
+BUG: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
 ---
+CHORE: Fix references to "library" in file headers.
 CHORE: Fix references to "FMS" to reflect the fact that either Freetalk or FMS may be used.
-
+CHORE: Add links to previous pages to release page. [encode head and date into tag?]
+CHORE: Pillage code out of hg infocalypse to update infocalypse repo version in cut_release.py
+CHORE: Backout the code in ArchiveManager that allows old format uris without parents.
+CHORE: Get rid of output spewed to stderr.
+CHORE: Fix sethcg's dump template stuff to use named variables?
+CHORE: Fix crappy code: fix places where I am using signed int values from DataInputStreams to rep unsigned values.
+CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
+       Write stand alone tool?
 ---
-IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
+***IDEA: USK insert from inside fniki (feature creep :-( ) [From a real user]
+         [This may be the thing that makes jfniki take off.]
+**IDEA: Staking.  add a biss message that says "I say this version is good"
+      not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
+**IDEA: Toadlet based plugin that redirects to jfniki (i.e. to get on menu) [not sure this is possible]
 *IDEA: Support links to other wikis. e.g.:b fniki://nntp/group/name[/SSK@some_version]
       [Not quite. Should be able to support mutliple transports (fms, ft, freemail?, fproxy usk?) in same url]
       [See notes below on ft fms interop. one NNTP to rule them all]
+IDEA: Freetalk vs Freenet interop
+      0) Group naming convention. anythingbutmul.foo.bar.baz -> mul.anythingbutmul.foo.bar.baz in freetalk
+      1) fniki://groupname/wikiname/[optional SSK] -- same for both. Freetalk nntp code prefixes mul. to group
+      2) In config UI. add freetalk config and enable checkboxes for freeetalk and fms
+      3) Convention or config to choose which private key is used for SSK insertion.
+      Hmmm... not sure if people would use this feature because of the correlation of ids.
+IDEA: Add permenant static help page, with quickstart page. Clean up display of empty wiki.
+IDEA: linklint. checks version of all USK links and updates them [feature creep.]
+IDEA: Use magic pages for extra header and footers. Add options to disable them in config. emergency link on perm footer
+      Completely replace top footer?
+IDEA: I KAN HAZ JAVA TEMPLATE ENGIN?
+       http://www.source-code.biz/MiniTemplator/
+
+IDEA: <<<SaidBy|public_key|sig>>> -- macro which allows you to drop a cryptographically signed block of text into a page
+      0) need to read up on crypto
+      1) Is it possible to implement block level macros with t4?
+      Intent: signed discussion entries, changlog entries
+IDEA: Headers / Footers (not sure how to implement yet. macros? <<<header>>> possibly referencing <<<this_page>>>) [From two different nyms]
+IDEA: write code to 0) compile a list of referenced USKS and 1) update them to the latest versions.
+
+IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
 IDEA: Caching in FreenetIO
       Make LinkCache and interface
       FreenetLinkCache extends LinkCache
@@ -108,21 +140,18 @@ IDEA: Caching in FreenetIO
         FreenetTopKey getTopKey(ssk)
         SHA1 cacheBlock(CHK, InputStream)
         boolean isCached(CHK)
+
+
 IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
       SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
-      let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics]
-*IDEA: Staking.  add a biss message that says "I say this version is good"
-      not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
+      let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics. USABILITY QUESTIONABLE]
 IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the latest and
       send a "Stake" biss message for it.
-IDEA: Freetalk vs Freenet interop
-      0) Group naming convention. anythingbutmul.foo.bar.baz -> mul.anythingbutmul.foo.bar.baz in freetalk
-      1) fniki://groupname/wikiname/[optional SSK] -- same for both. Freetalk nntp code prefixes mul. to group
-      2) In config UI. add freetalk config and enable checkboxes for freeetalk and fms
-      3) Convention or config to choose which private key is used for SSK insertion.
-      Hmmm... not sure if people would use this feature because of the correlation of ids.
 ---
 Fixed bugs:
+5686a2328b99: BUG: "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" in Discover for deleted
+              identities on FMS.
+
 238c7dcc5ae3: BUG: incorrect drawing of rebased changes on discover page (since b963650876a7).
               [The plausable commit order code was just wrong. Fixed it I hope.]
 8cfb2f3e7c38: BUG: Default FCP port wrong for CLI client. [requested by a real user]
@@ -147,8 +176,10 @@ Added features:
                because of the way the version is string is generated.
 
 Finished Chores:
-
+7c982a8a1ea9 CHORE: Prune out unused files in alien/src directory.
 d29fdea8222e: CHORE: Make cut_release.py use .zip files.  .tgz files are risky to extract.
        http://stackoverflow.com/questions/458436/adding-folders-to-a-zip-file-using-python
        (or just shell execute zip) [just executed in shell]
 cce3742a46d6: CHORE: Write a script to cut releases and insert them into freenet.
+
+
