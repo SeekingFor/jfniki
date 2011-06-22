@@ -67,6 +67,11 @@ class FMSConnection extends NNTPConnection {
         send(String.format("XGETTRUST %s %s", trustKindToString(kind), fmsId));
         String reply = read();
         StatusResponse response = parseResponse(reply, false);
+        if (response.getStatus() == 480) {
+            // This happens for deleted identities in FMS.
+            // 480 Identity not found
+            return -1;
+        }
         if (response.getStatus() < 200 || response.getStatus() > 299) {
             throw new IOException("XGETTRUST NNTP request failed: " + reply);
         }

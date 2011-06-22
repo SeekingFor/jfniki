@@ -32,7 +32,6 @@
 import os
 import shutil
 import subprocess
-import tarfile
 
 from binascii import hexlify
 
@@ -69,9 +68,9 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 ############################################################
 # Indexes of referenced USK sites
 
-FREENET_DOC_WIKI_IDX = 40
-FNIKI_IDX = 84
-REPO_IDX = 18
+FREENET_DOC_WIKI_IDX = 56
+FNIKI_IDX = 85
+REPO_IDX = 19
 
 ############################################################
 

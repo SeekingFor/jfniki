@@ -1,3 +1,8 @@
+Fixed bug that was causing "Discover" to fail with an
+"Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" error
+message on FMS. This only happened for deleted identities.
+
+da5f54f86710
 Fixed a bug in the display of '-' that was causing horizontal lines to
 be rendered incorrectly on the "Discover" page.
 

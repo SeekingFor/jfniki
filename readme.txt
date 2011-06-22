@@ -1,4 +1,4 @@
-20110611
+20110621
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -84,6 +84,8 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
+BUG: "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" in Discover for deleted
+      identities on FMS. [Already fixed.]
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
