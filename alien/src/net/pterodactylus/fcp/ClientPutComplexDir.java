@@ -243,7 +243,8 @@ public class ClientPutComplexDir extends FcpMessage {
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
 		/* create payload stream. */
-		setPayloadInputStream(new SequenceInputStream(Collections.enumeration(directFileInputStreams)));
+                // djk: bugfix here
+                super.setPayloadInputStream(new SequenceInputStream(Collections.enumeration(directFileInputStreams)));
 		/* write out all the fields. */
 		super.write(outputStream);
 	}

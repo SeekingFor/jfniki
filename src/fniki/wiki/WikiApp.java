@@ -42,6 +42,7 @@ import static fniki.wiki.Validations.*;
 import fniki.wiki.child.AsyncTaskContainer;
 import fniki.wiki.child.DefaultRedirect;
 import fniki.wiki.child.GotoRedirect;
+import fniki.wiki.child.InsertingFreesite;
 import fniki.wiki.child.LoadingArchive;
 import fniki.wiki.child.LoadingChangeLog;
 import fniki.wiki.child.LoadingVersionList;
@@ -90,6 +91,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     private final ChildContainer mLoadingArchive;
     private final ChildContainer mSubmitting;
     private final ChildContainer mLoadingChangeLog;
+    private final ChildContainer mInsertingFreesite;
 
     // The current default UI state.
     private ChildContainer mState;
@@ -127,6 +129,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         mLoadingArchive = new LoadingArchive(archiveManager);
         mSubmitting = new Submitting(archiveManager);
         mLoadingChangeLog = new LoadingChangeLog(archiveManager);
+        mInsertingFreesite = new InsertingFreesite(archiveManager);
 
         mState = mWikiContainer;
         mArchiveManager = archiveManager;
@@ -242,6 +245,8 @@ public class WikiApp implements ChildContainer, WikiContext {
             return setState(request, mLoadingArchive);
         } else if (path.equals("fniki/resettoempty")) {
             return setState(request, mResetToEmptyWiki);
+        } else if (path.equals("fniki/insertsite")) {
+            return setState(request, mInsertingFreesite);
         } else if (path.equals("")) {
             return mDefaultRedirect;
         } else if (slashCount != 0) {
