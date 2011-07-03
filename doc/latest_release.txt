@@ -1,3 +1,53 @@
+I added support for inserting wiki mirror freesites from jfniki.
+
+INSERTING:
+There is a new "Insert" link at the very bottom of the page which
+brings up the Freesite Insert page.
+
+There are radio buttons to choose between USK and CHK inserts.
+
+If you choose CHK, the site will be inserted under an CHK, which
+is good for testing.
+
+If you choose USK, the site will be inserted under the public key
+corresponding to your FMS / Freetalk private key, with the human
+readable site name you specify.  It should find the correct
+insertion index for you.
+
+GOTCHAS:
+* This feature relies on the underlying FCP2 ClientPutComplexDir command.
+  It seems pretty flaky especially for USK insertion, and especially
+  when the network is overloaded.  If you need reliability stick with
+  DumpWiki and jSite.
+
+THEMES:
+If you want, you can customize the the way the site is inserted by
+providing a theme zip file.
+
+The zip file MUST have the following layout:
+
+theme/config/template.html  -- a template file like the one used for DumpWiki
+theme/config/default_page.txt -- a text file with one line containing the default page name
+theme/static/ -- this directory can contain any static files you like.
+
+Here's an example theme you can download from freenet and unzip:
+
+CHK@Vp5D8hw9sQi5EGyW6xwjB3xoSCBPkej0RJP5x6vjKWs,UhRPRMdff3EKMIt7VtzaMI7cluGWStmL7~iRYaQQ-6w,AAIC--8/test_theme.zip
+
+GOTCHAS:
+* The default_page.txt file should contain the final converted name of the
+  page in the freesite, not the wiki name. It can be a static file.
+  e.g. use "Front_Page.html" for the "Front_Page" wiki page.
+* There are no directories in the inserted site.
+  e.g. theme/static/my_file.txt in the .zip file will appear as
+  USK@<line nois>/sitename/my_file.txt
+* Theme .zip files must be < 128K (and should be much smaller).
+* Uploaded theme .zip files must end in .zip. Only a-z, A-Z, 0-9 , '-' and '_'
+  are allowed in the name part.
+* Error reporting for problems with .zip files is poor so if you mess
+  up the theme .zip file, you won't get much useful feedback. Sorry.
+
+5686a2328b99
 Fixed bug that was causing "Discover" to fail with an
 "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" error
 message on FMS. This only happened for deleted identities.

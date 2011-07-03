@@ -1,4 +1,4 @@
-20110621
+20110703
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -101,8 +101,6 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
-***IDEA: USK insert from inside fniki (feature creep :-( ) [From a real user]
-         [This may be the thing that makes jfniki take off.]
 **IDEA: Staking.  add a biss message that says "I say this version is good"
       not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
 **IDEA: Toadlet based plugin that redirects to jfniki (i.e. to get on menu) [not sure this is possible]
@@ -151,7 +149,6 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
 Fixed bugs:
 5686a2328b99: BUG: "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" in Discover for deleted
               identities on FMS.
-
 238c7dcc5ae3: BUG: incorrect drawing of rebased changes on discover page (since b963650876a7).
               [The plausable commit order code was just wrong. Fixed it I hope.]
 8cfb2f3e7c38: BUG: Default FCP port wrong for CLI client. [requested by a real user]
@@ -161,6 +158,7 @@ Fixed bugs:
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
 
 Added features:
+f9b66084244d: IDEA: USK insert from inside fniki (feature creep :-( ) [From a real user]
 08d1b85d8ddd: IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
       from  http://selenic.com/repo/hg-stable/file/4ec34de8bbb1/hgext/graphlog.py
       ISSUES:
