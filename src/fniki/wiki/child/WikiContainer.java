@@ -56,7 +56,11 @@ import fniki.wiki.WikiTextStorage;
 
 public class WikiContainer implements ChildContainer {
     private final static String ENCODING = "UTF-8";
-
+    private boolean createHtmlOuter = true;
+    public void setCreateHtmlOuter(boolean enabled) {
+    	createHtmlOuter = enabled;
+    }
+    
     public WikiContainer() {}
 
     public String handle(WikiContext context) throws ChildContainerException {
@@ -249,20 +253,22 @@ public class WikiContainer implements ChildContainer {
 
     private void addHeader(WikiContext context, String escapedName, String talkName,
                            StringBuilder buffer) throws IOException {
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
-                      "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
-        buffer.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n");
-        buffer.append("<head><title>\n");
-        buffer.append(escapedName);
-        buffer.append("</title>\n");
-        buffer.append("<style type=\"text/css\">\n");
-        // CAREFUL: MUST audit .css files built into .jar to make sure they are safe.
-        // Load .css snippet from jar. Names can only have 1 '/' and must be globally unique.
-        buffer.append(context.getString("/add_header.css", ""));
-        buffer.append("</style>\n");
-        buffer.append("</head>\n");
-        buffer.append("<body>\n");
+    	if(createHtmlOuter) {
+	        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+	        buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
+	                      "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
+	        buffer.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n");
+	        buffer.append("<head><title>\n");
+	        buffer.append(escapedName);
+	        buffer.append("</title>\n");
+	        buffer.append("<style type=\"text/css\">\n");
+	        // CAREFUL: MUST audit .css files built into .jar to make sure they are safe.
+	        // Load .css snippet from jar. Names can only have 1 '/' and must be globally unique.
+	        buffer.append(context.getString("/add_header.css", ""));
+	        buffer.append("</style>\n");
+	        buffer.append("</head>\n");
+	        buffer.append("<body>\n");
+    	}
         buffer.append("<h1 class=\"pagetitle\">\n");
         buffer.append(escapedName);
         buffer.append("</h1>\n");
@@ -423,7 +429,9 @@ public class WikiContainer implements ChildContainer {
         }
 
         buffer.append("</form>\n");
-        buffer.append("</body></html>\n");
+        if(createHtmlOuter) {
+        	buffer.append("</body></html>\n");
+        }
     }
 
     private static String nullToNone(String value) {

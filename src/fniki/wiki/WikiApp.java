@@ -510,6 +510,14 @@ public class WikiApp implements ChildContainer, WikiContext {
         if (request == null) {
             throw new IllegalArgumentException("request == null");
         }
+        ((WikiContainer) mWikiContainer).setCreateHtmlOuter(true);
+        mRequest = request;
+    }
+    public void setRequest(Request request, boolean createHtmlOuter) {
+        if (request == null) {
+            throw new IllegalArgumentException("request == null");
+        }
+        ((WikiContainer) mWikiContainer).setCreateHtmlOuter(createHtmlOuter);
         mRequest = request;
     }
 }
