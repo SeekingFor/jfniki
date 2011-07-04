@@ -28,10 +28,15 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
+import freenet.clients.http.PageMaker;
+import freenet.clients.http.Toadlet;
+import freenet.clients.http.ToadletContainer;
+import freenet.l10n.BaseL10n.LANGUAGE;
 import freenet.pluginmanager.AccessDeniedPluginHTTPException;
 import freenet.pluginmanager.DownloadPluginHTTPException;
 import freenet.pluginmanager.FredPlugin;
 import freenet.pluginmanager.FredPluginHTTP;
+import freenet.pluginmanager.FredPluginL10n;
 import freenet.pluginmanager.FredPluginThreadless;
 import freenet.pluginmanager.NotFoundPluginHTTPException;
 import freenet.pluginmanager.PluginHTTPException;
@@ -51,11 +56,18 @@ import fniki.wiki.NotFoundException;
 import fniki.wiki.RedirectException;
 import fniki.wiki.ChildContainerException;
 
-public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
+public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, FredPluginL10n {
     private WikiApp mWikiApp;
     private String mContainerPrefix;
+	private ToadletContainer mFredWebUI;
+	private PageMaker mPageMaker;
+	private Toadlet mToadlet;
+	
     public void terminate() {
-        System.err.println("Fniki plugin terminating...");
+        System.err.println("jFniki plugin terminating...");
+		mFredWebUI.unregister(mToadlet);					// unload toadlet
+		mPageMaker.removeNavigationCategory("jfniki");		// unload category
+        System.err.println("jFniki plugin terminated.");
     }
 
     public void runPlugin(PluginRespirator pr) {
@@ -76,7 +88,22 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
             wikiApp.setFormPassword(pr.getNode().clientCore.formPassword);
 
             mWikiApp = wikiApp;
-
+    		mFredWebUI = pr.getToadletContainer();
+    		mPageMaker = pr.getPageMaker();
+			mToadlet = new WikiWebInterface(pr.getHLSimpleClient(), mContainerPrefix , mWikiApp);
+    		mPageMaker.addNavigationCategory(mToadlet.path(), "jfniki", "Wiki over Freenet", this);
+    		// add a hidden navigation item to catch a click on main navigation category
+    		mFredWebUI.register(mToadlet, null, mToadlet.path(), true, false);
+    		// add normal sub items
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Front_Page" , true, "Front Page", "Front Page", false, null, this);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Index" , true, "Index Page", "automatically generated index page", false, null, this);
+    		//mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/changelog?action=confirm&title=fniki/changelog" , true, "Changelog", "Changelog", false, null, null);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Changelog" , true, "Changelog", "user written changelog", false, null, this);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "jfniki_markup" , true, "Learn Creole", "Creole is something like simplified BBcode and is used by this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/getversions" , true, "Search other versions", "search for other recent versions of this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Local_Changes" , true, "Show local changes", "show your changes to this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/submit" , true, "Submit local changes", "submit your changes to this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/config" , true, "Options", "Options", false, null, this);
         } catch (IOException ioe) {
             System.err.println("Fniki Plugin EPIC FAIL!");
             ioe.printStackTrace();
@@ -84,12 +111,12 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     }
 
     private static class ServerPluginHTTPException extends PluginHTTPException {
-	private static final long serialVersionUID = -1;
-
-	public static final short code = 500; // Bad Request
-	public ServerPluginHTTPException(String errorMessage, String location) {
-            super(errorMessage, location);
-	}
+		private static final long serialVersionUID = -1;
+	
+		public static final short code = 500; // Bad Request
+		public ServerPluginHTTPException(String errorMessage, String location) {
+	            super(errorMessage, location);
+		}
     }
 
     private static class PluginQuery extends QueryBase {
@@ -147,7 +174,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
         }
     }
 
-    private static class PluginRequest implements Request {
+    static class PluginRequest implements Request {
         private final Query mQuery;
         private final String mPath;
         PluginRequest(HTTPRequest parent, String containerPrefix) throws IOException {
@@ -202,5 +229,17 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     public String handleHTTPPost(HTTPRequest request) throws PluginHTTPException {
         return handle(request);
     }
+
+	@Override
+	public String getString(String key) {
+		// TODO Auto-generated method stub
+		return key;
+	}
+
+	@Override
+	public void setLanguage(LANGUAGE newLanguage) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 
