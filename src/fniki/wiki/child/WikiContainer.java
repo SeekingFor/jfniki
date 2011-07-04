@@ -410,13 +410,16 @@ public class WikiContainer implements ChildContainer {
         buffer.append("<hr>\n");
         buffer.append(makeLocalLink(context, "fniki/resettoempty", "view", "Create Wiki!"));
         buffer.append(" (<em>careful:</em> This deletes all content and history without confirmation.)<p/>\n");
-    }
+        buffer.append("<hr>\n");
+
+        buffer.append(makeLocalLink(context, "fniki/insertsite", "view", "Insert"));
+        buffer.append(" a static version of this wiki as a freesite.<p/>\n");
+  }
 
     private void addFooter(WikiContext context, String name, boolean readOnly, StringBuilder buffer) throws IOException {
         buffer.append("<hr>\n");
 
         int kind = RebaseStatus.pageChangeKind(context.getStorage(), context.getRemoteChanges(), name);
-        System.err.println("kind: " + kind);
 
         if (!readOnly) {
             addStatusInfo(context, name, kind, buffer);

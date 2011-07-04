@@ -285,6 +285,8 @@ public class LoadingVersionList extends AsyncTaskContainer {
 
             if (child.equals(BASE_VERSION)) {
                 // INTENT: cycles in the DAG (i.e. non-dag) break the drawing code. Catch sleazy stuff.
+                //         Remove this? 1) The attacker has to break break SHA1 to make the bad link.
+                //                      2) No attacker will make a cylce with a single link.
                 System.err.println(String.format("Attempted attack? Skipping: (%s, %s)", child, parents[0]));
                 System.err.println("  " + record.mKey);
                 continue;

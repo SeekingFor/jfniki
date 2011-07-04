@@ -2,23 +2,73 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>jfniki version: 5686a2328b99</title>
+<title>jfniki version: 8b8d608e8198</title>
 </head>
 <body>
-<h4>jfniki version: 5686a2328b99</h4>
+<h4>jfniki version: 8b8d608e8198</h4>
 <div>
 <code>jfniki plugin.jar</code>:<br/>
-<pre><code><a href="/CHK@IH2rvp66a2nH2jg4ozoVq0ToWlbYciAdNvGrKP4iBwQ,X0t8JoowcW67m7Aci3f2-kk82Tv~FmUR8zeg87KK9L8,AAIC--8/jfniki.5686a2328b99.jar">CHK@IH2rvp66a2nH2jg4ozoVq0ToWlbYciAdNvGrKP4iBwQ,X0t8JoowcW67m7Aci3f2-kk82Tv~FmUR8zeg87KK9L8,AAIC--8/jfniki.5686a2328b99.jar</a></code></pre><p/>
-<code>source code tarball:</code><br/>
-<pre><code><a href="/CHK@L9A95qmhI0ct6QDkUiquMCbNciYOVTfM7hEJ5mX2kwI,mBaUqSc8Xx-QboqUpCAAST5DX46CyyD5qAM6vw4dou4,AAIC--8/jfniki.5686a2328b99.zip">CHK@L9A95qmhI0ct6QDkUiquMCbNciYOVTfM7hEJ5mX2kwI,mBaUqSc8Xx-QboqUpCAAST5DX46CyyD5qAM6vw4dou4,AAIC--8/jfniki.5686a2328b99.zip</a></code></pre><p/>
+<pre><code><a href="/CHK@mxiFQgYUU8NFjHtenKzkjQfRXAFl6DcazxoVXHluJXI,SS6LDm6-uisCDcI4q6gsoY1CMjHEMCn2x5FeZFbWivk,AAIC--8/jfniki.8b8d608e8198.jar">CHK@mxiFQgYUU8NFjHtenKzkjQfRXAFl6DcazxoVXHluJXI,SS6LDm6-uisCDcI4q6gsoY1CMjHEMCn2x5FeZFbWivk,AAIC--8/jfniki.8b8d608e8198.jar</a></code></pre><p/>
+<code>source code zip:</code><br/>
+<pre><code><a href="/CHK@PfftgZMLNcoqXr0GxYyPCfcihkzCgm9L8Q-e0uB3ft4,he61AsdJs-gyeAmkzIzzijYYOdkARTNz3lxz6Ej7m8U,AAIC--8/jfniki.8b8d608e8198.zip">CHK@PfftgZMLNcoqXr0GxYyPCfcihkzCgm9L8Q-e0uB3ft4,he61AsdJs-gyeAmkzIzzijYYOdkARTNz3lxz6Ej7m8U,AAIC--8/jfniki.8b8d608e8198.zip</a></code></pre><p/>
 <a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/85/HgInfocalypse">hg infocalpse</a> repo:<br/>
 <code>
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/19
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/20
 </code>
 </div>
 <div>
 <h4>release notes</h4>
-<pre><code>Fixed bug that was causing &quot;Discover&quot; to fail with an
+<pre><code>I added support for inserting wiki mirror freesites from jfniki.
+
+INSERTING:
+There is a new &quot;Insert&quot; link at the very bottom of the page which
+brings up the Freesite Insert page.
+
+There are radio buttons to choose between USK and CHK inserts.
+
+If you choose CHK, the site will be inserted under an CHK, which
+is good for testing.
+
+If you choose USK, the site will be inserted under the public key
+corresponding to your FMS / Freetalk private key, with the human
+readable site name you specify.  It should find the correct
+insertion index for you.
+
+GOTCHAS:
+* This feature relies on the underlying FCP2 ClientPutComplexDir command.
+  It seems pretty flaky especially for USK insertion, and especially
+  when the network is overloaded.  If you need reliability stick with
+  DumpWiki and jSite.
+
+THEMES:
+If you want, you can customize the the way the site is inserted by
+providing a theme zip file.
+
+The zip file MUST have the following layout:
+
+theme/config/template.html  -- a template file like the one used for DumpWiki
+theme/config/default_page.txt -- a text file with one line containing the default page name
+theme/static/ -- this directory can contain any static files you like.
+
+Here&apos;s an example theme you can download from freenet and unzip:
+
+CHK@Vp5D8hw9sQi5EGyW6xwjB3xoSCBPkej0RJP5x6vjKWs,UhRPRMdff3EKMIt7VtzaMI7cluGWStmL7~iRYaQQ-6w,AAIC--8/test_theme.zip
+
+GOTCHAS:
+* The default_page.txt file should contain the final converted name of the
+  page in the freesite, not the wiki name. It can be a static file.
+  e.g. use &quot;Front_Page.html&quot; for the &quot;Front_Page&quot; wiki page.
+* There are no directories in the inserted site.
+  e.g. theme/static/my_file.txt in the .zip file will appear as
+  USK@&lt;line nois&gt;/sitename/my_file.txt
+* Theme .zip files must be &lt; 128K (and should be much smaller).
+* Uploaded theme .zip files must end in .zip. Only a-z, A-Z, 0-9 , &apos;-&apos; and &apos;_&apos;
+  are allowed in the name part.
+* Error reporting for problems with .zip files is poor so if you mess
+  up the theme .zip file, you won&apos;t get much useful feedback. Sorry.
+
+5686a2328b99
+Fixed bug that was causing &quot;Discover&quot; to fail with an
 &quot;Error reading log: XGETTRUST NNTP request failed: 480 Identity not found&quot; error
 message on FMS. This only happened for deleted identities.
 
@@ -38,9 +88,9 @@ Use .zip instead of .tgz for source release.
 </code></pre>
 <h4>about jfniki</h4>
 <ul>
-  <li>The <a href = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/56/">Freenet Doc Wiki Mirror</a>
+  <li>The <a href = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/60/">Freenet Doc Wiki Mirror</a>
 has good documentation on jfniki. Activelink: <br/>
-  <img src = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/56/activelink.png" alt = "[FWDM activelink]"
+  <img src = "/USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/60/activelink.png" alt = "[FWDM activelink]"
        width="108" height="36"/>
   </li>
   <li> The
@@ -59,7 +109,7 @@ has good documentation on jfniki. Activelink: <br/>
 <h4>site info</h4>
 <img src="activelink.png" alt="[jfniki releases activelink.png]" width="108" height="36"/>
 <p>
-<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/6/&amp;desc=jfniki releases">[bookmark!]</a>
+<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/7/&amp;desc=jfniki releases">[bookmark!]</a>
 </div>
 </body>
 </html>

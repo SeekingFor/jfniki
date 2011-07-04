@@ -1,3 +1,5 @@
+// LATER: fix this to use WikiHtmlExporter.
+
 /* Command line utility to dump a jfniki wiki as html.
  *
  * Copyright (C) 2011 sethcg
@@ -44,6 +46,7 @@ import wormarc.IOUtil;
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.FreenetWikiTextParser;
 import fniki.wiki.WikiParserDelegate;
+import fniki.wiki.HtmlExportParserDelegate;
 
 public class DumpWiki {
 
@@ -63,51 +66,6 @@ public class DumpWiki {
         "DumpWiki was written as part of the fniki Freenet Wiki project\n\n";
 
     ////////////////////////////////////////////////////////////
-    private static class LocalParserDelegate extends WikiParserDelegate {
-        LocalParserDelegate(ArchiveManager archiveManager) {
-            super(archiveManager);
-        }
-
-        // Implement base class abstract methods to supply the functionality
-        // specific to dumping a wiki as html.
-        protected String getContainerPrefix() { return ""; }
-        protected boolean getFreenetLinksAllowed() { return true; }
-        protected boolean getImagesAllowed() { return true; }
-
-        protected String makeLink(String containerRelativePath) {
-            while (containerRelativePath.startsWith("/")) {
-                containerRelativePath = containerRelativePath.substring(1);
-            }
-            try {
-                if (!mArchiveManager.getStorage().hasPage(containerRelativePath)) {
-                    containerRelativePath = "PageDoesNotExist";
-                }
-            } catch (IOException ioe) {
-                throw new RuntimeException("ArchiveManager.getStorage() failed???", ioe);
-            }
-            return containerRelativePath + ".html";
-        }
-
-       protected String makeFreenetLink(String uri) {
-            if (!uri.startsWith("freenet:")) {
-                throw new RuntimeException("uri doesn't start with 'freenet:'");
-            }
-            return "/" + uri.substring("freenet:".length());
-        }
-
-        // Override one pesky macro that requires a different implementation.
-        protected boolean processedTitleIndexMacro(StringBuilder sb, String text) {
-            try {
-                for (String name : mArchiveManager.getStorage().getNames()) {
-                    sb.append("<a href=\"" + makeHref(name) + ".html\">" + escapeHTML(name.replace("_", " ")) + "</a>");
-                    sb.append("<br />");
-                }
-            } catch (IOException ioe) {
-                sb.append("{ERROR PROCESSING TITLEINDEX MACRO}");
-            }
-            return true;
-        }
-    }
 
     public static void main(String[] args) throws Exception {
         if (args.length > 5 || args.length < 2) {
@@ -128,7 +86,7 @@ public class DumpWiki {
         archiveManager.setFcpHost(fcpHost);
         archiveManager.setFcpPort(fcpPort);
 
-        FreenetWikiTextParser.ParserDelegate mParserDelegate = new LocalParserDelegate(archiveManager);
+        FreenetWikiTextParser.ParserDelegate mParserDelegate = new HtmlExportParserDelegate(archiveManager);
 
         String ouputDirectory = args[0];
         System.out.println("Preparing to dump archive to " + ouputDirectory + "...");

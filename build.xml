@@ -51,6 +51,7 @@
       </manifest>
       <fileset dir="${doc}" includes="quickstart.txt"/>
       <fileset dir="${templates}" includes="*.html"/>
+      <fileset dir="${templates}" includes="*.png"/>
       <!-- A place to stash snippets of .css -->
       <fileset dir="${style}" includes="*.css"/>
     </jar>

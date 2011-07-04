@@ -58,4 +58,23 @@ public class Validations {
                 link.startsWith("freenet:SSK@") ||
                 link.startsWith("freenet:USK@"));
     }
+
+    // INTENT: I added this because I've seen freesites with '-' in the human readable name.
+    //         I wanted people to be able to create theme names to match.
+    public static boolean isValidThemeName(String value) {
+        for (int index = 0; index < value.length(); index++) {
+            char c  = value.charAt(index);
+            if ((c >= '0' && c <= '9') ||
+                (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_' ||
+                c == '-') {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+
 }

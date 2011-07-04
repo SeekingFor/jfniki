@@ -24,11 +24,13 @@
 
 package fniki.wiki;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +76,10 @@ public class ArchiveManager {
     // Block hex digest to CHK key map.
     Map<String, String> mSha1ToChk = new HashMap<String, String>();
 
+    // Name to theme map for freesite insertion.
+    Map<String, SiteTheme> mThemeMap = new HashMap<String, SiteTheme>();
+    String mCurrentThemeName = "default";
+
     // Main version
     String mParentUri;
     Archive mArchive;
@@ -85,6 +91,10 @@ public class ArchiveManager {
     Archive mSecondaryArchive;
     FileManifest mSecondaryFileManifest;
     WikiTextChanges mSecondaryChanges;
+
+    public ArchiveManager() {
+        mThemeMap.put("default", buildDefaultSiteTheme());
+    }
 
     public void setDebugOutput(PrintStream out) {
         FreenetIO.setDebugOutput(out);
@@ -191,7 +201,6 @@ public class ArchiveManager {
     private FreenetIO makeIO() {
         return new FreenetIO(mFcpHost, mFcpPort, null, mSha1ToChk);
     }
-
 
     private static String getExternalRefDigest(Archive archive, int kind) throws IOException {
         String value = "";
@@ -433,5 +442,87 @@ public class ArchiveManager {
             return nym;
         }
         return nym + "@" + publicKeyHash;
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Support for Freesite insertion.
+    ////////////////////////////////////////////////////////////
+    public String insertSite(String insertUri, PrintStream out) throws IOException, InterruptedException {
+        out.println("Using site theme: " + mCurrentThemeName);
+
+        SiteTheme cfg = mThemeMap.get(mCurrentThemeName);
+        if (cfg == null) {
+            throw new RuntimeException("Failed to load theme???");
+        }
+
+        FileManifest.Changes changes = getLocalChanges();
+        if (!changes.isUnmodified()) {
+            throw new IOException("Can't insert because the wiki has unsubmitted local changes.");
+        }
+
+        Iterable<FileInfo> dataSource = new WikiHtmlExporter(this, cfg.mTemplate, cfg.mStaticFiles).export();
+
+        FreesiteInserter runner = new  FreesiteInserter(mFcpHost, mFcpPort, "jfniki");
+        FreesiteInserter.setDebugOutput(out);
+
+        FreesiteInserter.InsertFreesite cmd = runner.sendInsertFreesite(insertUri,
+                                                                        dataSource,
+                                                                        cfg.mDefaultPage);
+        runner.waitUntilAllFinished();
+        cmd.raiseOnFailure();
+
+        return cmd.getUri();
+    }
+
+    private static SiteTheme buildDefaultSiteTheme() {
+        try {
+            List<FileInfo> staticFiles = new ArrayList<FileInfo>();
+            byte[] png = IOUtil.readAndClose(ArchiveManager.class.getResourceAsStream("/jfniki_activelink.png"));
+            staticFiles.add(FreesiteInserter.makeFileInfo("activelink.png", png, "image/png"));
+
+            return new SiteTheme(IOUtil.readUtf8StringAndClose(ArchiveManager.class.
+                                                               getResourceAsStream("/wiki_dump_template.html")),
+                                 "Front_Page.html",
+                                 staticFiles);
+        } catch (IOException ioe) {
+            // Should never happen.
+            throw new RuntimeException("Couldn't build the default theme???", ioe);
+        }
+    }
+
+    public void loadSiteTheme(String themeFileName, byte[] zipFileBytes) throws IOException {
+        System.err.println("NAME: " + themeFileName + " len: " + zipFileBytes.length);
+        String[] fields = themeFileName.split("\\.");
+        for (String field : fields) {
+            System.err.println("FIELD: " + field);
+        }
+        if (fields.length < 2 || (!fields[fields.length - 1].toLowerCase().equals("zip"))) {
+            throw new IOException("Expected a zip file: " + themeFileName);
+        }
+
+        String name = fields[0].toLowerCase().trim();
+        if (name.equals("default")) {
+            throw new IOException("You can't replace the default theme: " + themeFileName);
+        }
+        if (!Validations.isValidThemeName(name)) {
+            throw new IOException("Illegal theme name: " + name);
+        }
+
+        SiteTheme theme = SiteTheme.fromZipStream(new ByteArrayInputStream(zipFileBytes));
+        mThemeMap.put(name, theme);
+    }
+
+    public List<String> getSiteThemes() {
+        List<String> names = new ArrayList<String>();
+        names.addAll(mThemeMap.keySet());
+        Collections.sort(names);
+        return names;
+    }
+
+    public void setSiteTheme(String name) {
+        if (mThemeMap.get(name) == null) {
+            throw new RuntimeException("Theme doesn't exist: " + name);
+        }
+        mCurrentThemeName = name;
     }
 }

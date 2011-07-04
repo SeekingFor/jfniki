@@ -418,7 +418,7 @@ public class HTTPServer {
         public int read() throws IOException {
             if (!fill())
                 return -1;
-            return buf[head++];
+            return buf[head++] & 0xff; // djk: bugfix: MUST deal with sign extension!
         }
 
         public int read(byte[] b, int off, int len) throws IOException {

@@ -1,0 +1,77 @@
+<!-- IMPORTANT: There are hard coded exceptions for the Freenet content filter to make -->
+<!--            file uploading work. See WikiContentFilter.EXCEPTIONS. -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Insert Freesite</title>
+<style type="text/css">
+div.indent{margin-left:20px;}
+div.center{text-align:center;}
+blockquote{margin-left:20px;background-color:#e0e0e0;}
+span.underline{text-decoration:underline;}
+body { background-color: #FFFFFF; color: #000000;}
+a { color: #1f6b9e;}
+</style>
+</head>
+<body>
+  <h1>Insert Freesite</h1>
+  <table>
+  <form method="post"
+        action="%1$s"
+        enctype="multipart/form-data"
+        accept-charset="UTF-8">
+      <tr>
+        <td>Site Name</td>
+        <td><input type="text" name="sitename" value="%2$s"/></td>
+      </tr>
+      <tr>
+        <td>Site Theme</td>
+        <td><
+        <select name="theme">
+          %4$s
+        </select>
+      </tr>
+      <tr>
+        <td>Insert as</td>
+        <td>
+          <input type="radio" name="keytype" value="usk" checked/>USK
+          <input type="radio" name="keytype" value="chk" />CHK
+        </td>
+      </tr>
+      <tr>
+        <td><input type="submit" name="action" value="Confirm"/></td>
+      </tr>
+      <input type=hidden name=formPassword value="%3$s"/>
+  </form>
+  <tr>
+    <td>
+      <form method="post"
+        action="%1$s"
+        enctype="multipart/form-data"
+        accept-charset="UTF-8">
+        <input type="submit" value="Cancel">
+        <input type=hidden name="action" value="finished">
+        <input type=hidden name=formPassword value="%3$s"/>
+      </form>
+    </td>
+  </tr>
+  </table>
+  <h1>Import Freesite Theme</h1>
+  <table>
+    <tr>
+    <td>
+      <form method="post"
+        action="%1$s"
+        enctype="multipart/form-data"
+        accept-charset="UTF-8">
+        <input name="import" type="submit" value="Import Theme"/>
+        <input type="hidden" name="action" value="sentfile">
+        <input type="file" name="upload" size="64">
+        <input type="hidden" name="formPassword" value="%3$s"/>
+      </form>
+    </td>
+  </tr>
+  </table>
+</body>
+</html>
