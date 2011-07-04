@@ -88,14 +88,15 @@ public class WikiWebInterface extends Toadlet {
 			}
 			throw new NotFoundPluginHTTPException(notFound.getMessage(), mNameSpace);
 		} catch(RedirectException redirected) {
-			//System.err.println("WikiWebInterface::handleWebRequest::RedirectException::getMessage(): " + redirected.getMessage() + "::getLocation(): " + redirected.getLocation());
-			//tmpResult = "<b>WikiWebInterface::handleWebRequest::RedirectException::getMessage(): " + redirected.getMessage() + "::getLocation(): " + redirected.getLocation() + "</b>";
-			//throw new RedirectPluginHTTPException(redirected.getMessage(), redirected.getLocation());
-			//mWikiApp.setRequest(new PluginRequest(request,mNameSpace));
-			//tmpResult = mWikiApp.handle(mWikiApp);
-			//writeHTMLReply(ctx, 200, "OK", createRequestInfo(request,ctx).outer.generate());
-			//writeHTMLReply(ctx, 200, "OK", "<a href=\"" + redirected.getLocation() + "\">Redirection failed</a>");
-			tmpResult = "<a href=\"" + redirected.getLocation() + "\">Redirection failed</a>";
+			try {
+				writeTemporaryRedirect(ctx, redirected.getLocalizedMessage(), redirected.getLocation());
+			} catch (ToadletContextClosedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			//} catch(DownloadException forceDownload) {
 			// This is to allow exporting the configuration.
 			//    throw new DownloadPluginHTTPException(forceDownload.mData,

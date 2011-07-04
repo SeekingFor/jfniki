@@ -25,7 +25,6 @@
 package fniki.freenet.plugin;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
 import freenet.clients.http.PageMaker;
@@ -61,7 +60,7 @@ import fniki.wiki.RedirectException;
 import fniki.wiki.ChildContainerException;
 
 public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, FredPluginL10n {
-    private WikiApp mWikiApp;
+	private WikiApp mWikiApp;
     private String mContainerPrefix;
 	private ToadletContainer mFredWebUI;
 	private PageMaker mPageMaker;
@@ -70,7 +69,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
     public void terminate() {
         System.err.println("jFniki plugin terminating...");
 		mFredWebUI.unregister(mToadlet);					// unload toadlet
-		mPageMaker.removeNavigationCategory("jfniki");		// unload category
+		mPageMaker.removeNavigationCategory("jfniki");	// unload category
         System.err.println("jFniki plugin terminated.");
     }
 
@@ -259,5 +258,6 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
 		// TODO Auto-generated method stub
 		
 	}
+
 }
 
