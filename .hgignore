@@ -6,6 +6,7 @@ syntax: glob
 *.pyc
 build/*
 buildtests/*
+alien/libs/freenet.jar
 
 syntax: regexp
 .*\#.*\#$
