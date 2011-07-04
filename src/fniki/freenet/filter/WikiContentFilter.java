@@ -139,7 +139,7 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
 
     // One off hacks to allow specific cases mangled by the filter.
     private final static String EXCEPTIONS[] = new String[] {
-        // Mangled form
+        // Mangled configuration import form
         "<input name=\"import\" type=\"submit\" value=\"Import Configuration\" />\n\n<hr>\n",
         // Allowed
         "<input name=\"import\" type=\"submit\" value=\"Import Configuration\"/>\n" +
@@ -147,7 +147,12 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
         // Removed meta refresh
         "html><head>\n\n<title>",
         // Allowed.
-        "html><head><meta http-equiv=\"refresh\" content=\"15\" /><title>\n"
+        "html><head><meta http-equiv=\"refresh\" content=\"15\" /><title>\n",
+        // Mangled theme upload form
+        "<input name=\"import\" type=\"submit\" value=\"Import Theme\" />\n",
+        // Allowed
+        "<input name=\"import\" type=\"submit\" value=\"Import Theme\"/>\n" +
+        "<input type=\"file\" name=\"upload\" size=\"64\">\n",
     };
 
     // Allow a few safe, specific exceptions through the content filter.

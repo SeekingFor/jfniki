@@ -457,6 +457,7 @@ public class GraphLog {
             GraphEdge other = (GraphEdge)obj;
             return mFrom.equals(other.mFrom) && mTo.equals(other.mTo);
         }
+        // LATER: Do better? Doesn't matter.
         public int hashCode() { return (mFrom + mTo).hashCode(); } // Hmmm... fast enough?
     }
 
@@ -674,6 +675,7 @@ public class GraphLog {
             }
         }
 
+        // Tweak here to order by date? or some other metric?
         // Set the ordinals for nodes which have no children.
         List<String> sorted_leaf_nodes = new ArrayList<String>(leaf_nodes);
         Collections.sort(sorted_leaf_nodes);

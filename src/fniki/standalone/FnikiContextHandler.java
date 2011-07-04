@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import net.freeutils.httpserver.HTTPServer;
 
+import wormarc.IOUtil;
+
 import fniki.wiki.Query;
 import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
@@ -53,18 +55,20 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
         private final String mPath;
 
         // Hmmmm... can't figure out any other way to know when part is done.
-        private final String readAsUtf8(HTTPServer.MultipartIterator.Part part) throws IOException {
+        private final byte[] readAsBytes(HTTPServer.MultipartIterator.Part part) throws IOException {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
+            int count = 0;
             while (true) { // Do better? Does it matter?
                 int oneByte = part.body.read();
                 if (oneByte == -1) {
                     break;
                 }
+                count++;
                 baos.write(oneByte);
             }
-            //System.err.println("read part bytes: " +  baos.toByteArray().length);
-            return new String(baos.toByteArray(), "utf8");
+
+            return baos.toByteArray();
         }
 
         public void readParams() throws IOException {
@@ -76,8 +80,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                 if (!parentParams.containsKey(name)) {
                     continue;
                 }
-                //System.err.println("Set Param: " + name + " : " + parentParams.get(name));
-                mParamTable.put(name, parentParams.get(name));
+                mParamTable.put(name, parentParams.get(name).getBytes(IOUtil.UTF8));
             }
 
             // Then read multipart params if there are any.
@@ -89,22 +92,21 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                     if (!allParams.contains(part.name)) {
                         continue;
                     }
-                    mParamTable.put(part.name, readAsUtf8(part));
-                    // System.err.println(String.format("Set multipart Param: %s[%d]:\n%s",
-                    //                                  part.name,
-                    //                                  mParamTable.get(part.name).length(),
-                    //                                  mParamTable.get(part.name)));
+                    mParamTable.put(part.name, readAsBytes(part));
+                    if (allParams.contains(part.name + ".filename") && part.filename != null) {
+                        // Special case for file uploading.
+                        mParamTable.put(part.name + ".filename", part.filename.getBytes(IOUtil.UTF8));
+                    }
                 }
                 mParent.consumeBody();
             }
 
             if (!mParamTable.containsKey("action")) {
-                //System.err.println("Forced default action to view");
-                mParamTable.put("action", "view");
+                mParamTable.put("action", "view".getBytes(IOUtil.UTF8));
             }
 
             if (!mParamTable.containsKey("title")) {
-                mParamTable.put("title", mPath);
+                mParamTable.put("title", mPath.getBytes(IOUtil.UTF8));
             }
         }
 

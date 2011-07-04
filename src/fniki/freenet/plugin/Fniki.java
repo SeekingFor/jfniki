@@ -42,7 +42,11 @@ import freenet.pluginmanager.NotFoundPluginHTTPException;
 import freenet.pluginmanager.PluginHTTPException;
 import freenet.pluginmanager.PluginRespirator;
 import freenet.pluginmanager.RedirectPluginHTTPException;
+import freenet.support.api.Bucket;
 import freenet.support.api.HTTPRequest;
+import freenet.support.api.HTTPUploadedFile;
+
+import wormarc.IOUtil;
 
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.Query;
@@ -131,35 +135,49 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
                 if (!mParent.isParameterSet(name)) {
                     continue;
                 }
-                mParamTable.put(name, mParent.getParam(name));
+                mParamTable.put(name, mParent.getParam(name).getBytes(IOUtil.UTF8));
                 //System.err.println("Set Param: " + name + " : " + mParamTable.get(name));
             }
 
             // Then read multipart params if there are any.
             try {
-                try {
-                    for (String part : mParent.getParts()) {
-                        if (!allParams.contains(part)) {
-                            continue;
-                        }
-
-                        String value = new String(mParent.getPartAsBytesFailsafe(part, 64 * 1024), "utf-8");
-                        mParamTable.put(part, value);
-                        // System.err.println("Set multipart Param: " + part + " : " +
-                        //                    mParamTable.get(part));
+                for (String part : mParent.getParts()) {
+                    if (!allParams.contains(part)) {
+                        continue;
                     }
-                } catch (UnsupportedEncodingException ue) {
-                    // Shouldn't happen.
-                    ue.printStackTrace();
+
+                    // Special case file posts.
+                    if (part.equals("upload")) {
+                        HTTPUploadedFile uploadedFile = mParent.getUploadedFile(part);
+                        Bucket bucket = uploadedFile.getData();
+                        try {
+                            byte[] data = IOUtil.readAndClose(bucket.getInputStream());
+                            if (data == null) {
+                                throw new IOException("Couldn't read uploaded file data from bucket.");
+                            }
+                            if (data.length > 128 * 1024) {
+                                throw new IOException("Uploaded file too big.");
+                            }
+                            mParamTable.put(part, data);
+                            mParamTable.put(part + ".filename", uploadedFile.getFilename().getBytes(IOUtil.UTF8));
+                        } finally {
+                            bucket.free();
+                        }
+                    } else {
+                        byte[] value = mParent.getPartAsBytesFailsafe(part, 128 * 1024);
+                        mParamTable.put(part, value);
+                    }
+                    // Can fail if value isn't utf-8
+                    // System.err.println("Set multipart Param: " + part + " : " +
+                    //                    mParamTable.get(part));
                 }
 
                 if (!mParamTable.containsKey("action")) {
                     //System.err.println("Forced default action to view");
-                    mParamTable.put("action", "view");
+                    mParamTable.put("action", "view".getBytes(IOUtil.UTF8));
                 }
-
                 if (!mParamTable.containsKey("title")) {
-                    mParamTable.put("title", mPath);
+                    mParamTable.put("title", mPath.getBytes(IOUtil.UTF8));
                 }
             } finally {
                 mParent.freeParts();

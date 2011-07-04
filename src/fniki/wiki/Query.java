@@ -27,4 +27,5 @@ package fniki.wiki;
 public interface Query {
     boolean containsKey(String paramName);
     String get(String paramName);
+    byte[] getBytes(String paramName);
 }

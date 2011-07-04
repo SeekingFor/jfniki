@@ -25,6 +25,7 @@
 package fniki.wiki;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,8 +33,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import wormarc.IOUtil;
+
 public abstract class QueryBase implements Query {
-    protected Map<String, String> mParamTable = new HashMap<String, String>();
+    protected Map<String, byte[]> mParamTable = new HashMap<String, byte[]>();
 
     // MUST contain every parameter used by any ChildContainer.
     protected final static String PARAMS[] = new String[] {
@@ -46,6 +49,9 @@ public abstract class QueryBase implements Query {
         "defaults", "done", "import", "export", "upload",
         "fcphost", "fcpport", "fpprefix", "fmshost", "fmsport",
         "fmsssk", "fmsid", "fmsgroup", "wikiname", "images",
+        // Freesite insertion stuff.
+        "sitename", "keytype", "theme",
+        "upload.filename", // <- There are special hacks in the mime multipart post code for this.
     };
 
     protected static Set<String> paramsSet() {
@@ -56,7 +62,21 @@ public abstract class QueryBase implements Query {
         return mParamTable.containsKey(paramName);
     }
 
+    // Can throw a RuntimeException if the parameter value isn't a UTF8 string.
     public String get(String paramName) {
+        try {
+            byte[] bytes = mParamTable.get(paramName);
+            if (bytes == null) {
+                return null;
+            }
+            return new String(bytes, IOUtil.UTF8);
+
+        } catch (UnsupportedEncodingException uee) {
+            throw new RuntimeException("Maybe that's binary data?", uee);
+        }
+    }
+
+    public byte[] getBytes(String paramName) {
         return mParamTable.get(paramName);
     }
 
