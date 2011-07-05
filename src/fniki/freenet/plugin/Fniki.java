@@ -61,15 +61,16 @@ import fniki.wiki.ChildContainerException;
 
 public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, FredPluginL10n {
 	private WikiApp mWikiApp;
-    private String mContainerPrefix;
+    //private String mContainerPrefix;
 	private ToadletContainer mFredWebUI;
 	private PageMaker mPageMaker;
 	private Toadlet mToadlet;
 	
     public void terminate() {
         System.err.println("jFniki plugin terminating...");
-		mFredWebUI.unregister(mToadlet);					// unload toadlet
-		mPageMaker.removeNavigationCategory("jfniki");	// unload category
+		mFredWebUI.unregister(mToadlet);				// unload toadlet
+		mPageMaker.removeNavigationCategory("jFniki");	// unload category
+		mToadlet = null;
         System.err.println("jFniki plugin terminated.");
     }
 
@@ -83,7 +84,7 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
             if (wikiApp.getString("container_prefix", null) == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }
-            mContainerPrefix = wikiApp.getString("container_prefix", null);
+            //mContainerPrefix = wikiApp.getString("container_prefix", null);
 
             // IMPORTANT:
             // HTTP POSTS will be rejected without any useful error message if your form
@@ -93,20 +94,20 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
             mWikiApp = wikiApp;
     		mFredWebUI = pr.getToadletContainer();
     		mPageMaker = pr.getPageMaker();
-			mToadlet = new WikiWebInterface(pr.getHLSimpleClient(), mContainerPrefix , mWikiApp);
-    		mPageMaker.addNavigationCategory(mToadlet.path(), "jfniki", "Wiki over Freenet", this);
+			mToadlet = new WikiWebInterface(pr.getHLSimpleClient(), "/jfniki/" , mWikiApp);
+    		mPageMaker.addNavigationCategory(mToadlet.path(), "jFniki", "Wiki over Freenet", this);
     		// add a hidden navigation item to catch a click on main navigation category
     		mFredWebUI.register(mToadlet, null, mToadlet.path(), true, false);
     		// add normal sub items
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Front_Page" , true, "Front Page", "Front Page", false, null, this);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Index" , true, "Index Page", "automatically generated index page", false, null, this);
-    		//mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/changelog?action=confirm&title=fniki/changelog" , true, "Changelog", "Changelog", false, null, null);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Changelog" , true, "Changelog", "user written changelog", false, null, this);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "jfniki_markup" , true, "Learn Creole", "Creole is something like simplified BBcode and is used by this wiki.", false, null, this);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/getversions" , true, "Search other versions", "search for other recent versions of this wiki.", false, null, this);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "Local_Changes" , true, "Show local changes", "show your changes to this wiki.", false, null, this);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/submit" , true, "Submit local changes", "submit your changes to this wiki.", false, null, this);
-    		mFredWebUI.register(mToadlet, "jfniki", mToadlet.path() + "fniki/config" , true, "Options", "Options", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Front_Page" , true, "Front Page", "Front Page", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Index" , true, "Index Page", "automatically generated index page", false, null, this);
+    		//mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/changelog?action=confirm&title=fniki/changelog" , true, "Changelog", "Changelog", false, null, null);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Changelog" , true, "Changelog", "user written changelog", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "jfniki_markup" , true, "Learn Creole", "Creole is something like simplified BBcode and is used by this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/getversions" , true, "Search other versions", "search for other recent versions of this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Local_Changes" , true, "Show local changes", "show your changes to this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/submit" , true, "Submit local changes", "submit your changes to this wiki.", false, null, this);
+    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/config" , true, "Options", "Options", false, null, this);
         } catch (IOException ioe) {
             System.err.println("Fniki Plugin EPIC FAIL!");
             ioe.printStackTrace();
@@ -216,8 +217,10 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
     }
 
     public String handle(HTTPRequest request) throws PluginHTTPException {
+    	final String mContainerPrefix = "/plugins/fniki.freenet.plugin.Fniki"; 
+    	mWikiApp.setContainerPrefix(mContainerPrefix);
         try {
-            mWikiApp.setRequest(new PluginRequest(request, mContainerPrefix));
+            mWikiApp.setRequest(new PluginRequest(request, mContainerPrefix), true);
             return mWikiApp.handle(mWikiApp);
 
             // IMPORTANT: Look at these catch blocks carefully. They bypass the freenet ContentFilter.

@@ -109,7 +109,8 @@ public class WikiApp implements ChildContainer, WikiContext {
     private boolean mAllowImages = ALLOW_IMAGES;
     private String mFormPassword;
     private int mListenPort = LISTEN_PORT;
-
+    private static String servingNamespace = "/plugins/fniki.freenet.plugin.Fniki";
+    
     // final because it is called from the ctor.
     private final void resetContentFilter() {
         mFilter = ContentFilterFactory.create(mFproxyPrefix, containerPrefix());
@@ -312,7 +313,11 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     // Hmmmm... kind of weird. I can't remember why I used this static method instead of a constant.
     // NO trailing slash.
-    private static String containerPrefix() { return "/plugins/fniki.freenet.plugin.Fniki"; }
+    private static String containerPrefix() { return servingNamespace; }
+    public void setContainerPrefix(String containerPrefix) {
+    	servingNamespace = containerPrefix;
+    	resetContentFilter();
+    }
 
     ////////////////////////////////////////////////////////////
     // Wiki context implementations.
@@ -464,10 +469,10 @@ public class WikiApp implements ChildContainer, WikiContext {
         }
         String full = containerPrefix() + containerRelativePath;
         while (full.indexOf("//") != -1) {
-            // System.err.println("WikiApp.makeLink -- fixing  '//': " +
-            //                    full);
+            System.err.println("WikiApp.makeLink -- fixing  '//': " +
+                                full);
             full = full.replace("//", "/");
-            (new RuntimeException("find extra /")).printStackTrace();
+            //(new RuntimeException("find extra /")).printStackTrace();
         }
         return full;
     }
