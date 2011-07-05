@@ -48,7 +48,7 @@ public class WikiWebInterface extends Toadlet {
 			final String customCssString =
 				//"div#content { background-color: #FFFFFF; color: #000000;}\n"+
 				"div#content {margin-left: 8px;}\n"+
-				"div#content a { color: #1f6b9e;}\n"+
+				//"div#content a { color: #1f6b9e;}\n"+
 				"div#content h1 {font-size:32px;}\n"+
 				"div#content h2 {font-size:24px;}\n"+
 				"div#content h3 {font-size:18.7167px;}\n"+
