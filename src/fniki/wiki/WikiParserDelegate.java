@@ -144,7 +144,7 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         String[] link=split(text, '|');
         if (getFreenetLinksAllowed() &&
             isValidFreenetUri(link[0])) {
-            sb.append("<a href=\""+ makeFreenetLink(link[0].trim()) +"\">");
+            sb.append("<a class=\"jfnikiLinkFreenet\" href=\""+ makeFreenetLink(link[0].trim()) +"\">");
             sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
             sb.append("</a>");
             return;
@@ -152,13 +152,13 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
 
         if (isAlphaNumOrUnder(link[0])) {
             // Link to an internal wiki page.
-            sb.append("<a href=\""+ makeHref(makeLink("/" + link[0].trim())) +"\">");
+            sb.append("<a class=\"jfnikiLinkInternal\" href=\""+ makeHref(makeLink("/" + link[0].trim())) +"\">");
             sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
             sb.append("</a>");
             return;
         }
 
-        sb.append("<a href=\"" + makeHref(makeLink("/ExternalLink")) +"\">");
+        sb.append("<a class=\"jfnikiLinkExternal\" href=\"" + makeHref(makeLink("/ExternalLink")) +"\">");
         sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
         sb.append("</a>");
     }
