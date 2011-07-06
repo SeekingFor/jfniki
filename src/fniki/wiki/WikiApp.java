@@ -469,10 +469,10 @@ public class WikiApp implements ChildContainer, WikiContext {
         }
         String full = containerPrefix() + containerRelativePath;
         while (full.indexOf("//") != -1) {
-            System.err.println("WikiApp.makeLink -- fixing  '//': " +
-                                full);
+            //System.err.println("WikiApp.makeLink -- fixing  '//': " +
+            //                    full);
             full = full.replace("//", "/");
-            //(new RuntimeException("find extra /")).printStackTrace();
+            (new RuntimeException("find extra /")).printStackTrace();
         }
         return full;
     }
