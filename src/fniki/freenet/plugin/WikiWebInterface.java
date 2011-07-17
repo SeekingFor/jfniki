@@ -107,9 +107,10 @@ public class WikiWebInterface extends Toadlet {
 			} catch(DownloadException forceDownload) {
 				// This is to allow exporting the configuration.
 				if("Download of: jfniki.cfg".equals(forceDownload.getMessage())) {
-					throw new DownloadPluginHTTPException(forceDownload.mData,
-														forceDownload.mFilename,
-														forceDownload.mMimeType);
+					writeReply(ctx, 200, forceDownload.mMimeType, "OK", forceDownload.mData, 0, forceDownload.mData.length);
+					//throw new DownloadPluginHTTPException(forceDownload.mData,
+					//									forceDownload.mFilename,
+					//									forceDownload.mMimeType);
 				} else {
 					System.err.println("WikiWebInterface::handleWebRequest failed with a DownloadException: " + forceDownload.getMessage());
 					tmpResult = "Requested path " + request.getPath() + " can not be delivered: " + forceDownload.getMessage() + "<br />Please report this message.<br />";
