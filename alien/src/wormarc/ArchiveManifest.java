@@ -22,6 +22,11 @@
  * "fniki" (a wiki implementation running over Freenet).
  */
 
+// LATER: Simplify this.
+// 0) Implement toBytes() and fromBytes() on Archive.ArchiveData.
+// 1) Use that to implement ArchiveManifest. just a thin wrapper that does the fixup hacks.
+// 2) Keep binary compatibility.
+
 package wormarc;
 
 import java.io.ByteArrayInputStream;

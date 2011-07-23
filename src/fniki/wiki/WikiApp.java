@@ -30,7 +30,9 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import wormarc.FileManifest;
@@ -78,22 +80,10 @@ public class WikiApp implements ChildContainer, WikiContext {
     // Delegate to implement link, image and macro handling in wikitext.
     private final FreenetWikiTextParser.ParserDelegate mParserDelegate;
 
-    // ChildContainers for non-modal UI elements.
-    private final ChildContainer mDefaultRedirect;
-    private final ChildContainer mGotoRedirect;
-    private final ChildContainer mQueryError;
-    private final ChildContainer mWikiContainer;
-    private final ChildContainer mResetToEmptyWiki;
+    // UI subcomponents and actions (e.g. redirecting).
+    private final Map<String, ChildContainer> mRoutes = new HashMap<String, ChildContainer>();
 
-    // ChildContainers for modal UI states.
-    private final ChildContainer mSettingConfig;
-    private final ChildContainer mLoadingVersionList;
-    private final ChildContainer mLoadingArchive;
-    private final ChildContainer mSubmitting;
-    private final ChildContainer mLoadingChangeLog;
-    private final ChildContainer mInsertingFreesite;
-
-    // The current default UI state.
+    // The current UI state.
     private ChildContainer mState;
 
     // Transient, per request state.
@@ -116,23 +106,23 @@ public class WikiApp implements ChildContainer, WikiContext {
     }
 
     public WikiApp(ArchiveManager archiveManager) {
-        mParserDelegate = new LocalParserDelegate(this, archiveManager);
-
-        mDefaultRedirect = new DefaultRedirect();
-        mGotoRedirect = new GotoRedirect();
-        mQueryError = new QueryError();
-        mWikiContainer = new WikiContainer();
-        mResetToEmptyWiki = new ResetToEmptyWiki(archiveManager);
-
-        mSettingConfig = new SettingConfig();
-        mLoadingVersionList = new LoadingVersionList(archiveManager);
-        mLoadingArchive = new LoadingArchive(archiveManager);
-        mSubmitting = new Submitting(archiveManager);
-        mLoadingChangeLog = new LoadingChangeLog(archiveManager);
-        mInsertingFreesite = new InsertingFreesite(archiveManager);
-
-        mState = mWikiContainer;
         mArchiveManager = archiveManager;
+        mParserDelegate = new LocalParserDelegate(this, mArchiveManager);
+
+        // Static routes.
+        mRoutes.put("", new DefaultRedirect());
+        mRoutes.put("fniki/config", new SettingConfig());
+        mRoutes.put("fniki/submit", new Submitting(mArchiveManager));
+        mRoutes.put("fniki/changelog", new LoadingChangeLog(mArchiveManager));
+        mRoutes.put("fniki/getversions", new LoadingVersionList(mArchiveManager));
+        mRoutes.put("fniki/loadarchive", new LoadingArchive(mArchiveManager));
+        mRoutes.put("fniki/resettoempty", new ResetToEmptyWiki(mArchiveManager));
+        mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
+
+        // Routes determined by code.
+        mRoutes.put("from_code/goto_redirect", new GotoRedirect());
+        mRoutes.put("from_code/query_error", new QueryError());
+        mRoutes.put("from_code/wiki_container", new WikiContainer());
 
         resetContentFilter();
     }
@@ -183,29 +173,13 @@ public class WikiApp implements ChildContainer, WikiContext {
     private ChildContainer routeRequest(WikiContext request)
         throws IOException {
 
-        // Fail immediately if there are problems in the glue code.
-        if (request.getPath() == null) {
-            throw new RuntimeException("Assertion Failure: path == null");
-        }
-        if (request.getQuery() == null) {
-            throw new RuntimeException("Assertion Failure: query == null");
-        }
-        if (request.getAction() == null) {
-            throw new RuntimeException("Assertion Failure: action == null");
-        }
-        if (request.getTitle() == null) {
-            throw new RuntimeException("Assertion Failure: title == null");
-        }
-
         String action = request.getAction();
 
         if (mState instanceof ModalContainer) {
             // Handle transitions out of modal UI states.
             ModalContainer state = (ModalContainer)mState;
             if (action.equals("finished")) {
-                //System.err.println("finished");
                 if (!state.isFinished()) {
-                    //System.err.println("canceling");
                     state.cancel();
                     try {
                         Thread.sleep(250); // HACK
@@ -215,47 +189,26 @@ public class WikiApp implements ChildContainer, WikiContext {
                 }
                 // No "else" because it might have finished while sleeping.
                 if (state.isFinished()) {
-                    //System.err.println("finished");
-                    setState(request, mWikiContainer);
-                    return mGotoRedirect;
+                    setState(request, mRoutes.get("from_code/wiki_container"));
+                    return mRoutes.get("from_code/goto_redirect");
                 }
             }
             return state;  // Don't leave the modal UI state until finished.
         }
 
         String path = request.getPath();
-        int slashCount = 0;
-        for (int index = 0; index < path.length(); index++) {
-            if (path.charAt(index) == '/') {
-                slashCount++;
-            }
+
+        // Handle static routes.
+        if (mRoutes.containsKey(path) && !path.startsWith("from_code/")) {
+            return setState(request, mRoutes.get(path));
         }
 
-        // DCI: Fix. Use a hashmap of paths -> instances for static paths
-        //System.err.println("WikiApp.routeRequest: " + path);
-        if (path.equals("fniki/config")) {
-            return setState(request, mSettingConfig);
-        } else if (path.equals("fniki/submit")) {
-            return setState(request, mSubmitting);
-        } else if (path.equals("fniki/changelog")) {
-            return setState(request, mLoadingChangeLog);
-        } else if (path.equals("fniki/getversions")) {
-            return setState(request, mLoadingVersionList);
-        } else if (path.equals("fniki/loadarchive")) {
-            return setState(request, mLoadingArchive);
-        } else if (path.equals("fniki/resettoempty")) {
-            return setState(request, mResetToEmptyWiki);
-        } else if (path.equals("fniki/insertsite")) {
-            return setState(request, mInsertingFreesite);
-        } else if (path.equals("")) {
-            return mDefaultRedirect;
-        } else if (slashCount != 0) {
-            return mQueryError;
-        } else {
-            setState(request, mWikiContainer);
+        if (path.indexOf("/") != -1) {
+            // The wiki container doesn't allow subdirectories.
+            return mRoutes.get("from_code/query_error");
         }
 
-        return mState;
+        return setState(request, mRoutes.get("from_code/wiki_container"));
     }
 
     // All requests are serialized! Hmmmm....
@@ -512,8 +465,21 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     ////////////////////////////////////////////////////////////
     public void setRequest(Request request) {
+        // Fail immediately if there are problems in the glue code.
         if (request == null) {
             throw new IllegalArgumentException("request == null");
+        }
+        if (request.getPath() == null) {
+            throw new RuntimeException("Assertion Failure: request.getPath() == null");
+        }
+        if (request.getQuery() == null) {
+            throw new RuntimeException("Assertion Failure: request.getQuery() == null");
+        }
+        if (request.getQuery().get("action") == null) {
+            throw new RuntimeException("Assertion Failure: request.getAction() == null");
+        }
+        if (request.getQuery().get("title") == null) {
+            throw new RuntimeException("Assertion Failure: request.getTitle() == null");
         }
         mRequest = request;
     }
