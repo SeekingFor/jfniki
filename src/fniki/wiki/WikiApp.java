@@ -110,7 +110,7 @@ public class WikiApp implements ChildContainer, WikiContext {
     private String mFormPassword;
     private int mListenPort = LISTEN_PORT;
     private static String servingNamespace = "/plugins/fniki.freenet.plugin.Fniki";
-    
+
     // final because it is called from the ctor.
     private final void resetContentFilter() {
         mFilter = ContentFilterFactory.create(mFproxyPrefix, containerPrefix());
