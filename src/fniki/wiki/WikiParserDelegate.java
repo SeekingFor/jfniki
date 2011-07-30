@@ -150,7 +150,7 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
             return;
         }
 
-        if (isAlphaNumOrUnder(link[0])) {
+        if (isValidLocalLink(link[0])) {
             // Link to an internal wiki page.
             sb.append("<a href=\""+ makeHref(makeLink("/" + link[0].trim())) +"\">");
             sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));

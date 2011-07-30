@@ -26,6 +26,7 @@ package fniki.wiki;
 
 import static ys.wikiparser.Utils.*; // DCI: clean up
 
+import java.io.InputStream;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ import fniki.wiki.child.LoadingVersionList;
 import fniki.wiki.child.QueryError;
 import fniki.wiki.child.ResetToEmptyWiki;
 import fniki.wiki.child.SettingConfig;
+import fniki.wiki.child.StaticHtml;
+import fniki.wiki.child.StaticWikiText;
 import fniki.wiki.child.Submitting;
 import fniki.wiki.child.WikiContainer;
 
@@ -118,6 +121,11 @@ public class WikiApp implements ChildContainer, WikiContext {
         mRoutes.put("fniki/loadarchive", new LoadingArchive(mArchiveManager));
         mRoutes.put("fniki/resettoempty", new ResetToEmptyWiki(mArchiveManager));
         mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
+
+        // Routes to static files in the jar.
+        // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.
+        mRoutes.put("static_files/Quick_Start", new StaticWikiText("/quickstart.txt", "Quick Start"));
+        //mRoutes.put("static_files/tools", new StaticHtml("/tools.html"));
 
         // Routes determined by code.
         mRoutes.put("from_code/goto_redirect", new GotoRedirect());
@@ -311,7 +319,10 @@ public class WikiApp implements ChildContainer, WikiContext {
         } else if (keyName.startsWith("/")) {
             // Assume any name starting with a "/" is a UTF-8 encoded file in the jar.
             try {
-                return IOUtil.readUtf8StringAndClose(WikiApp.class.getResourceAsStream(keyName));
+                InputStream resourceStream = WikiApp.class.getResourceAsStream(keyName);
+                if (resourceStream != null) {
+                    return IOUtil.readUtf8StringAndClose(resourceStream);
+                }
             } catch (IOException ioe) {
                 /* NOP: Caller gets default */
             }
