@@ -60,7 +60,7 @@ public class WikiContainer implements ChildContainer {
     public void setCreateHtmlOuter(boolean enabled) {
     	createHtmlOuter = enabled;
     }
-    
+
     public WikiContainer() {}
 
     public String handle(WikiContext context) throws ChildContainerException {
