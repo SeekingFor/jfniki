@@ -499,4 +499,22 @@ public class WikiContainer implements ChildContainer {
     public String renderXHTML(WikiContext context, String wikiText) {
         return new FreenetWikiTextParser(wikiText, context.getParserDelegate()).toString();
     }
+
+    public String renderExternalWikiText(WikiContext context, String title, String path, String wikiText) throws IOException {
+        StringBuilder buffer = new StringBuilder();
+        String escapedName = escapeHTML(title);
+        addHeader(context, escapedName, null, buffer);
+        buffer.append(renderXHTML(context, wikiText));
+
+        // Custom footer.
+        buffer.append("<hr>\n");
+        buffer.append("<em> You can't edit this page because it is built into the jar.</em> <p/>\n");
+        buffer.append("");
+        buffer.append(makeLocalLink(context, path, "viewsrc", "View Wikitext Source"));
+        buffer.append("</form>\n");
+        buffer.append("</body></html>\n");
+
+        return buffer.toString();
+    }
+
 }

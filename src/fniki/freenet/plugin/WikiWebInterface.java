@@ -12,6 +12,7 @@ import fniki.wiki.DownloadException;
 import fniki.wiki.NotFoundException;
 import fniki.wiki.RedirectException;
 import fniki.wiki.Request;
+import fniki.wiki.WikiContext;
 import fniki.wiki.WikiApp;
 
 import freenet.client.HighLevelSimpleClient;
@@ -37,7 +38,7 @@ public class WikiWebInterface extends Toadlet {
         mWikiApp = wikiapp;
 
         // Loaded from ./style/plugin_jfniki.css.
-        mJfnikiCss = mWikiApp.getString("/plugin_jfniki.css", null);
+        mJfnikiCss = mWikiApp.getContext().getString("/plugin_jfniki.css", null);
         if (mJfnikiCss == null) {
             throw new RuntimeException("/plugin_jfniki.css not found in .jar");
         }
@@ -83,7 +84,8 @@ public class WikiWebInterface extends Toadlet {
         mWikiApp.setContainerPrefix(mNameSpace.substring(0, mNameSpace.length()-1));
         try {
             mWikiApp.setRequest(new PluginRequest(request, mNameSpace));
-            return mWikiApp.handle(mWikiApp);
+            WikiContext context = mWikiApp.getContext();
+            return mWikiApp.handle(context);
             // IMPORTANT: Look at these catch blocks carefully. They bypass the freenet ContentFilter.
             // SeekingForAttention: This could be insecure code because I have no clue and no documentation.
             //                      Do not use it if you don't know what you are doing.

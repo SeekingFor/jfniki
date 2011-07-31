@@ -52,6 +52,8 @@ public abstract class QueryBase implements Query {
         // Freesite insertion stuff.
         "sitename", "keytype", "theme",
         "upload.filename", // <- There are special hacks in the mime multipart post code for this.
+        // Static wikitext
+        "viewsrc",
     };
 
     protected static Set<String> paramsSet() {
