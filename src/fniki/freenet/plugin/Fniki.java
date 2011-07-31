@@ -51,6 +51,7 @@ import fniki.wiki.ArchiveManager;
 import fniki.wiki.Query;
 import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
+import fniki.wiki.WikiContext;
 import fniki.wiki.WikiApp;
 
 import fniki.wiki.AccessDeniedException;
@@ -81,7 +82,7 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
             archiveManager.createEmptyArchive();
 
             WikiApp wikiApp = new WikiApp(archiveManager, false);
-            if (wikiApp.getString("container_prefix", null) == null) {
+            if (wikiApp.getContext().getString("container_prefix", null) == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }
 

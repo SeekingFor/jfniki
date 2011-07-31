@@ -40,6 +40,25 @@ public class Validations {
         return true;
     }
 
+    public static boolean isValidLocalLink(String value) {
+        // Allow links to files stored in the jar.
+        if (value.startsWith("static_files/")) {
+            value = value.substring("static_files/".length());
+        }
+
+        for (int index = 0; index < value.length(); index++) {
+            char c  = value.charAt(index);
+            if ((c >= '0' && c <= '9') ||
+                (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_') {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
     // empty is allowed
     public static boolean isLowerCaseAlpha(String value) {
         for (int index = 0; index < value.length(); index++) {

@@ -28,7 +28,6 @@ import java.io.IOException;
 
 // Add wiki specific functionality.
 public interface WikiContext extends Request {
-    // DCI: are these used?
     String getAction();
     String getTitle(); // hmmm
 

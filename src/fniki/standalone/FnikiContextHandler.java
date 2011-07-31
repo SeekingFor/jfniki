@@ -37,6 +37,7 @@ import wormarc.IOUtil;
 import fniki.wiki.Query;
 import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
+import fniki.wiki.WikiContext;
 import fniki.wiki.WikiApp;
 
 import fniki.wiki.AccessDeniedException;
@@ -146,7 +147,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
 
     public FnikiContextHandler(WikiApp app) {
         mApp = app;
-        mContainerPrefix = mApp.getString("container_prefix", null);
+        mContainerPrefix = mApp.getContext().getString("container_prefix", null);
         if (mContainerPrefix == null) {
             throw new IllegalArgumentException("mContainerPrefix == null");
         }
@@ -168,7 +169,8 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
         synchronized (mApp) { // Only allow one thread to touch app at a time.
             mApp.setRequest(new WikiRequest(req, mContainerPrefix));
             try {
-                String html = mApp.handle(mApp);
+                WikiContext context = mApp.getContext();
+                String html = mApp.handle(context);
                 resp.send(200, html);
                 return 0;
             } catch(AccessDeniedException accessDenied) {

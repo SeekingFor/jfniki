@@ -120,7 +120,7 @@ public class Archive {
 
     public interface IO {
         // DCI: back to this.
-        // It workd be cleaner to have this take and ArchiveData, but the block list isn't immutable.
+        // It would be cleaner to have this take an ArchiveData, but the block list isn't immutable.
         void write(HistoryLinkMap linkMap, List<Block> blocks, List<Archive.RootObject> rootObjects) throws IOException;
         // ArchiveData == blocks, rootObjects
         Archive.ArchiveData read(HistoryLinkMap linkMap, LinkDataFactory linkFactory) throws IOException;
