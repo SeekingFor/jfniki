@@ -116,13 +116,13 @@ public class WikiApp implements ChildContainer, WikiContext {
         mFilter = ContentFilterFactory.create(mFproxyPrefix, containerPrefix());
     }
 
-    public WikiApp(ArchiveManager archiveManager) {
+    public WikiApp(ArchiveManager archiveManager, boolean createOuterHtml) {
         mParserDelegate = new LocalParserDelegate(this, archiveManager);
 
         mDefaultRedirect = new DefaultRedirect();
         mGotoRedirect = new GotoRedirect();
         mQueryError = new QueryError();
-        mWikiContainer = new WikiContainer();
+        mWikiContainer = new WikiContainer(createOuterHtml);
         mResetToEmptyWiki = new ResetToEmptyWiki(archiveManager);
 
         mSettingConfig = new SettingConfig();
@@ -520,14 +520,6 @@ public class WikiApp implements ChildContainer, WikiContext {
         if (request == null) {
             throw new IllegalArgumentException("request == null");
         }
-        ((WikiContainer) mWikiContainer).setCreateHtmlOuter(true);
-        mRequest = request;
-    }
-    public void setRequest(Request request, boolean createHtmlOuter) {
-        if (request == null) {
-            throw new IllegalArgumentException("request == null");
-        }
-        ((WikiContainer) mWikiContainer).setCreateHtmlOuter(createHtmlOuter);
         mRequest = request;
     }
 }

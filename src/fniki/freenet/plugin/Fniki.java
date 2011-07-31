@@ -59,9 +59,9 @@ import fniki.wiki.NotFoundException;
 import fniki.wiki.RedirectException;
 import fniki.wiki.ChildContainerException;
 
-public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, FredPluginL10n {
+public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
     private WikiApp mWikiApp;
-    //private String mContainerPrefix;
+
     private ToadletContainer mFredWebUI;
     private PageMaker mPageMaker;
     private Toadlet mToadlet;
@@ -80,11 +80,10 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
             ArchiveManager archiveManager = new ArchiveManager();
             archiveManager.createEmptyArchive();
 
-            WikiApp wikiApp = new WikiApp(archiveManager);
+            WikiApp wikiApp = new WikiApp(archiveManager, false);
             if (wikiApp.getString("container_prefix", null) == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }
-            //mContainerPrefix = wikiApp.getString("container_prefix", null);
 
             // IMPORTANT:
             // HTTP POSTS will be rejected without any useful error message if your form
@@ -92,48 +91,59 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
             wikiApp.setFormPassword(pr.getNode().clientCore.formPassword);
 
             mWikiApp = wikiApp;
-    		mFredWebUI = pr.getToadletContainer();
-    		mPageMaker = pr.getPageMaker();
-			mToadlet = new WikiWebInterface(pr.getHLSimpleClient(), "/jfniki/" , mWikiApp);
-    		mPageMaker.addNavigationCategory(mToadlet.path(), "jFniki", "Wiki over Freenet", this);
-    		// add a hidden navigation item to catch a click on main navigation category
-    		mFredWebUI.register(mToadlet, null, mToadlet.path(), true, false);
-    		// add normal sub items
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Front_Page" , true,
-                                    "Front Page", "Front Page", false, null, this);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Index" , true,
-                                    "Index Page", "automatically generated index page", false, null, this);
-    		//mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/changelog?action=confirm&title=fniki/changelog" ,
-                //true, "Changelog", "Changelog", false, null, null);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Changelog" , true,
-                                    "Changelog", "user written changelog", false, null, this);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "jfniki_markup" , true,
-                                    "Learn Creole", "Creole is something like simplified BBcode and is used by this wiki.",
-                                    false, null, this);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/getversions" , true,
-                                    "Search other versions", "search for other recent versions of this wiki.",
-                                    false, null, this);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Local_Changes" , true,
-                                    "Show local changes", "show your changes to this wiki.",
-                                    false, null, this);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/submit" , true,
-                                    "Submit local changes", "submit your changes to this wiki.",
-                                    false, null, this);
-    		mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/config" , true,
-                                    "Options", "Options", false, null, this);
+            mFredWebUI = pr.getToadletContainer();
+            mPageMaker = pr.getPageMaker();
+            mToadlet = new WikiWebInterface(pr.getHLSimpleClient(), "/jfniki/" , mWikiApp);
+            mPageMaker.addNavigationCategory(mToadlet.path(), "jFniki", "Wiki over Freenet", this);
+            // add a hidden navigation item to catch a click on main navigation category
+            mFredWebUI.register(mToadlet, null, mToadlet.path(), true, false);
+            // add normal sub items
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Front_Page" , true,
+                                "Front Page", "Front Page", false, null, this);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Index" , true,
+                                "Index Page", "automatically generated index page", false, null, this);
+            //mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/changelog?action=confirm&title=fniki/changelog" ,
+            //true, "Changelog", "Changelog", false, null, null);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Changelog" , true,
+                                "Changelog", "user written changelog", false, null, this);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "jfniki_markup" , true,
+                                "Learn Creole", "Creole is something like simplified BBcode and is used by this wiki.",
+                                false, null, this);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/getversions" , true,
+                                "Search other versions", "search for other recent versions of this wiki.",
+                                false, null, this);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Local_Changes" , true,
+                                "Show local changes", "show your changes to this wiki.",
+                                false, null, this);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/submit" , true,
+                                "Submit local changes", "submit your changes to this wiki.",
+                                false, null, this);
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/config" , true,
+                                "Options", "Options", false, null, this);
         } catch (IOException ioe) {
             System.err.println("Fniki Plugin EPIC FAIL!");
             ioe.printStackTrace();
         }
     }
 
-    private static class ServerPluginHTTPException extends PluginHTTPException {
-		private static final long serialVersionUID = -1;
+    @Override
+    public String getString(String key) {
+        // TODO Auto-generated method stub
+        return key;
+    }
 
-		public static final short code = 500; // Bad Request
-		public ServerPluginHTTPException(String errorMessage, String location) {
-	            super(errorMessage, location);
-		}
+    @Override
+    public void setLanguage(LANGUAGE newLanguage) {
+        // TODO Auto-generated method stub
+    }
+
+    protected static class ServerPluginHTTPException extends PluginHTTPException {
+        private static final long serialVersionUID = -1;
+
+        public static final short code = 500; // Bad Request
+        public ServerPluginHTTPException(String errorMessage, String location) {
+            super(errorMessage, location);
+        }
     }
 
     private static class PluginQuery extends QueryBase {
@@ -227,51 +237,6 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless, 
 
         public String getPath() { return mPath; }
         public Query getQuery() { return mQuery; }
-    }
-
-    public String handle(HTTPRequest request) throws PluginHTTPException {
-    	final String mContainerPrefix = "/plugins/fniki.freenet.plugin.Fniki";
-    	mWikiApp.setContainerPrefix(mContainerPrefix);
-        try {
-            mWikiApp.setRequest(new PluginRequest(request, mContainerPrefix), true);
-            return mWikiApp.handle(mWikiApp);
-
-            // IMPORTANT: Look at these catch blocks carefully. They bypass the freenet ContentFilter.
-        } catch(AccessDeniedException accessDenied) {
-            throw new AccessDeniedPluginHTTPException(accessDenied.getMessage(), mContainerPrefix);
-        } catch(NotFoundException notFound) {
-            throw new NotFoundPluginHTTPException(notFound.getMessage(), mContainerPrefix);
-        } catch(RedirectException redirected) {
-            throw new RedirectPluginHTTPException(redirected.getMessage(), redirected.getLocation());
-        } catch(DownloadException forceDownload) {
-            // This is to allow exporting the configuration.
-            throw new DownloadPluginHTTPException(forceDownload.mData,
-                                                  forceDownload.mFilename,
-                                                  forceDownload.mMimeType);
-        } catch(ChildContainerException serverError) {
-            throw new ServerPluginHTTPException(serverError.getMessage(), mContainerPrefix);
-        } catch(IOException ioError) {
-            throw new ServerPluginHTTPException(ioError.getMessage(), mContainerPrefix);
-        }
-    }
-
-    public String handleHTTPGet(HTTPRequest request) throws PluginHTTPException {
-        return handle(request);
-    }
-
-    public String handleHTTPPost(HTTPRequest request) throws PluginHTTPException {
-        return handle(request);
-    }
-
-    @Override
-    public String getString(String key) {
-        // TODO Auto-generated method stub
-        return key;
-    }
-
-    @Override
-    public void setLanguage(LANGUAGE newLanguage) {
-        // TODO Auto-generated method stub
     }
 }
 

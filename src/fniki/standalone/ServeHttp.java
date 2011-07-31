@@ -62,7 +62,7 @@ public class ServeHttp {
         }
 
         ArchiveManager archiveManager = new ArchiveManager();
-        WikiApp wikiApp = new WikiApp(archiveManager);
+        WikiApp wikiApp = new WikiApp(archiveManager, true);
 
         if(wikiApp.getString("container_prefix", null) == null) {
             throw new RuntimeException("Assertion Failure: container_prefix not set!");
