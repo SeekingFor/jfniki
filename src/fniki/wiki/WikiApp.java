@@ -130,9 +130,10 @@ public class WikiApp implements ChildContainer {
 
         // Routes to static files in the jar.
         // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.
-        mRoutes.put("static_files/Quick_Start", new StaticWikiText("/quickstart.txt", "Quick Start",
-                                                                   createOuterHtml));
-        //mRoutes.put("static_files/tools", new StaticHtml("/tools.html"));
+        mRoutes.put("static_files/Quick_Start",
+                    new StaticWikiText("/quickstart.txt", "Quick Start", createOuterHtml));
+        mRoutes.put("static_files/About_Jfniki_Plugin",
+                    new StaticWikiText("/aboutplugin.txt", "About the jFniki Plugin", createOuterHtml));
 
         // Routes determined by code.
         mRoutes.put("from_code/goto_redirect", new GotoRedirect());

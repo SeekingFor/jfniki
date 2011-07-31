@@ -1,0 +1,31 @@
+=About=
+
+jFniki is an uncensorable, decentralized, pseudo-anonymous
+wiki implementation which runs on top of Freenet
+and FMS or Freetalk.
+
+Bear in mind that jFniki was designed to run as a
+standalone web application -- and still does! This plugin
+is a thin wrapper around that code. It may not always
+behave like other plugins. Specifically:
+
+# It has modal UI states which you will see regardless of
+path until you exit them. e.g. the ##Configuration## page
+# It doesn't support sessions. Everyone who has access to your
+fproxy port will see the same thing.
+# It doesn't save any configuration state so you will need to
+re-import your configuration every time you load the plugin.
+
+==Documentation==
+
+[[freenet:USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/61/|The Freenet Documentation Wiki]]
+
+==Authoritative Source Code==
+
+[[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/7/|Official jFniki release site]]
+
+==Contributors==
+* ##SeekingForAttention## -- Improvements to the jfniki Freenet Plugin code.
+* ##sethcg## -- Freetalk support, and support for dumping wikis for insertion as websites.
+* ##djk## -- Principal developer.
+

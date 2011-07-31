@@ -96,31 +96,24 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
             mPageMaker = pr.getPageMaker();
             mToadlet = new WikiWebInterface(pr.getHLSimpleClient(), "/jfniki/" , mWikiApp);
             mPageMaker.addNavigationCategory(mToadlet.path(), "jFniki", "Wiki over Freenet", this);
-            // add a hidden navigation item to catch a click on main navigation category
+            // Add a hidden navigation item to catch a click on main navigation category.
             mFredWebUI.register(mToadlet, null, mToadlet.path(), true, false);
-            // add normal sub items
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Front_Page" , true,
-                                "Front Page", "Front Page", false, null, this);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Index" , true,
-                                "Index Page", "automatically generated index page", false, null, this);
-            //mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/changelog?action=confirm&title=fniki/changelog" ,
-            //true, "Changelog", "Changelog", false, null, null);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Changelog" , true,
-                                "Changelog", "user written changelog", false, null, this);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "jfniki_markup" , true,
-                                "Learn Creole", "Creole is something like simplified BBcode and is used by this wiki.",
-                                false, null, this);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/getversions" , true,
-                                "Search other versions", "search for other recent versions of this wiki.",
-                                false, null, this);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "Local_Changes" , true,
-                                "Show local changes", "show your changes to this wiki.",
-                                false, null, this);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/submit" , true,
-                                "Submit local changes", "submit your changes to this wiki.",
-                                false, null, this);
-            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "fniki/config" , true,
-                                "Options", "Options", false, null, this);
+
+            // Add normal sub items.
+            // djk: Don't make deep links into the plugin.
+            //      0) The UI has some modal states, so you won't always end up viewing
+            //         the page you link to. e.g. If you try to go to the "Front_Page"
+            //         while the "Discover" page is running, you see the "Discover"
+            //         page not the "Front_Page".
+            //      1) Not all pages exist in all wikis. e.g. "Index", "Changelog"
+            //
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "" , true, // "" == default redirect
+                                "View Current Wiki", "view currently loaded wiki", false, null, this);
+
+            // The WikiApp constructor adds a static route to this page.
+            // The wikitext is read from doc/aboutplugin.txt.
+            mFredWebUI.register(mToadlet, "jFniki", mToadlet.path() + "static_files/About_Jfniki_Plugin" , true,
+                                "About", "information about this plugin", false, null, this);
         } catch (IOException ioe) {
             System.err.println("Fniki Plugin EPIC FAIL!");
             ioe.printStackTrace();
