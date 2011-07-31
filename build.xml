@@ -50,6 +50,7 @@
         <attribute name="Plugin-Main-Class" value="fniki.freenet.plugin.Fniki"/>
       </manifest>
       <fileset dir="${doc}" includes="quickstart.txt"/>
+      <fileset dir="${doc}" includes="aboutplugin.txt"/>
       <fileset dir="${templates}" includes="*.html"/>
       <fileset dir="${templates}" includes="*.png"/>
       <!-- A place to stash snippets of .css -->
