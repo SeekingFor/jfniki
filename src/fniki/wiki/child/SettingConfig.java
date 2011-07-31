@@ -138,6 +138,9 @@ public class SettingConfig implements ModalContainer {
         if (query.containsKey("defaults")) {
             mConfig = context.getDefaultConfiguration();
             try {
+                mFinished = false;
+                mPrivateSSK = "";
+                mPublicFmsId = "???";
                 mConfig.validate();
                 mMsg = "Reset to default values."; // Won't see this because fms config not set.
             } catch (Configuration.ConfigurationException cfe) {
