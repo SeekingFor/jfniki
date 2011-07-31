@@ -47,6 +47,7 @@ import fniki.wiki.ArchiveManager;
 import fniki.wiki.Query;
 import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
+import fniki.wiki.WikiContext;
 import fniki.wiki.WikiApp;
 
 import fniki.wiki.AccessDeniedException;
@@ -69,10 +70,10 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
             archiveManager.createEmptyArchive();
 
             WikiApp wikiApp = new WikiApp(archiveManager);
-            if (wikiApp.getString("container_prefix", null) == null) {
+            if (wikiApp.getContext().getString("container_prefix", null) == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }
-            mContainerPrefix = wikiApp.getString("container_prefix", null);
+            mContainerPrefix = wikiApp.getContext().getString("container_prefix", null);
 
             // IMPORTANT:
             // HTTP POSTS will be rejected without any useful error message if your form
@@ -192,7 +193,8 @@ public class Fniki implements FredPlugin, FredPluginHTTP, FredPluginThreadless {
     public String handle(HTTPRequest request) throws PluginHTTPException {
         try {
             mWikiApp.setRequest(new PluginRequest(request, mContainerPrefix));
-            return mWikiApp.handle(mWikiApp);
+            WikiContext context = mWikiApp.getContext();
+            return mWikiApp.handle(context);
 
             // IMPORTANT: Look at these catch blocks carefully. They bypass the freenet ContentFilter.
         } catch(AccessDeniedException accessDenied) {

@@ -60,7 +60,7 @@ import fniki.wiki.child.WikiContainer;
 import fniki.freenet.filter.ContentFilterFactory;
 
 // Aggregates a bunch of other ChildContainers and runs UI state machine.
-public class WikiApp implements ChildContainer, WikiContext {
+public class WikiApp implements ChildContainer {
     public final static int LISTEN_PORT = 8083;
     private final static String FPROXY_PREFIX = "http://127.0.0.1:8888/";
     private final static boolean ALLOW_IMAGES = false;
@@ -79,6 +79,9 @@ public class WikiApp implements ChildContainer, WikiContext {
 
     // Time to wait for FCP before giving up on inverting private key.
     private final static int INVERT_TIMEOUT_MS = 30 * 1000;
+
+    // Delegate to implement WikiContext.
+    private final WikiContext mWikiContext = new WikiContextImplementation();
 
     // Delegate to implement link, image and macro handling in wikitext.
     private final FreenetWikiTextParser.ParserDelegate mParserDelegate;
@@ -108,9 +111,11 @@ public class WikiApp implements ChildContainer, WikiContext {
         mFilter = ContentFilterFactory.create(mFproxyPrefix, containerPrefix());
     }
 
+    public WikiContext getContext() { return mWikiContext; }
+
     public WikiApp(ArchiveManager archiveManager) {
         mArchiveManager = archiveManager;
-        mParserDelegate = new LocalParserDelegate(this, mArchiveManager);
+        mParserDelegate = new LocalParserDelegate(getContext(), mArchiveManager);
 
         // Static routes.
         mRoutes.put("", new DefaultRedirect());
@@ -219,6 +224,7 @@ public class WikiApp implements ChildContainer, WikiContext {
         return setState(request, mRoutes.get("from_code/wiki_container"));
     }
 
+
     // All requests are serialized! Hmmmm....
     public synchronized String handle(WikiContext context) throws ChildContainerException {
         try {
@@ -275,204 +281,6 @@ public class WikiApp implements ChildContainer, WikiContext {
     // NO trailing slash.
     private static String containerPrefix() { return "/plugins/fniki.freenet.plugin.Fniki"; }
 
-    ////////////////////////////////////////////////////////////
-    // Wiki context implementations.
-    public WikiTextStorage getStorage() throws IOException { return mArchiveManager.getStorage(); }
-    public WikiTextChanges getRemoteChanges() throws IOException { return mArchiveManager.getRemoteChanges(); }
-
-    public FreenetWikiTextParser.ParserDelegate getParserDelegate() { return mParserDelegate; }
-
-    public String getString(String keyName, String defaultValue) {
-        if (keyName.equals("default_page")) {
-            return "Front_Page";
-        } else if (keyName.equals("fproxy_prefix")) {
-            if (mFproxyPrefix == null) {
-                return defaultValue;
-            }
-            return mFproxyPrefix;
-        } else if (keyName.equals("parent_uri")) {
-            if (mArchiveManager.getParentUri() == null) {
-                // Can be null
-                return defaultValue;
-            }
-            return mArchiveManager.getParentUri();
-        } else if (keyName.equals("secondary_uri")) {
-            if (mArchiveManager.getSecondaryUri() == null) {
-                // Can be null
-                return defaultValue;
-            }
-            return mArchiveManager.getSecondaryUri();
-        } else if (keyName.equals("container_prefix")) {
-            return containerPrefix();
-        } else if (keyName.equals("form_password") && mFormPassword != null) {
-            return mFormPassword;
-        } else if (keyName.equals("default_wikitext")) {
-            return getString("/quickstart.txt", "Couldn't load default wikitext from jar???");
-        } else if (keyName.equals("wikiname")) {
-            if (mArchiveManager.getBissName() != null) {
-                return mArchiveManager.getBissName();
-            }
-        } else if (keyName.equals("fms_group")) {
-            if (mArchiveManager.getFmsGroup() != null) {
-                return mArchiveManager.getFmsGroup();
-            }
-        } else if (keyName.startsWith("/")) {
-            // Assume any name starting with a "/" is a UTF-8 encoded file in the jar.
-            try {
-                InputStream resourceStream = WikiApp.class.getResourceAsStream(keyName);
-                if (resourceStream != null) {
-                    return IOUtil.readUtf8StringAndClose(resourceStream);
-                }
-            } catch (IOException ioe) {
-                /* NOP: Caller gets default */
-            }
-        }
-
-        return defaultValue;
-    }
-
-    public int getInt(String keyName, int defaultValue) {
-        if (keyName.equals("allow_images")) {
-            return mAllowImages ? 1 : 0;
-        }
-        if (keyName.equals("listen_port")) {
-            return mListenPort;
-        }
-
-        return defaultValue;
-    }
-
-    // Can return an invalid configuration. e.g. if fms id and private ssk are not set.
-    public Configuration getConfiguration() {
-        // Converts null values to ""
-        return new Configuration(getInt("listen_port", LISTEN_PORT),
-                                 mArchiveManager.getFcpHost(),
-                                 mArchiveManager.getFcpPort(),
-                                 getString("fproxy_prefix", FPROXY_PREFIX),
-                                 mAllowImages,
-                                 mArchiveManager.getFmsHost(),
-                                 mArchiveManager.getFmsPort(),
-                                 mArchiveManager.getFmsId(),
-                                 mArchiveManager.getPrivateSSK(),
-                                 mArchiveManager.getFmsGroup(),
-                                 mArchiveManager.getBissName());
-    }
-
-    public Configuration getDefaultConfiguration() { return DEFAULT_CONFIG; }
-
-    public String getPublicFmsId(String fmsId, String privateSSK) {
-        if (fmsId == null || privateSSK == null ||
-            (fmsId.indexOf("@") != -1 && (!fmsId.endsWith(".freetalk")))) {
-            return "???";
-        }
-        try {
-            try {
-                String publicKey = mArchiveManager.invertPrivateSSK(privateSSK, INVERT_TIMEOUT_MS);
-                int pos = publicKey.indexOf(",");
-                if (pos == -1 || pos < 5) {
-                    return "???";
-                }
-
-                if (!fmsId.endsWith(".freetalk")) {
-                    return fmsId + publicKey.substring("SSK".length(), pos);
-                } else {
-                    int atPos = fmsId.indexOf("@");
-                    if (atPos == -1) {
-                        return "???";
-                    }
-
-                    // LATER: Fix config to take only human readable id for Freetalk.
-                    String invertedFmsId  = fmsId.substring(0, atPos) +
-                        publicKey.substring("SSK".length(), pos) + ".freetalk";
-                    if (!invertedFmsId.equals(fmsId)) {
-                        return "???";
-                    }
-                    return invertedFmsId;
-                }
-
-            } catch (IllegalArgumentException iae) {
-                // Was called with an invalid privateSSK value
-                return "???";
-            }
-        } catch (IOException ioe) {
-            logError("getPublicFmsId failed", ioe);
-            return "???";
-        }
-    }
-
-    // For setting data from forms and restoring saved settings.
-    // throws unchecked Configuration.ConfigurationException
-    public void setConfiguration(Configuration config) {
-        config.validate();
-        setListenPort(config.mListenPort);
-        mArchiveManager.setFcpHost(config.mFcpHost);
-        mArchiveManager.setFcpPort(config.mFcpPort);
-        setFproxyPrefix(config.mFproxyPrefix);
-        setAllowImages(config.mAllowImages);
-        mArchiveManager.setFmsHost(config.mFmsHost);
-        mArchiveManager.setFmsPort(config.mFmsPort);
-        mArchiveManager.setFmsId(config.mFmsId);
-        mArchiveManager.setPrivateSSK(config.mFmsSsk);
-        mArchiveManager.setFmsGroup(config.mFmsGroup);
-        mArchiveManager.setBissName(config.mWikiName);
-    }
-
-    public String makeLink(String containerRelativePath) {
-        // Hacks to find bugs
-        if (!containerRelativePath.startsWith("/")) {
-            containerRelativePath = "/" + containerRelativePath;
-            // System.err.println("WikiApp.makeLink -- added leading '/': " +
-            //                    containerRelativePath);
-            (new RuntimeException("find missing /")).printStackTrace();
-
-        }
-        String full = containerPrefix() + containerRelativePath;
-        while (full.indexOf("//") != -1) {
-            // System.err.println("WikiApp.makeLink -- fixing  '//': " +
-            //                    full);
-            full = full.replace("//", "/");
-            (new RuntimeException("find extra /")).printStackTrace();
-        }
-        return full;
-    }
-
-    public void raiseRedirect(String toLocation, String msg) throws RedirectException {
-        throw new RedirectException(toLocation, msg);
-    }
-
-    public void raiseNotFound(String msg) throws NotFoundException {
-        throw new NotFoundException(msg);
-    }
-
-    public void raiseAccessDenied(String msg) throws AccessDeniedException {
-        throw new AccessDeniedException(msg);
-    }
-
-    public void raiseServerError(String msg) throws ServerErrorException {
-        throw new ServerErrorException(msg);
-    }
-
-    public void raiseDownload(byte[] data, String filename, String mimeType) throws DownloadException {
-        throw new DownloadException(data, filename, mimeType);
-    }
-
-    public void logError(String msg, Throwable t) {
-        if (msg == null) {
-            msg = "null";
-        }
-        if (t == null) {
-            t = new RuntimeException("FAKE EXCEPTION: logError called with t == null!");
-        }
-        System.err.println("Unexpected error: " + msg + " : " + t.toString());
-        t.printStackTrace();
-    }
-
-    // Delegate to the mRequest helper instance set with setRequest().
-    public String getPath() { return mRequest.getPath(); }
-    public Query getQuery() { return mRequest.getQuery(); }
-
-    public String getAction() { return mRequest.getQuery().get("action"); }
-    public String getTitle() { return mRequest.getQuery().get("title"); }
 
     ////////////////////////////////////////////////////////////
     public void setRequest(Request request) {
@@ -493,5 +301,210 @@ public class WikiApp implements ChildContainer, WikiContext {
             throw new RuntimeException("Assertion Failure: request.getTitle() == null");
         }
         mRequest = request;
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Wiki context implementations.
+    //
+    // Pendantic. Implement as a private inner class instead of having WikiApp
+    // implement WikiContext directly to prevent unintended coupling from creeping
+    // into the code.
+    private class WikiContextImplementation implements WikiContext {
+        public WikiTextStorage getStorage() throws IOException { return mArchiveManager.getStorage(); }
+        public WikiTextChanges getRemoteChanges() throws IOException { return mArchiveManager.getRemoteChanges(); }
+
+        public FreenetWikiTextParser.ParserDelegate getParserDelegate() { return mParserDelegate; }
+
+        public String getString(String keyName, String defaultValue) {
+            if (keyName.equals("default_page")) {
+                return "Front_Page";
+            } else if (keyName.equals("fproxy_prefix")) {
+                if (mFproxyPrefix == null) {
+                    return defaultValue;
+                }
+                return mFproxyPrefix;
+            } else if (keyName.equals("parent_uri")) {
+                if (mArchiveManager.getParentUri() == null) {
+                    // Can be null
+                    return defaultValue;
+                }
+                return mArchiveManager.getParentUri();
+            } else if (keyName.equals("secondary_uri")) {
+                if (mArchiveManager.getSecondaryUri() == null) {
+                    // Can be null
+                    return defaultValue;
+                }
+                return mArchiveManager.getSecondaryUri();
+            } else if (keyName.equals("container_prefix")) {
+                return containerPrefix();
+            } else if (keyName.equals("form_password") && mFormPassword != null) {
+                return mFormPassword;
+            } else if (keyName.equals("default_wikitext")) {
+                return getString("/quickstart.txt", "Couldn't load default wikitext from jar???");
+            } else if (keyName.equals("wikiname")) {
+                if (mArchiveManager.getBissName() != null) {
+                    return mArchiveManager.getBissName();
+                }
+            } else if (keyName.equals("fms_group")) {
+                if (mArchiveManager.getFmsGroup() != null) {
+                    return mArchiveManager.getFmsGroup();
+                }
+            } else if (keyName.startsWith("/")) {
+                // Assume any name starting with a "/" is a UTF-8 encoded file in the jar.
+                try {
+                    InputStream resourceStream = WikiApp.class.getResourceAsStream(keyName);
+                    if (resourceStream != null) {
+                        return IOUtil.readUtf8StringAndClose(resourceStream);
+                    }
+                } catch (IOException ioe) {
+                    /* NOP: Caller gets default */
+                }
+            }
+
+            return defaultValue;
+        }
+
+        public int getInt(String keyName, int defaultValue) {
+            if (keyName.equals("allow_images")) {
+                return mAllowImages ? 1 : 0;
+            }
+            if (keyName.equals("listen_port")) {
+                return mListenPort;
+            }
+
+            return defaultValue;
+        }
+
+        // Can return an invalid configuration. e.g. if fms id and private ssk are not set.
+        public Configuration getConfiguration() {
+            // Converts null values to ""
+            return new Configuration(getInt("listen_port", LISTEN_PORT),
+                                     mArchiveManager.getFcpHost(),
+                                     mArchiveManager.getFcpPort(),
+                                     getString("fproxy_prefix", FPROXY_PREFIX),
+                                     mAllowImages,
+                                     mArchiveManager.getFmsHost(),
+                                     mArchiveManager.getFmsPort(),
+                                     mArchiveManager.getFmsId(),
+                                     mArchiveManager.getPrivateSSK(),
+                                     mArchiveManager.getFmsGroup(),
+                                     mArchiveManager.getBissName());
+        }
+
+        public Configuration getDefaultConfiguration() { return DEFAULT_CONFIG; }
+
+        public String getPublicFmsId(String fmsId, String privateSSK) {
+            if (fmsId == null || privateSSK == null ||
+                (fmsId.indexOf("@") != -1 && (!fmsId.endsWith(".freetalk")))) {
+                return "???";
+            }
+            try {
+                try {
+                    String publicKey = mArchiveManager.invertPrivateSSK(privateSSK, INVERT_TIMEOUT_MS);
+                    int pos = publicKey.indexOf(",");
+                    if (pos == -1 || pos < 5) {
+                        return "???";
+                    }
+
+                    if (!fmsId.endsWith(".freetalk")) {
+                        return fmsId + publicKey.substring("SSK".length(), pos);
+                    } else {
+                        int atPos = fmsId.indexOf("@");
+                        if (atPos == -1) {
+                            return "???";
+                        }
+
+                        // LATER: Fix config to take only human readable id for Freetalk.
+                        String invertedFmsId  = fmsId.substring(0, atPos) +
+                            publicKey.substring("SSK".length(), pos) + ".freetalk";
+                        if (!invertedFmsId.equals(fmsId)) {
+                            return "???";
+                        }
+                        return invertedFmsId;
+                    }
+
+                } catch (IllegalArgumentException iae) {
+                    // Was called with an invalid privateSSK value
+                    return "???";
+                }
+            } catch (IOException ioe) {
+                logError("getPublicFmsId failed", ioe);
+                return "???";
+            }
+        }
+
+        // For setting data from forms and restoring saved settings.
+        // throws unchecked Configuration.ConfigurationException
+        public void setConfiguration(Configuration config) {
+            config.validate();
+            setListenPort(config.mListenPort);
+            mArchiveManager.setFcpHost(config.mFcpHost);
+            mArchiveManager.setFcpPort(config.mFcpPort);
+            setFproxyPrefix(config.mFproxyPrefix);
+            setAllowImages(config.mAllowImages);
+            mArchiveManager.setFmsHost(config.mFmsHost);
+            mArchiveManager.setFmsPort(config.mFmsPort);
+            mArchiveManager.setFmsId(config.mFmsId);
+            mArchiveManager.setPrivateSSK(config.mFmsSsk);
+            mArchiveManager.setFmsGroup(config.mFmsGroup);
+            mArchiveManager.setBissName(config.mWikiName);
+        }
+
+        public String makeLink(String containerRelativePath) {
+            // Hacks to find bugs
+            if (!containerRelativePath.startsWith("/")) {
+                containerRelativePath = "/" + containerRelativePath;
+                // System.err.println("WikiApp.makeLink -- added leading '/': " +
+                //                    containerRelativePath);
+                (new RuntimeException("find missing /")).printStackTrace();
+
+            }
+            String full = containerPrefix() + containerRelativePath;
+            while (full.indexOf("//") != -1) {
+                // System.err.println("WikiApp.makeLink -- fixing  '//': " +
+                //                    full);
+                full = full.replace("//", "/");
+                (new RuntimeException("find extra /")).printStackTrace();
+            }
+            return full;
+        }
+
+        public void raiseRedirect(String toLocation, String msg) throws RedirectException {
+            throw new RedirectException(toLocation, msg);
+        }
+
+        public void raiseNotFound(String msg) throws NotFoundException {
+            throw new NotFoundException(msg);
+        }
+
+        public void raiseAccessDenied(String msg) throws AccessDeniedException {
+            throw new AccessDeniedException(msg);
+        }
+
+        public void raiseServerError(String msg) throws ServerErrorException {
+            throw new ServerErrorException(msg);
+        }
+
+        public void raiseDownload(byte[] data, String filename, String mimeType) throws DownloadException {
+            throw new DownloadException(data, filename, mimeType);
+        }
+
+        public void logError(String msg, Throwable t) {
+            if (msg == null) {
+                msg = "null";
+            }
+            if (t == null) {
+                t = new RuntimeException("FAKE EXCEPTION: logError called with t == null!");
+            }
+            System.err.println("Unexpected error: " + msg + " : " + t.toString());
+            t.printStackTrace();
+        }
+
+        // Delegate to the mRequest helper instance set with WikiApp.setRequest().
+        public String getPath() { return mRequest.getPath(); }
+        public Query getQuery() { return mRequest.getQuery(); }
+
+        public String getAction() { return mRequest.getQuery().get("action"); }
+        public String getTitle() { return mRequest.getQuery().get("title"); }
     }
 }

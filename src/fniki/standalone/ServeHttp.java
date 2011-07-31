@@ -64,7 +64,7 @@ public class ServeHttp {
         ArchiveManager archiveManager = new ArchiveManager();
         WikiApp wikiApp = new WikiApp(archiveManager);
 
-        if(wikiApp.getString("container_prefix", null) == null) {
+        if(wikiApp.getContext().getString("container_prefix", null) == null) {
             throw new RuntimeException("Assertion Failure: container_prefix not set!");
         }
 
@@ -76,7 +76,7 @@ public class ServeHttp {
             System.out.println("Reading configuration from: " + args[0]);
             Configuration config =
                 Configuration.fromStringRep(IOUtil.readUtf8StringAndClose(new FileInputStream(args[0])));
-            wikiApp.setConfiguration(config);
+            wikiApp.getContext().setConfiguration(config);
         }
 
         if (args.length == 1) {
@@ -86,8 +86,8 @@ public class ServeHttp {
             archiveManager.load(args[1]);
         }
 
-        int listenPort = wikiApp.getInt("listen_port", WikiApp.LISTEN_PORT);
-        final String containerPrefix = wikiApp.getString("container_prefix", null);
+        int listenPort = wikiApp.getContext().getInt("listen_port", WikiApp.LISTEN_PORT);
+        final String containerPrefix = wikiApp.getContext().getString("container_prefix", null);
         // Redirect non-routed requests to the wiki app.
         HTTPServer.ContextHandler defaultRedirect = new HTTPServer.ContextHandler() {
                 public int serve(HTTPServer.Request req, HTTPServer.Response resp) throws IOException {
