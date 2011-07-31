@@ -1,0 +1,17 @@
+div#content {margin-left: 8px;}
+div#content a { color: #1f6b9e;}
+div#content h1 {font-size:32px;}
+div#content h2 {font-size:24px;}
+div#content h3 {font-size:18.7167px;}
+div#content h4 {font-size:16px;}
+div#content h5 {font-size:140px;}
+div#content pre, textarea {font-family: monospace; font-size: 12px;}
+div#content blockquote {margin-left:20px;background-color:#e0e0e0;}
+div#content div.indent {margin-left:20px;}
+div#content div.center {text-align:center;}
+div#content span.underline {text-decoration:underline;}
+div#content .pagetitle {text-align:left;}
+div#content .talktitle {text-align:left;}
+div#content .notalktitle {color:#c0c0c0;text-align:left;}
+div#content .archiveuri {font-family: monospace; font-size: 70%;}
+div#content .archivever {font-family: monospace;}

@@ -29,11 +29,18 @@ import freenet.support.api.HTTPRequest;
 public class WikiWebInterface extends Toadlet {
     private String mNameSpace;
     private WikiApp mWikiApp;
+    private final String mJfnikiCss;
 
     protected WikiWebInterface(HighLevelSimpleClient client, String path, WikiApp wikiapp) {
         super(client);
         mNameSpace = path;
         mWikiApp = wikiapp;
+
+        // Loaded from ./style/plugin_jfniki.css.
+        mJfnikiCss = mWikiApp.getString("/plugin_jfniki.css", null);
+        if (mJfnikiCss == null) {
+            throw new RuntimeException("/plugin_jfniki.css not found in .jar");
+        }
     }
 
     @Override
@@ -44,26 +51,7 @@ public class WikiWebInterface extends Toadlet {
     public void handleMethodGET(URI uri, HTTPRequest req, ToadletContext ctx) throws
         ToadletContextClosedException, IOException, RedirectException, PluginHTTPException {
         if(uri.toASCIIString().equals(mNameSpace + "jfniki.css")) {
-            final String customCssString =
-                //"div#content { background-color: #FFFFFF; color: #000000;}\n"+
-                "div#content {margin-left: 8px;}\n"+
-                "div#content a { color: #1f6b9e;}\n"+
-                "div#content h1 {font-size:32px;}\n"+
-                "div#content h2 {font-size:24px;}\n"+
-                "div#content h3 {font-size:18.7167px;}\n"+
-                "div#content h4 {font-size:16px;}\n"+
-                "div#content h5 {font-size:140px;}\n"+
-                "div#content pre, textarea {font-family: monospace; font-size: 12px;}"+
-                "div#content blockquote {margin-left:20px;background-color:#e0e0e0;}\n"+
-                "div#content div.indent {margin-left:20px;}\n"+
-                "div#content div.center {text-align:center;}\n"+
-                "div#content span.underline {text-decoration:underline;}\n"+
-                "div#content .pagetitle {text-align:left;}\n"+
-                "div#content .talktitle {text-align:left;}\n"+
-                "div#content .notalktitle {color:#c0c0c0;text-align:left;}\n"+
-                "div#content .archiveuri {font-family: monospace; font-size: 70%;}\n"+
-                "div#content .archivever {font-family: monospace;}";
-            writeReply(ctx, 200, "text/css", "OK", customCssString);
+            writeReply(ctx, 200, "text/css", "OK", mJfnikiCss);
         } else {
             PageNode mPageNode = ctx.getPageMaker().getPageNode("jFniki", true, ctx);
             mPageNode.addCustomStyleSheet(mNameSpace + "jfniki.css");
@@ -102,6 +90,7 @@ public class WikiWebInterface extends Toadlet {
             // djk: All I meant is that the my code runs the content filter over the html which is returned
             //      by handle() above, but  not  over whatever you return from the catch blocks below.
         } catch(AccessDeniedException accessDenied) {
+            // FIXME: Check. This doesn't need to be HTML escaped because it is text/plain, right?
             writeReply(ctx, 403, "text/plain", "Forbidden", accessDenied.getMessage());
         } catch(NotFoundException notFound) { // Not currently used.
             writeHTMLReply(ctx, 200, "OK", createRequestInfo(request,ctx).outer.generate());
@@ -113,6 +102,7 @@ public class WikiWebInterface extends Toadlet {
         } catch(ChildContainerException ex) {
             System.err.println("WikiWebInterface::handleWebRequest failed: " + ex.getMessage());
             return
+                // FIXME: getPath() and getMessage() should be HTML escaped.
                 "Requested path " + request.getPath() + " can not be delivered: " +
                 ex.getMessage() + "<br />Please report this message.<br />" +
                 createRequestInfo(request, ctx).content.generate();
@@ -124,6 +114,7 @@ public class WikiWebInterface extends Toadlet {
     }
 
     private PageNode createRequestInfo(HTTPRequest req, ToadletContext ctx) {
+        // djk: I don't know these APIs. Does this HTML escape for you?
         // FIXME: return a content node only instead of PageNode
         URI uri = ctx.getUri();
         PageNode mPageNode = ctx.getPageMaker().getPageNode("HelloWorld InfoPage", true, ctx);
