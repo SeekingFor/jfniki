@@ -60,6 +60,7 @@ public interface WikiContext extends Request {
     void logError(String msg, Throwable throwable);
 
     void raiseRedirect(String toLocation, String msg) throws RedirectException; // 302
+    // LATER: Remove? this is not used
     void raiseNotFound(String msg) throws NotFoundException;  // 404
     void raiseAccessDenied(String msg) throws AccessDeniedException;  // 403
     void raiseServerError(String msg) throws ServerErrorException;  // 500

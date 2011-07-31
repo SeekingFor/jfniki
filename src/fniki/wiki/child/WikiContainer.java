@@ -56,12 +56,11 @@ import fniki.wiki.WikiTextStorage;
 
 public class WikiContainer implements ChildContainer {
     private final static String ENCODING = "UTF-8";
-    private boolean createHtmlOuter = true;
-    public void setCreateHtmlOuter(boolean enabled) {
-    	createHtmlOuter = enabled;
-    }
+    private boolean mCreateOuterHtml;
 
-    public WikiContainer() {}
+    public WikiContainer(boolean createOuterHtml) {
+        mCreateOuterHtml = createOuterHtml;
+    }
 
     public String handle(WikiContext context) throws ChildContainerException {
         try {
@@ -253,7 +252,7 @@ public class WikiContainer implements ChildContainer {
 
     private void addHeader(WikiContext context, String escapedName, String talkName,
                            StringBuilder buffer) throws IOException {
-    	if(createHtmlOuter) {
+    	if(mCreateOuterHtml) {
 	        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 	        buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
 	                      "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
@@ -432,8 +431,8 @@ public class WikiContainer implements ChildContainer {
         }
 
         buffer.append("</form>\n");
-        if(createHtmlOuter) {
-        	buffer.append("</body></html>\n");
+        if(mCreateOuterHtml) {
+            buffer.append("</body></html>\n");
         }
     }
 
