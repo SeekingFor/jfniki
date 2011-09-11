@@ -31,6 +31,8 @@
 
  Based roughly on Python difflib
 */
+// NOTE: All of mercurial was subsequently relicensed to GPL2+.
+// http://mercurial.selenic.com/wiki/License#What_is_Mercurial.27s_license.3F
 
 package wormarc.hgdeltacoder.ported;
 

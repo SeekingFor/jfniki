@@ -5,6 +5,10 @@
  * Mercurial code under the GNU General Public Licencse.
  *
  */
+
+// hgkit was subsequently relicensed to GPL2+.
+// http://hg.berlios.de/repos/hgkit/file/f2c9aeeadf53/licence.txt
+
 package wormarc.hgdeltacoder.ported;
 
 //package org.freehg.hgkit.core;

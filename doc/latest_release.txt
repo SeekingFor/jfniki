@@ -1,3 +1,7 @@
+I merged SeekingForAttention's changes to convert jfniki into
+a first class plugin (i.e. Toadlet).
+
+8b8d608e8198
 I added support for inserting wiki mirror freesites from jfniki.
 
 INSERTING:
