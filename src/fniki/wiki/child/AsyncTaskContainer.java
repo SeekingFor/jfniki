@@ -35,6 +35,8 @@ import ys.wikiparser.Utils;
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
+import fniki.wiki.HtmlResultFactory;
 import static fniki.wiki.HtmlUtils.*;
 import fniki.wiki.ModalContainer;
 import fniki.wiki.RedirectException;
@@ -48,20 +50,21 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
     protected final int STATE_SUCCEEDED = 3;
     protected final int STATE_FAILED = 4;
 
+    private String mTitle;
+
     private int mState;
     private Thread mThread;
     protected ByteArrayOutputStream mBuffer = new ByteArrayOutputStream();
     protected boolean mUIRunning = false;
     protected String mExitPage = "/";
 
-
     // IMPORTANT: See hacks in WikiContentFilter.EXCEPTIONS if this stops working.
     // 15 second refresh if the task isn't finished.
-    protected String metaRefresh() {
+    protected int getMetaRefreshSeconds() {
         if (isFinished()) {
-            return "";
+            return 0;
         }
-        return "\n<meta http-equiv=\"refresh\" content=\"15\" />\n";
+        return 15;
     }
 
     // DCI: make these return a string? To get rid of no return value warnings
@@ -148,7 +151,7 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
         boolean failed = true;
         try {
             //System.err.println("Task started: " + mState);
-            PrintStream log = new PrintStream(mBuffer, true);
+           PrintStream log = new PrintStream(mBuffer, true);
             mArchiveManager.setDebugOutput(log);
             failed = !doWork(new PrintStream(mBuffer, true));
         } catch (Exception e) {
@@ -163,6 +166,25 @@ public abstract class AsyncTaskContainer implements ChildContainer, ModalContain
         }
     }
 
-    public abstract String handle(WikiContext context) throws ChildContainerException;
+
+    public String getTitle() { return mTitle; }
+    public void setTitle(String value) { mTitle = value; }
+
+    public ChildContainerResult handle(WikiContext context)
+        throws ChildContainerException {
+
+        // There is a harmless race condition.
+        // Get the refresh time first, so that if the background
+        // thread finishes in the meantime we still refresh.
+        int refreshSeconds = getMetaRefreshSeconds();
+        String html = getHtml(context);
+
+        return HtmlResultFactory.makeResult(getTitle(), // Subclass must implement get title.
+                                            getHtml(context),
+                                            context.isCreatingOuterHtml(),
+                                            refreshSeconds);
+    }
+
+    public abstract String getHtml(WikiContext context) throws ChildContainerException;
     public abstract boolean doWork(PrintStream out) throws Exception;
 }

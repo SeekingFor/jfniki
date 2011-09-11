@@ -45,7 +45,7 @@ public class LoadingArchive extends AsyncTaskContainer {
         super(archiveManager);
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public String getHtml(WikiContext context) throws ChildContainerException {
         try {
             if (context.getQuery().get("uri") != null && mUri == null) {
                 mUri = context.getQuery().get("uri");
@@ -95,10 +95,11 @@ public class LoadingArchive extends AsyncTaskContainer {
                 cancelTitle = "Done";
                 break;
             }
+
+            setTitle(title);
+
             StringWriter buffer = new StringWriter();
             PrintWriter body = new PrintWriter(buffer);
-
-            body.println("<html><head>" + metaRefresh() + "<title>" + escapeHTML(title) + "</title></head><body>");
 
             if (getState() == STATE_WORKING || getState() == STATE_SUCCEEDED) {
                 if (getState() == STATE_WORKING) {
@@ -126,7 +127,6 @@ public class LoadingArchive extends AsyncTaskContainer {
 
             addButtonsHtml(context, body, confirmTitle, cancelTitle);
 
-            body.println("</body></html>");
             body.close();
             return buffer.toString();
 

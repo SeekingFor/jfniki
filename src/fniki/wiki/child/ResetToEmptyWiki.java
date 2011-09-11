@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
 import fniki.wiki.ServerErrorException;
 import fniki.wiki.WikiContext;
 
@@ -39,7 +40,7 @@ public class ResetToEmptyWiki implements ChildContainer {
         mArchiveManager = archiveManager;
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         try {
             mArchiveManager.createEmptyArchive();
         } catch (IOException ioe) {
@@ -49,6 +50,6 @@ public class ResetToEmptyWiki implements ChildContainer {
         context.raiseRedirect(context.makeLink("/" + context.getString("default_page", "Front_Page")),
                               "Redirecting...");
 
-        return "unreachable code";
+        return null;
     }
 }

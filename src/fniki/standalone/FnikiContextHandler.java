@@ -41,10 +41,11 @@ import fniki.wiki.WikiContext;
 import fniki.wiki.WikiApp;
 
 import fniki.wiki.AccessDeniedException;
+import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
 import fniki.wiki.DownloadException;
 import fniki.wiki.NotFoundException;
 import fniki.wiki.RedirectException;
-import fniki.wiki.ChildContainerException;
 
 // Adapter class to run WikiApp from HTTPServer
 public class FnikiContextHandler implements HTTPServer.ContextHandler {
@@ -170,8 +171,22 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
             mApp.setRequest(new WikiRequest(req, mContainerPrefix));
             try {
                 WikiContext context = mApp.getContext();
-                String html = mApp.handle(context);
-                resp.send(200, html);
+
+                ChildContainerResult appResult = mApp.handle(context);
+                // NOTE: We don't have to worry about the meta refresh here.
+                //       That is done for us in by HtmlResultFactory.
+                resp.sendHeaders(200,
+                                 appResult.getData().length,
+                                 0, // Send current date for Last-Modified header.
+                                 null, // Don't send Etag header.
+                                 appResult.getMimeType(),
+                                 null /* No range. i.e. send everything. */);
+                OutputStream body = resp.getBody();
+                try {
+                    body.write(appResult.getData());
+                } finally {
+                    body.close();
+                }
                 return 0;
             } catch(AccessDeniedException accessDenied) {
                 resp.sendError(403, accessDenied.getMessage());

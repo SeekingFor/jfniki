@@ -41,6 +41,8 @@ public interface WikiContext extends Request {
     String getString(String keyName, String defaultValue);
     int getInt(String keyName, int defaultValue);
 
+    boolean isCreatingOuterHtml();
+
     Configuration getConfiguration();
     Configuration getDefaultConfiguration();
 

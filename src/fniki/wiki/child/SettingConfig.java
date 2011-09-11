@@ -31,7 +31,9 @@ import static ys.wikiparser.Utils.*;
 import wormarc.IOUtil;
 
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
 import fniki.wiki.Configuration;
+import fniki.wiki.HtmlResultFactory;
 import static fniki.wiki.HtmlUtils.*;
 import fniki.wiki.ModalContainer;
 import fniki.wiki.Query;
@@ -176,7 +178,7 @@ public class SettingConfig implements ModalContainer {
         }
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         handlePost(context);
 
         String href = makeHref(context.makeLink("/fniki/config"),
@@ -184,7 +186,7 @@ public class SettingConfig implements ModalContainer {
 
         // Html escape CDATA
         // http://www.w3.org/TR/html401/types.html#type-cdata
-        return String.format(formTemplate(),
+        String html = String.format(formTemplate(),
                              getMsgHtml(), // Already escaped
                              href, // Not escaped
                              escapeHTML(mConfig.mFcpHost),
@@ -200,6 +202,9 @@ public class SettingConfig implements ModalContainer {
                              // IMPORTANT: Won't work as a plugin without this.
                              context.getString("form_password", "FORM_PASSWORD_NOT_SET") // Not escaped
                              );
+
+        // DCI: hard coded title
+        return HtmlResultFactory.makeResult("Configuration", html, context.isCreatingOuterHtml());
     }
 
     public String getMsgHtml() {

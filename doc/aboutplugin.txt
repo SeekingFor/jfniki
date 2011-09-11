@@ -5,7 +5,7 @@ wiki implementation which runs on top of Freenet
 and FMS or Freetalk.
 
 Bear in mind that jFniki was designed to run as a
-standalone web application -- and still does! This plugin
+standalone web application -- and still does. This plugin
 is a thin wrapper around that code. It may not always
 behave like other plugins. Specifically:
 
@@ -25,7 +25,7 @@ re-import your configuration every time you load the plugin.
 [[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/7/|Official jFniki release site]]
 
 ==Contributors==
-* ##SeekingForAttention## -- Improvements to the jfniki Freenet Plugin code.
+* ##SeekingForAttention## -- Improved to the jfniki Freenet Plugin code.
 * ##sethcg## -- Freetalk support, and support for dumping wikis for insertion as websites.
 * ##djk## -- Principal developer.
 

@@ -29,14 +29,15 @@ import java.io.PrintStream;
 
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
 import fniki.wiki.RedirectException;
 import fniki.wiki.WikiContext;
 
 public class QueryError implements ChildContainer {
     public QueryError() {}
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         context.raiseAccessDenied("Couldn't resolve query or post.");
-        return "unreachable code";
+        return null;
     }
 }

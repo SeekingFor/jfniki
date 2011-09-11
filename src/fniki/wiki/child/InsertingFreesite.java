@@ -110,7 +110,7 @@ public class InsertingFreesite extends AsyncTaskContainer {
         mThemeName = context.getQuery().get("theme");
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public String getHtml(WikiContext context) throws ChildContainerException {
         try {
             if (context.getAction().toLowerCase().equals("confirm")) {
                 setupFromFormParams(context);
@@ -135,6 +135,7 @@ public class InsertingFreesite extends AsyncTaskContainer {
                 break;
 
             case STATE_WAITING:
+                setTitle("Insert Freesite");
                 return getFormHtml(context);
 
             case STATE_SUCCEEDED:
@@ -148,10 +149,11 @@ public class InsertingFreesite extends AsyncTaskContainer {
                 cancelTitle = "Done";
                 break;
             }
+
+            setTitle(title);
+
             StringWriter buffer = new StringWriter();
             PrintWriter body = new PrintWriter(buffer);
-
-            body.println("<html><head>" + metaRefresh() + "<title>" + escapeHTML(title) + "</title></head><body>");
 
             if (getState() == STATE_WORKING || getState() == STATE_SUCCEEDED) {
                 if (getState() == STATE_WORKING) {
@@ -175,7 +177,6 @@ public class InsertingFreesite extends AsyncTaskContainer {
 
             addButtonsHtml(context, body, confirmTitle, cancelTitle);
 
-            body.println("</body></html>");
             body.close();
             return buffer.toString();
 

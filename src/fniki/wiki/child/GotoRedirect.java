@@ -29,13 +29,14 @@ import java.io.PrintStream;
 
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
 import fniki.wiki.WikiContext;
 
 
 public class GotoRedirect implements ChildContainer {
     public GotoRedirect() {}
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         String target = context.makeLink("/" + context.getString("default_page", "Front_Page"));
         if (context.getQuery().get("goto") != null) {
             target = context.makeLink("/" + context.getQuery().get("goto"));
@@ -48,6 +49,6 @@ public class GotoRedirect implements ChildContainer {
         }
         context.raiseRedirect(target, "Redirecting...");
 
-        return "unreachable code";
+        return null; // unreachable
     }
 }

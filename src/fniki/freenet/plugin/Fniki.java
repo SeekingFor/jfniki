@@ -81,7 +81,7 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
             ArchiveManager archiveManager = new ArchiveManager();
             archiveManager.createEmptyArchive();
 
-            WikiApp wikiApp = new WikiApp(archiveManager, false);
+            WikiApp wikiApp = new WikiApp(archiveManager, false /* <= no outer html */);
             if (wikiApp.getContext().getString("container_prefix", null) == null) {
                 throw new RuntimeException("Assertion Failure: container_prefix not set!");
             }

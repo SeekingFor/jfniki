@@ -32,8 +32,10 @@ import freenet.client.filter.CommentException;
 import freenet.client.filter.UnsafeContentTypeException;
 import freenet.client.filter.HTMLFilter.ParsedTag;
 
+import fniki.wiki.ChildContainerResult;
 import fniki.wiki.ContentFilter;
 import fniki.wiki.ServerErrorException;
+import fniki.wiki.StaticResult;
 
 class WikiContentFilter implements ContentFilter, FilterCallback  {
     private String mContainerPrefix;
@@ -64,7 +66,10 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
             return "#" + uri.substring(1).replaceAll("[^a-zA-Z0-9_-]", "");
         }
 
-        if (!(uri.startsWith(mContainerPrefix) || uri.startsWith(mFproxyPrefix))) {
+        if (!(uri.startsWith(mContainerPrefix) ||
+              uri.startsWith(mFproxyPrefix) ||
+              // Allow links to static files served from the jar.
+              uri.startsWith("static_files/"))) {
             System.err.println("processURI(0): " + uri + " : " + overrideType);
             System.err.println("processURI(0): REJECTED URI");
             filterTripped();
@@ -135,19 +140,16 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * @return The new tag, or null, if it doesn't need changing
      * */
     public String processTag(ParsedTag pt) { return null; }
-    ////////////////////////////////////////////////////////////
 
+    ////////////////////////////////////////////////////////////
     // One off hacks to allow specific cases mangled by the filter.
     private final static String EXCEPTIONS[] = new String[] {
         // Mangled configuration import form
-        "<input name=\"import\" type=\"submit\" value=\"Import Configuration\" />\n\n<hr>\n",
+        "<input name=\"import\" type=\"submit\" value=\"Import Configuration\" />\n\n<hr />",
         // Allowed
         "<input name=\"import\" type=\"submit\" value=\"Import Configuration\"/>\n" +
-        "<input type=\"file\" name=\"upload\" size=\"64\">\n<hr>\n",
-        // Removed meta refresh
-        "html><head>\n\n<title>",
-        // Allowed.
-        "html><head><meta http-equiv=\"refresh\" content=\"15\" /><title>\n",
+        "<input type=\"file\" name=\"upload\" size=\"64\">\n<hr />\n",
+
         // Mangled theme upload form
         "<input name=\"import\" type=\"submit\" value=\"Import Theme\" />\n",
         // Allowed
@@ -155,41 +157,85 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
         "<input type=\"file\" name=\"upload\" size=\"64\">\n",
     };
 
+
+    // Ugggh... This is horrible. Not dangerous. Just butt ugly.
+    // REQUIRES: UTF-8 encoded.
     // Allow a few safe, specific exceptions through the content filter.
-    public String postProcess(String filtered, String unfiltered) {
-        // System.err.println("--- unfiltered ---");
-        // System.err.println(unfiltered);
-        // System.err.println("--- filtered ---");
-        // System.err.println(filtered);
-        // System.err.println("---");
+    private static byte[] postProcess(byte[] filteredData)
+        throws IOException {
+
+        String filtered = new String(filteredData, UTF8);
+        String original = filtered;
+
+        // System.out.println("--- mangled ---");
+        // System.out.println(filtered);
+        // System.out.println("---");
+
         int index = 0;
         while (index < EXCEPTIONS.length) {
             filtered = filtered.replace(EXCEPTIONS[index], EXCEPTIONS[index + 1]);
             index += 2;
         }
-        return filtered;
+
+        // if (!filtered.equals(original)) {
+        //     System.out.println("---WikeContentFilter.postProcessed -- fixed output ---");
+        //     System.out.println(filtered);
+        //     System.out.println("---");
+        // }
+
+        return filtered.getBytes(UTF8);
     }
 
-    public String filter(String html) throws ServerErrorException {
+    // Hmmm... Why?
+    private  static boolean charsetMatches(freenet.client.filter.ContentFilter.FilterStatus status,
+                                         ChildContainerResult result) {
+        if (result.getEncoding() == null || status.charset == null) {
+            // null is allowed. Avoid NPEs below.
+            return result.getEncoding() == status.charset;
+        }
+
+        if (result.getEncoding().toLowerCase().equals("utf-8") &&
+            status.charset.toLowerCase().equals("iso-8859-1")) {
+            //System.err.println("Hit charset match hack: " + result.getEncoding() + " : " + status.charset);
+            return true;
+        }
+        return status.charset.toLowerCase().equals(result.getEncoding().toLowerCase());
+    }
+
+    public ChildContainerResult filter(ChildContainerResult unfiltered) throws ServerErrorException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
             freenet.client.filter.ContentFilter.FilterStatus status =
-                freenet.client.filter.ContentFilter.filter(new ByteArrayInputStream(html.getBytes(UTF8)),
-                                                           baos, "text/html",
-                                                           UTF8,
+                freenet.client.filter.ContentFilter.filter(new ByteArrayInputStream(unfiltered.getData()),
+                                                           baos,
+                                                           unfiltered.getMimeType(),
+                                                           unfiltered.getEncoding(),
                                                            this);
 
-            if (status.charset.equals("UTF-8")) {
+            if (!charsetMatches(status, unfiltered)) {
                 throw new ServerErrorException("BUG: Generated output with unexpected "
                                                + "character set. But we caught it :-)");
             }
-            if (!status.mimeType.equals("text/html")) {
+            if (!status.mimeType.equals(unfiltered.getMimeType())) {
                 throw new ServerErrorException("BUG: Generated output with unexpected "
                                                + "mime type. But we caught it :-)");
 
             }
-            return postProcess(new String(baos.toByteArray(), UTF8), html);
+
+            byte[] filteredData = baos.toByteArray();
+
+            if (unfiltered.getMimeType().equals("text/html")) {
+                // Fix a few specific cases that are mangled.
+                filteredData = postProcess(filteredData);
+            }
+            // NOTE: Replace because the filter might have rewritten stuff.
+            return new StaticResult(unfiltered.getEncoding(),
+                                    unfiltered.getMimeType(),
+                                    unfiltered.getTitle(),
+                                    unfiltered.getMetaRefreshSeconds(),
+                                    filteredData);
+
         } catch (UnsafeContentTypeException ucte) {
             ucte.printStackTrace();
             throw new ServerErrorException("BUG: Generated dangerous html(0)??? But we caught it :-)");

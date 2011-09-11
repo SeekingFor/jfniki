@@ -5,7 +5,7 @@
 # Use it at your own peril.
 
 export set FCP_HOST="127.0.0.1"
-export set FCP_PORT="9481"
+export set FCP_PORT="19481"
 
 # Deal with symlinks.
 export set FULL_SCRIPT_PATH=`readlink -e $0`

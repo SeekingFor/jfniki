@@ -1,4 +1,4 @@
-/* A UI subcomponent which redirects to the default page.
+/* A UI subcomponent which displays a static file from the .jar.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -24,22 +24,37 @@
 
 package fniki.wiki.child;
 
+import java.io.InputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+
+import static ys.wikiparser.Utils.*;
 
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
 import fniki.wiki.ChildContainerResult;
+import fniki.wiki.StaticResult;
+import fniki.wiki.ServerErrorException;
 import fniki.wiki.WikiContext;
 
-// DCI: remove this file
-public class DefaultRedirect implements ChildContainer {
-    public DefaultRedirect() {}
+import wormarc.IOUtil;
+
+// DON'T use this for big files.  It stores the data in memory.
+// DON'T use this for html. It doesn't support the optional outer
+// html stuff required by the plugin.
+public class StaticFile implements ChildContainer {
+    private final ChildContainerResult mResult;
+
+    public StaticFile(String resourcePath, String encoding, String mimeType) {
+        try {
+            InputStream resourceStream = StaticFile.class.getResourceAsStream(resourcePath);
+            mResult = new StaticResult(encoding, mimeType, "not used", 0,
+                                       IOUtil.readAndClose(resourceStream));
+        } catch (IOException ioe) {
+            throw new RuntimeException("StaticFile couldn't read resource from jar.");
+        }
+    }
 
     public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
-        context.raiseRedirect(context.makeLink("/" + context.getString("default_page", "Front_Page")),
-                              "Redirecting...");
-
-        return null; // unreachable
+        return mResult;
     }
 }

@@ -34,6 +34,7 @@ import static ys.wikiparser.Utils.*;
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
 
 import static fniki.wiki.HtmlUtils.*;
 import fniki.wiki.WikiContext;
@@ -43,7 +44,7 @@ public class Submitting extends AsyncTaskContainer {
         super(archiveManager);
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public String getHtml(WikiContext context) throws ChildContainerException {
         try {
             if (context.getAction().equals("confirm")) {
                 startTask();
@@ -80,9 +81,10 @@ public class Submitting extends AsyncTaskContainer {
                 break;
             }
 
+            setTitle(title);
+
             StringWriter buffer = new StringWriter();
             PrintWriter body = new PrintWriter(buffer);
-            body.println("<html><head>" + metaRefresh() + "<title>" + escapeHTML(title) + "</title></head><body>");
             body.println("<h3>" + escapeHTML(title) + "</h3>");
             if (showBuffer) {
                 body.println("<pre>");
@@ -90,7 +92,6 @@ public class Submitting extends AsyncTaskContainer {
                 body.println("</pre>");
             }
             addButtonsHtml(context, body, confirmTitle, cancelTitle);
-            body.println("</body></html>");
             body.close();
             return buffer.toString();
         } catch (IOException ioe) {

@@ -25,5 +25,5 @@ package fniki.wiki;
 
 // Thin wrapper around the Freenet content filter.
 public interface ContentFilter {
-    String filter(String html) throws ServerErrorException;
+    ChildContainerResult filter(ChildContainerResult result) throws ServerErrorException;
 }

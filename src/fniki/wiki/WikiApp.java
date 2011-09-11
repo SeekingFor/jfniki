@@ -52,7 +52,7 @@ import fniki.wiki.child.LoadingVersionList;
 import fniki.wiki.child.QueryError;
 import fniki.wiki.child.ResetToEmptyWiki;
 import fniki.wiki.child.SettingConfig;
-import fniki.wiki.child.StaticHtml;
+import fniki.wiki.child.StaticFile;
 import fniki.wiki.child.StaticWikiText;
 import fniki.wiki.child.Submitting;
 import fniki.wiki.child.WikiContainer;
@@ -97,6 +97,8 @@ public class WikiApp implements ChildContainer {
 
     private ArchiveManager mArchiveManager;
 
+    private final boolean mCreateOuterHtml;
+
     // Belt and braces. Run the ContentFilter from the Freenet fred codebase
     // over all output before serving it.
     private ContentFilter mFilter;
@@ -105,7 +107,7 @@ public class WikiApp implements ChildContainer {
     private boolean mAllowImages = ALLOW_IMAGES;
     private String mFormPassword;
     private int mListenPort = LISTEN_PORT;
-    private static String servingNamespace = "/plugins/fniki.freenet.plugin.Fniki";
+    private static String sContainerPrefix = "/plugins/fniki.freenet.plugin.Fniki";
 
     // final because it is called from the ctor.
     private final void resetContentFilter() {
@@ -116,6 +118,7 @@ public class WikiApp implements ChildContainer {
 
     public WikiApp(ArchiveManager archiveManager, boolean createOuterHtml) {
         mArchiveManager = archiveManager;
+        mCreateOuterHtml = createOuterHtml;
         mParserDelegate = new LocalParserDelegate(getContext(), mArchiveManager);
 
         // Static routes.
@@ -128,17 +131,27 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("fniki/resettoempty", new ResetToEmptyWiki(mArchiveManager));
         mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
 
-        // Routes to static files in the jar.
+        // Routes to files in the jar.
         // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.
+        // IMPORTANT: These are included in the .jar so they should be small.
         mRoutes.put("static_files/Quick_Start",
-                    new StaticWikiText("/quickstart.txt", "Quick Start", createOuterHtml));
+                    new StaticWikiText("/quickstart.txt", "Quick Start"));
         mRoutes.put("static_files/About_Jfniki_Plugin",
-                    new StaticWikiText("/aboutplugin.txt", "About the jFniki Plugin", createOuterHtml));
+                    new StaticWikiText("/aboutplugin.txt", "About the jFniki Plugin"));
+
+        mRoutes.put("static_files/jfniki_markup",
+                    new StaticWikiText("/jfniki_markup.txt", "jFniki Markup"));
+
+        mRoutes.put("static_files/creole_cheat_sheet.png",
+                    new StaticFile("/creole_cheat_sheet.png", null /*hmmm...*/, "image/png"));
+
+        mRoutes.put("jfniki.css", // Only used by Plugin.
+                    new StaticFile("/plugin_jfniki.css", "UTF-8", "text/css"));
 
         // Routes determined by code.
         mRoutes.put("from_code/goto_redirect", new GotoRedirect());
         mRoutes.put("from_code/query_error", new QueryError());
-        mRoutes.put("from_code/wiki_container", new WikiContainer(createOuterHtml));
+        mRoutes.put("from_code/wiki_container", new WikiContainer());
 
         resetContentFilter();
     }
@@ -190,8 +203,18 @@ public class WikiApp implements ChildContainer {
         throws IOException {
 
         String action = request.getAction();
+        String path = request.getPath();
 
         if (mState instanceof ModalContainer) {
+            if (mRoutes.containsKey(path) &&
+                ((mRoutes.get(path) instanceof StaticFile ||
+                  mRoutes.get(path) instanceof StaticWikiText))) {
+                // Serve static files even when in a modal state.
+                // Note that we don't transition into the new state.
+                return mRoutes.get(path);
+            }
+
+
             // Handle transitions out of modal UI states.
             ModalContainer state = (ModalContainer)mState;
             if (action.equals("finished")) {
@@ -212,7 +235,6 @@ public class WikiApp implements ChildContainer {
             return state;  // Don't leave the modal UI state until finished.
         }
 
-        String path = request.getPath();
 
         // Handle static routes.
         if (mRoutes.containsKey(path) && !path.startsWith("from_code/")) {
@@ -229,7 +251,8 @@ public class WikiApp implements ChildContainer {
 
 
     // All requests are serialized! Hmmmm....
-    public synchronized String handle(WikiContext context) throws ChildContainerException {
+    public synchronized ChildContainerResult handle(WikiContext context)
+        throws ChildContainerException {
         try {
             ChildContainer childContainer = routeRequest(context);
             //System.err.println("Request routed to: " + childContainer.getClass().getName());
@@ -282,9 +305,10 @@ public class WikiApp implements ChildContainer {
 
     // Hmmmm... kind of weird. I can't remember why I used this static method instead of a constant.
     // NO trailing slash.
-    private static String containerPrefix() { return servingNamespace; }
+    private static String containerPrefix() { return sContainerPrefix; }
     public void setContainerPrefix(String containerPrefix) {
-    	servingNamespace = containerPrefix;
+        // TODO(djk): Why remove this if it is not necessary.
+    	sContainerPrefix = containerPrefix;
     	resetContentFilter();
     }
 
@@ -381,6 +405,7 @@ public class WikiApp implements ChildContainer {
 
             return defaultValue;
         }
+        public boolean isCreatingOuterHtml() { return mCreateOuterHtml; }
 
         // Can return an invalid configuration. e.g. if fms id and private ssk are not set.
         public Configuration getConfiguration() {

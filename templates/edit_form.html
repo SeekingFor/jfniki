@@ -1,34 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<title>%s</title>
-<style type="text/css">
-div.indent{margin-left:20px;}
-div.center{text-align:center;}
-blockquote{margin-left:20px;background-color:#e0e0e0;}
-span.underline{text-decoration:underline;}
-body { background-color: #FFFFFF; color: #000000;}
-a { color: #1f6b9e }
-.diffins {background:#e6ffe6;}
-.diffdel {background:#ffe6e6;}
-.diffequal {}
-.difftext {font-family: monospace;}
-</style>
-</head>
-<body>
-<h1>%s</h1>
+<h1>%2$s</h1>
 <hr/>
-<a name="localedits">
+<a name="localedits"/>
 <form method="post"
-      action="%s"
+      action="%3$s"
       enctype="multipart/form-data"
       accept-charset="UTF-8">
-  <input type=hidden name="savepage" value="%s"/>
-  <textarea wrap="virtual" name="savetext" rows="17" cols="120">%s</textarea>
+  <input type=hidden name="savepage" value="%4$s"/>
+  <textarea wrap="virtual" name="savetext" rows="17" cols="120">%5$s</textarea>
   <br/>
   <input type=submit value="Save"/>
-  <input type=hidden name=formPassword value="%s"/>
+  <input type=hidden name=formPassword value="%6$s"/>
   <input type=reset value="Reset"/>
   <br/>
 </form>
@@ -39,22 +20,23 @@ a { color: #1f6b9e }
 <a href="#pwt">[Parent WikiText]</a>
 <a href="#rwt">[Rebase WikiText]</a>
 <a href="#localedits">[LocalEdits]</a>
+<a href="static_files/creole_cheat_sheet.png">[Cheat Sheet]</a>
+<a href="static_files/jfniki_markup">[Creole Help]</a>
 <hr/>
 <h2><a name="ptldiff" href="#toplinks">Diffs from Parent to Local Copy</a></h2>
 <div class="difftext">
-%s
+%7$s
 </div>
 <hr/>
 <h2><a name="ptrdiff" href="#toplinks">Diffs from Parent to Rebase</a></h2>
 <div class="difftext">
-%s
+%8$s
 </div>
 <hr/>
 <h2><a name="pwt" href="#toplinks"> Parent Wikitext</a></h2>
-<textarea wrap="virtual" name="pwt" rows="17" cols="120" readonly>%s</textarea>
+<textarea wrap="virtual" name="pwt" rows="17" cols="120" readonly>%9$s</textarea>
 <hr/>
 <h2><a name ="rwt" href="#toplinks">Rebase WikiText</a></h2>
-<textarea wrap="virtual" name="rwt" rows="17" cols="120" readonly>%s</textarea>
-</body>
-</html>
+<textarea wrap="virtual" name="rwt" rows="17" cols="120" readonly>%10$s</textarea>
+
 

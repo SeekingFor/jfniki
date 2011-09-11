@@ -1,4 +1,4 @@
-/* A UI subcomponent which display static html from the .jar.
+/* Static implementation of ChildContainerResult.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -21,25 +21,28 @@
  *  This file was developed as component of
  * "fniki" (a wiki implementation running over Freenet).
  */
+package fniki.wiki;
 
-package fniki.wiki.child;
+public class StaticResult implements ChildContainerResult {
+    private final String mEncoding;
+    private final String mMimeType;
+    private final byte[] mData;
+    private final String mTitle;
+    private final int mMetaRefreshSeconds;
 
-import java.io.IOException;
-
-import fniki.wiki.ChildContainer;
-import fniki.wiki.ChildContainerException;
-import fniki.wiki.WikiContext;
-
-// LATER: I'm leaving this in my bagotrix for now, remove if unused.
-public class StaticHtml implements ChildContainer {
-    private final String mResourcePath;
-
-    public StaticHtml(String resourcePath) {
-        mResourcePath = resourcePath;
+    public StaticResult(String encoding, String mimeType, String title, int refreshSeconds,
+                        byte[] data) {
+        mEncoding = encoding;
+        mMimeType = mimeType;
+        mTitle = title;
+        mMetaRefreshSeconds = refreshSeconds;
+        mData = data;
     }
 
-    // IMPORTANT: links must be absolute w.r.t  WikiApp.containerPrefix().
-    public String handle(WikiContext context) throws ChildContainerException {
-        return context.getString(mResourcePath, "Couldn't find requested file in jar!");
-    }
+    public String getEncoding() { return mEncoding; }
+    public String getMimeType() { return mMimeType; }
+    public byte[] getData() { return mData; }
+    public String getTitle() { return mTitle; }
+    public int getMetaRefreshSeconds() { return mMetaRefreshSeconds; }
 }
+

@@ -1,4 +1,4 @@
-/* A UI subcomponent which redirects to the default page.
+/* Interface for an HTTP result returned by a ChildContainer.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -21,25 +21,15 @@
  *  This file was developed as component of
  * "fniki" (a wiki implementation running over Freenet).
  */
+package fniki.wiki;
 
-package fniki.wiki.child;
+public interface ChildContainerResult {
+    String getEncoding();
+    String getMimeType();
+    byte[] getData();
 
-import java.io.IOException;
-import java.io.PrintStream;
-
-import fniki.wiki.ChildContainer;
-import fniki.wiki.ChildContainerException;
-import fniki.wiki.ChildContainerResult;
-import fniki.wiki.WikiContext;
-
-// DCI: remove this file
-public class DefaultRedirect implements ChildContainer {
-    public DefaultRedirect() {}
-
-    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
-        context.raiseRedirect(context.makeLink("/" + context.getString("default_page", "Front_Page")),
-                              "Redirecting...");
-
-        return null; // unreachable
-    }
+    // These are only used for text/html.
+    String getTitle();
+    // 0 means don't refresh
+    int getMetaRefreshSeconds();
 }

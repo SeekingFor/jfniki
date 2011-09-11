@@ -1,34 +1,28 @@
 <!-- IMPORTANT: There are hard coded exceptions for the Freenet content filter to make -->
 <!--            file uploading work. See WikiContentFilter.EXCEPTIONS. -->
-<html>
-<head>
-<title>Configuration
-</title>
-</head>
-<body>
-%s
+%1$s
 <h1>Configuration</h1>
-<form method="post" action="%s" enctype="multipart/form-data" accept-charset="UTF-8">
+<form method="post" action="%2$s" enctype="multipart/form-data" accept-charset="UTF-8">
 <table>
   <tr>
     <td>Fcp Host</td>
-    <td><input type="text" name="fcphost" value="%s" /></td>
+    <td><input type="text" name="fcphost" value="%3$s" /></td>
   </tr>
   <tr>
     <td>Fcp Port</td>
-    <td><input type="text" name="fcpport" value="%d" /></td>
+    <td><input type="text" name="fcpport" value="%4$d" /></td>
   </tr>
   <tr>
     <td>Fproxy Prefix</td>
-    <td><input type="text" name="fpprefix" size="64" value="%s" /></td>
+    <td><input type="text" name="fpprefix" size="64" value="%5$s" /></td>
   </tr>
   <tr>
     <td>FMS Host</td>
-    <td><input type="text" name="fmshost" value="%s" /></td>
+    <td><input type="text" name="fmshost" value="%6$s" /></td>
   </tr>
   <tr>
     <td>FMS Port</td>
-    <td><input type="text" name="fmsport" value="%d" /> </td>
+    <td><input type="text" name="fmsport" value="%7$d" /> </td>
   </tr>
   <tr>
     <td>FMS Private SSK</td>
@@ -36,34 +30,31 @@
   </tr>
   <tr>
     <td>FMS Name</td>
-    <td><input type="text" name="fmsid" size="64" value="%s" /> </td>
+    <td><input type="text" name="fmsid" size="64" value="%8$s" /> </td>
   </tr>
   <tr>
     <td>Full FMS ID</td>
-    <td><input type="text" name="fmsfull" size="64" readonly="readonly" value="%s" /> </td>
+    <td><input type="text" name="fmsfull" size="64" readonly="readonly" value="%9$s" /> </td>
   </tr>
   <tr>
     <td>FMS Group</td>
-    <td><input type="text" name="fmsgroup" value="%s" /> </td>
+    <td><input type="text" name="fmsgroup" value="%10$s" /> </td>
   </tr>
   <tr>
     <td>Wiki Name</td>
-    <td><input type="text" name="wikiname" value="%s"/> </td>
+    <td><input type="text" name="wikiname" value="%11$s"/> </td>
   </tr>
   <tr>
-    <td><input type="checkbox" name="images" %s/>Enable Images</td>
+    <td><input type="checkbox" name="images" %12$s/>Enable Images</td>
   </tr>
-  <input type="hidden" name="formPassword" value="%s"/>
+  <input type="hidden" name="formPassword" value="%13$s"/>
 </table>
 <input name="defaults" type="submit" value="Reset Defaults"/>
 <input name="done" type="submit" value="Done"/>
 <hr>
 <input name="import" type="submit" value="Import Configuration"/>
 <input type="file" name="upload" size="64">
-<hr>
+<hr />
 <input name="export" type="submit" value="Export Configuration"/>
 <hr>
 </form>
-
-</body>
-</html>

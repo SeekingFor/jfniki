@@ -51,6 +51,7 @@
       </manifest>
       <fileset dir="${doc}" includes="quickstart.txt"/>
       <fileset dir="${doc}" includes="aboutplugin.txt"/>
+      <fileset dir="${doc}" includes="jfniki_markup.txt"/>
       <fileset dir="${templates}" includes="*.html"/>
       <fileset dir="${templates}" includes="*.png"/>
       <!-- A place to stash snippets of .css -->

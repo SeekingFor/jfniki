@@ -23,8 +23,13 @@
  */
 package fniki.wiki;
 
+
 public interface ChildContainer {
-    // Should return well formed html or raise on 302, 403, 500
-    String handle(WikiContext context) throws ChildContainerException;
+    // If context.isCreatingOuterHtml() is true implementations should return an
+    // entire html document when the result is HTML,  Otherwise they should
+    // return only the body. i.e. to play nice with the Freenet Plugin framework.
+
+    // Should return a result or raise on 302, 403, 500.
+    ChildContainerResult handle(WikiContext context) throws ChildContainerException;
 }
 

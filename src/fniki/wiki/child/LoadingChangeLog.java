@@ -54,7 +54,7 @@ public class LoadingChangeLog extends AsyncTaskContainer
         return mListHtml.toString();
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public String getHtml(WikiContext context) throws ChildContainerException {
         try {
             if (context.getAction().equals("confirm")) {
                 mPath = context.getPath();
@@ -98,10 +98,11 @@ public class LoadingChangeLog extends AsyncTaskContainer
                 break;
             }
 
+            setTitle(title);
+
             StringWriter buffer = new StringWriter();
             PrintWriter body = new PrintWriter(buffer);
 
-            body.println("<html><head>" + metaRefresh() + "<title>" + escapeHTML(title) + "</title></head><body>");
             body.println("<h3>" + escapeHTML(title) + "</h3>");
             if (showBuffer) {
                 body.println(getListHtml());
@@ -113,7 +114,6 @@ public class LoadingChangeLog extends AsyncTaskContainer
             body.println("<hr>");
 
             addButtonsHtml(context, body, confirmTitle, cancelTitle);
-            body.println("</body></html>");
             body.close();
             return buffer.toString();
         } catch (IOException ioe) {

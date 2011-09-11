@@ -30,21 +30,21 @@ import static ys.wikiparser.Utils.*;
 
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
+import fniki.wiki.HtmlResultFactory;
 import fniki.wiki.ServerErrorException;
 import fniki.wiki.WikiContext;
 
 public class StaticWikiText implements ChildContainer {
     private final String mResourcePath;
     private final String mTitle;
-    private final boolean mCreateOuterHtml;
 
-    public StaticWikiText(String resourcePath, String title, boolean createOuterHtml) {
+    public StaticWikiText(String resourcePath, String title) {
         mResourcePath = resourcePath;
         mTitle = title;
-        mCreateOuterHtml = createOuterHtml;
     }
 
-    protected String getViewSourcePage(WikiContext context) throws ChildContainerException {
+    protected ChildContainerResult getViewSourcePage(WikiContext context) throws ChildContainerException {
         String template = context.getString("/view_source.html", null);
         if (template == null) {
             throw new ServerErrorException("view_source.html template not in the .jar.");
@@ -52,17 +52,24 @@ public class StaticWikiText implements ChildContainer {
 
         String title = escapeHTML(mTitle);
         String source = escapeHTML(context.getString(mResourcePath, "Couldn't find requested resource in jar!"));
-        return String.format(template, title, source);
+
+        return HtmlResultFactory.makeResult(title, String.format(template, title, source),
+                                            context.isCreatingOuterHtml());
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         try {
             if (context.getAction().equals("viewsrc")) {
                 return getViewSourcePage(context);
             }
             String wikiText = context.getString(mResourcePath, "Couldn't find requested resource in jar!");
-            return new WikiContainer(mCreateOuterHtml).
-                renderExternalWikiText(context, mTitle, context.getPath(), wikiText);
+
+            return HtmlResultFactory.
+                makeResult(mTitle,
+                           new WikiContainer().renderExternalWikiText(context, mTitle,
+                                                                      context.getPath(),
+                                                                      wikiText),
+                           context.isCreatingOuterHtml());
         } catch (IOException ioe) {
             throw new ServerErrorException("Couldn't render the requested static wikitext from the .jar.");
         }

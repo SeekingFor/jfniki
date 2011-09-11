@@ -40,6 +40,8 @@ import static ys.wikiparser.Utils.*;
 
 import fniki.wiki.ChildContainer;
 import fniki.wiki.ChildContainerException;
+import fniki.wiki.ChildContainerResult;
+import fniki.wiki.HtmlResultFactory;
 import fniki.wiki.Query;
 
 import wormarc.FileManifest;
@@ -56,13 +58,8 @@ import fniki.wiki.WikiTextStorage;
 
 public class WikiContainer implements ChildContainer {
     private final static String ENCODING = "UTF-8";
-    private boolean mCreateOuterHtml;
 
-    public WikiContainer(boolean createOuterHtml) {
-        mCreateOuterHtml = createOuterHtml;
-    }
-
-    public String handle(WikiContext context) throws ChildContainerException {
+    public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         try {
             String action = context.getAction();
             if (action.equals("finished")) {
@@ -83,31 +80,38 @@ public class WikiContainer implements ChildContainer {
                 // Illegal action
                 context.raiseAccessDenied("Couldn't work out query.");
             }
-
-            Query query = context.getQuery();
-
-            if (action.equals("view") ||       // editable
-                action.equals("viewparent") || // view parent version read only
-                action.equals("viewrebase")) { // view rebase version read only
-                return handleView(context, title, action);
-            } else if (action.equals("edit")) {
-                return handleEdit(context, title);
-            } else if (action.equals("delete")) {
-                return handleDelete(context, title);
-            } else if (action.equals("revert")) {
-                return handleRevert(context, title);
-            } else if (action.equals("rebased")) {
-                return handleRebase(context, title);
-            } else if (action.equals("save")) {
-                return handleSave(context, query);
-            } else  {
-                context.raiseAccessDenied("Couldn't work out query.");
-            }
+            return HtmlResultFactory.makeResult(title,
+                                                getHtmlForAction(context, action, title),
+                                                context.isCreatingOuterHtml());
         } catch (IOException ioe) {
             context.logError("WikiContainer.handle", ioe);
             context.raiseServerError("Unexpected Error in WikiContainer.handle. Sorry :-(");
         }
-        return "unreachable code";
+        return null; // unreachable
+    }
+
+    private String getHtmlForAction(WikiContext context, String action, String title)
+        throws ChildContainerException, IOException {
+
+        if (action.equals("view") ||       // editable
+            action.equals("viewparent") || // view parent version read only
+            action.equals("viewrebase")) { // view rebase version read only
+            return handleView(context, title, action);
+        } else if (action.equals("edit")) {
+            return handleEdit(context, title);
+        } else if (action.equals("delete")) {
+            return handleDelete(context, title);
+        } else if (action.equals("revert")) {
+            return handleRevert(context, title);
+        } else if (action.equals("rebased")) {
+            return handleRebase(context, title);
+        } else if (action.equals("save")) {
+            // Doesn't return.
+            return handleSave(context, context.getQuery());
+        } else  {
+            context.raiseAccessDenied("Couldn't work out query.");
+        }
+        return null; // unreachable.
     }
 
     private String handleView(WikiContext context, String name, String action) throws IOException {
@@ -149,20 +153,15 @@ public class WikiContainer implements ChildContainer {
 
     private String handleSave(WikiContext context, Query form) throws ChildContainerException, IOException {
         // Name is included in the query data.
-        System.err.println("handleSave -- ENTERED");
         String name = form.get("savepage");
         String wikiText = form.get("savetext");
 
-        System.err.println("handleSave --got params");
         if (name == null || wikiText == null) {
             context.raiseAccessDenied("Couldn't parse parameters from POST.");
         }
 
-        System.err.println("Writing: " + name);
         context.getStorage().putPage(name, unescapeHTML(wikiText));
-        System.err.println("Raising redirect!");
         context.raiseRedirect(context.makeLink("/" + name), "Redirecting...");
-        System.err.println("SOMETHING WENT WRONG!");
         return "unreachable code";
     }
 
@@ -250,24 +249,9 @@ public class WikiContainer implements ChildContainer {
         return buffer.toString();
     }
 
+    // LATER: revisit
     private void addHeader(WikiContext context, String escapedName, String talkName,
                            StringBuilder buffer) throws IOException {
-    	if(mCreateOuterHtml) {
-	        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-	        buffer.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
-	                      "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
-	        buffer.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n");
-	        buffer.append("<head><title>\n");
-	        buffer.append(escapedName);
-	        buffer.append("</title>\n");
-	        buffer.append("<style type=\"text/css\">\n");
-	        // CAREFUL: MUST audit .css files built into .jar to make sure they are safe.
-	        // Load .css snippet from jar. Names can only have 1 '/' and must be globally unique.
-	        buffer.append(context.getString("/add_header.css", ""));
-	        buffer.append("</style>\n");
-	        buffer.append("</head>\n");
-	        buffer.append("<body>\n");
-    	}
         buffer.append("<h1 class=\"pagetitle\">\n");
         buffer.append(escapedName);
         buffer.append("</h1>\n");
@@ -431,9 +415,6 @@ public class WikiContainer implements ChildContainer {
         }
 
         buffer.append("</form>\n");
-        if(mCreateOuterHtml) {
-            buffer.append("</body></html>\n");
-        }
     }
 
     private static String nullToNone(String value) {
@@ -512,9 +493,6 @@ public class WikiContainer implements ChildContainer {
         buffer.append("");
         buffer.append(makeLocalLink(context, path, "viewsrc", "View Wikitext Source"));
         buffer.append("</form>\n");
-        if (mCreateOuterHtml) {
-            buffer.append("</body></html>\n");
-        }
 
         return buffer.toString();
     }

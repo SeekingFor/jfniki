@@ -1,0 +1,161 @@
+// This is a read only copy of the jfniki_markup page taken from the Freenet Doc Wiki. //
+
+This wiki uses Creole as implemented by Yaroslav Stavnichiy's T4 WikiText Parser.
+
+===Creole Cheetsheet Image ===
+{{freenet:CHK@9PKf0c3ZNLFHe7f7yVjtyrdeC7rn9ND6J2652TD8DVs,9qTep6luNYVRWIu8EeKSjima01acH84xDHX9ZqDNzIc,AAIC--8/creole_cheat_sheet.png|Creole Cheetsheet Image}}
+
+
+=== jfniki Specific Extensions to Creole ===
+# External http links show up as hypertexted but all point to the [[ExternalLink]] Page
+# CHK, SSK and USK freenet links work. e.g.:\\
+  [[freenet:USK@8r-uSRcJPkAr-3v3YJR16OCx~lyV2XOKsiG4MOQQBMM,P42IgNemestUdaI7T6z3Og6P-Hi7g9U~e37R3kWGVj8,AQACAAE/freesite-HOWTO/4/|Freesite HOWTO Freesite.]]\\
+  KSK links aren't allowed because they can be attacked.
+# CHK, and SSK references can be used in inline images. e.g.\\
+  {{freenet:SSK@0npnMrqZNKRCRoGojZV93UNHCMN-6UU3rRSAmP6jNLE,~BG-edFtdCC1cSH4O3BWdeIYa8Sw5DfyrSV-TKdO5ec,AQACAAE/fms-123/activelink.png}} \\
+  USK inline images aren't allowed because they can be changed after the wikitext is submitted.\\
+  KSK inline images aren't allowed because they can be changed (attacked).
+# ~<<<LocalChanges>>>\\displays a list of all pages that have unsubmitted local changes.
+# ~<<<TitleIndex>>>\\displays a list of all pages in the wiki.
+# ~<<<RebasedChanges>>>\\displays a directory level diff between the parent and rebase versions if a rebase version is loaded.
+# ~<<<ArchiveVersion>>>\\displays the 16 digit hex version of the archive the current version was loaded from.
+# ~<<<ArchiveUri>>>\\displays a link to the SSK the of the archive the current version was loaded from.
+
+====Main Creole Site====
+http://www.wikicreole.org/
+
+
+=== Notes and examples from T4 Release notes ===
+
+=== Deviations from Creole 1.0
+
+# Nowiki blocks and spans:
+#- Nowiki blocks and spans ~{{{...}}} can start and end anywhere
+(within text, in lists, table cells). If }}} needs to be included
+into nowiki-block it has to be escaped by ~~}}}. If nowiki block
+has to end with tilde (~), insert newline after tilde; for inline
+nowiki just put tilde outside nowiki block: {{{nowiki}}}~.
+#- Nowiki is treated as a block if it has newline characters within it.
+Block nowikis are rendered with <pre> tag, inline nowikis rendered
+without any additional tags around (monospaced font can be turned on by ~##).
+# Mixed lists:
+#- When nesting different types of lists T4-WP requires that initial line
+characters signifying lists that shall continue should match.
+E.g., for T4-WP this is correct:{{{
+* item a
+*# item a.1
+*#* item a.1.a
+}}}
+But the following construct doesn't work:{{{
+* item a
+## item a.1
+*** item a.1.a
+}}}
+# Escaping:
+#- Tilde only escapes characters that otherwise would be treated as markup.
+If tilde is found in front of other characters it is treated literally: ~example.
+# Extensions:
+#- __Underlined__ and ##monospaced## font styles.
+#- Quotes (>), indents (:), and centered paragraphs (!). These can be intermixed with lists (*#).
+#- Unnumbered lists can be done with minus (-) character as well as with (*).
+#- Table cells can span multiple columns (by using multiple pipes in a row: |||).
+#- Double minus (--) surrounded by spaces produces – ( -- ).
+#- Some HTML character entities are supported: © ® ™
+— – “ ” € • · « » etc.
+(and   of course).
+These are defined in ##ys.wikiparser.Utils## class and can be extended.
+#- ~<<<TOC>>> macro to generate table of contents based on headings in text
+#- Headings are given unique generated id's to be referred from TOC, etc.
+#- Simplified Mediawiki-style multiline tables ({| ... | ... |- ... | ... |}) to allow structured wiki content within cells.
+
+=== Bold, Italic, Underlined, Monospaced ===
+
+You can make things **bold** or //italic// or __**//both + underline//**__.
+
+##{{{Monospaced text **no markup**}}}## or **##{{{monospaced bold text **no markup**}}}##**
+
+=== Links ===
+
+You can use [[internal_links|internal links]] (eg. links to your own wikipedia's tags) or [[http://www.wikicreole.org|external links]],
+give the link a [[internal links|different display text]].
+
+Free links without braces are rendered as well, like http://www.wikicreole.org/ and http://www.wikicreole.org/users/~example.
+
+
+=== Horizontal Rule ===
+
+You can use ---- to draw a line to separate the page:
+----
+
+=== Lists, Quotes, Indents ===
+
+Unnumbered lists:
+* item a
+* item b
+* **bold item c**
+
+Lists can be numbered or even mixed up:
+# item a
+# item b
+#* **bold sub item of b**
+#* __underlined sub item of b__
+#*# sub-sub-item 1
+#*# sub-sub-item 2
+
+> Quotes can be mixed with lists.
+: ... so do indents.
+:: ... at multiple levels
+
+=== Nowiki and Escape ===
+
+You can use block nowiki syntax if you would like do stuff like this:
+
+{{{
+Guitar Chord C:
+
+||---|---|---|
+||-0-|---|---|
+||---|-0-|---|
+||---|---|-0-|
+||---|---|---|
+}}}
+
+... or inline nowiki: {{{** not bold **}}}.
+
+Single character escape is done by a tilde: ~
+
+Normal link: http://wikicreole.org/ - now same link, but escaped: ~http://wikicreole.org/ 
+
+Normal asterisks: ~**not bold~**
+
+A tilde escapes itself: ~~**bold**.
+
+=== Tables ===
+
+Tables are done like this:
+
+|=header1||=headerl2|
+|col1|col2|col3|
+| can have ~| in a cell||colspan=2|
+|||colspan=3|
+
+=== MediaWiki-Style Tables ===
+
+{|
+- Can have lists within cells
+|
+! Can have\\centered\\paragraphs
+|-
+{{{
+As well as
+multiline
+no-wiki blocks
+}}}
+|
+| And even nested | mini-tables |
+|}
+
+=== Insert a summary ===
+
+Wrote ~<<<TOC>>> to insert a summary here.
+

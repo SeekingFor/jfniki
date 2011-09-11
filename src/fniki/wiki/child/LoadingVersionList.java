@@ -71,7 +71,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
         return mListHtml.toString();
     }
 
-    public String handle(WikiContext context) throws ChildContainerException {
+    public String getHtml(WikiContext context) throws ChildContainerException {
         try {
             if (context.getAction().equals("confirm")) {
                 // Copy stuff we need out because context isn't threadsafe.
@@ -121,15 +121,13 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 break;
             }
 
+            setTitle(title);
+
+            // Hmmm... why did I do this before?
+            // body.println("TD{font-family: Arial; font-size: 7pt;}\n");
+
             StringWriter buffer = new StringWriter();
             PrintWriter body = new PrintWriter(buffer);
-            body.println("<html><head>\n");
-            body.println(metaRefresh());
-            body.println("<style type=\"text/css\">\n");
-            body.println("TD{font-family: Arial; font-size: 7pt;}\n");
-            body.println("</style>\n");
-            body.println("<title>" + escapeHTML(title) + "</title>\n");
-            body.println("</head><body>\n");
 
             body.println("<h3>" + escapeHTML(title) + "</h3>");
             body.println(String.format("wikiname: %s<br>board: %s<p>",
@@ -145,7 +143,6 @@ public class LoadingVersionList extends AsyncTaskContainer {
             }
             body.println("<hr>");
             addButtonsHtml(context, body, confirmTitle, cancelTitle);
-            body.println("</body></html>");
             body.close();
             return buffer.toString();
         } catch (IOException ioe) {
