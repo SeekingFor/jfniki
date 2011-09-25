@@ -95,5 +95,7 @@ public class Validations {
         return true;
     }
 
-
+    public static boolean isValidPrivateSsk(String value) {
+        return value != null && value.startsWith("SSK@") && value.endsWith(",AQECAAE/");
+    }
 }

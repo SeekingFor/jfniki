@@ -50,7 +50,7 @@ public abstract class QueryBase implements Query {
         "fcphost", "fcpport", "fpprefix", "fmshost", "fmsport",
         "fmsssk", "fmsid", "fmsgroup", "wikiname", "images",
         // Freesite insertion stuff.
-        "sitename", "keytype", "theme",
+        "sitename", "keytype", "theme", "sitekey",
         "upload.filename", // <- There are special hacks in the mime multipart post code for this.
         // Static wikitext
         "viewsrc",

@@ -102,7 +102,7 @@ public final class Configuration {
         checkSet(mFmsGroup, "FMS Group");
         checkSet(mWikiName, "Wiki Name");
 
-        if (!mFmsSsk.startsWith("SSK@") || !mFmsSsk.endsWith(",AQECAAE/")) {
+        if (!Validations.isValidPrivateSsk(mFmsSsk)) {
             throw new ConfigurationException("The private SSK value must start with 'SSK@' " +
                                              "and end with ',AQECAAE/'.");
         }

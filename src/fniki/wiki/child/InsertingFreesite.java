@@ -84,7 +84,8 @@ public class InsertingFreesite extends AsyncTaskContainer {
                              formAction,  // %1$s
                              siteName,    // %2$s
                              formPassword, // %3$s
-                             buildThemeOptionsHtml() // %4$s
+                             buildThemeOptionsHtml(), // %4$s
+                             "" // %5s, optional private key, never displayed
                              );
     }
 
@@ -104,8 +105,14 @@ public class InsertingFreesite extends AsyncTaskContainer {
         if (context.getQuery().get("keytype").equals("chk")) {
             mUri = "CHK@";
         } else {
-            mUri = "USK" + mArchiveManager.getPrivateSSK().substring(3) +
+            if (context.getQuery().get("sitekey") != null) {
+                // Support optional private key.
+                mUri = "USK" + context.getQuery().get("sitekey").substring(3) +
                 sitename + "/0/";
+            } else {
+                mUri = "USK" + mArchiveManager.getPrivateSSK().substring(3) +
+                sitename + "/0/";
+            }
         }
         mThemeName = context.getQuery().get("theme");
     }
