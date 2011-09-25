@@ -180,9 +180,21 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         if (isValidFreenetUri(link[0]) &&
             !link[0].startsWith("freenet:USK@")) {
             String alt=escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0]));
-            sb.append("<img src=\"" + makeFreenetLink(link[0].trim())
-                      + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
-            return;
+
+            if (link.length == 3 && isValidFreenetUri(link[2].trim())) {
+                sb.append("<a href=\"");
+                sb.append(makeFreenetLink(link[2].trim()));
+                sb.append("\">");
+                sb.append("<img src=\"" + makeFreenetLink(link[0].trim())
+                          + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
+                sb.append("</a>");
+                return;
+            } else {
+                // Hmmm... allows extra fields
+                sb.append("<img src=\"" + makeFreenetLink(link[0].trim())
+                          + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
+                return;
+            }
         }
         sb.append("{ERROR PROCESSING IMAGE WIKITEXT}");;
     }
