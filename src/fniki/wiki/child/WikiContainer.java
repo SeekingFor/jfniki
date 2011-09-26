@@ -397,6 +397,12 @@ public class WikiContainer implements ChildContainer {
 
         buffer.append(makeLocalLink(context, "fniki/insertsite", "view", "Insert"));
         buffer.append(" a static version of this wiki as a freesite.<p/>\n");
+
+        buffer.append("<hr>\n");
+
+        buffer.append(makeLocalLink(context, "fniki/updateusks", "view", "Update"));
+        buffer.append(" the index values of all USK links in this wiki (experimental).<p/>\n");
+
   }
 
     private void addFooter(WikiContext context, String name, boolean readOnly, StringBuilder buffer) throws IOException {

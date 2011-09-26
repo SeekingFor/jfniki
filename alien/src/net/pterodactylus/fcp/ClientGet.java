@@ -75,7 +75,8 @@ public class ClientGet extends FcpMessage {
 	 *            store, <code>false</code> to search on other nodes, too
 	 */
 	public void setDataStoreOnly(boolean dsOnly) {
-		setField("DSonly", String.valueOf(dsOnly));
+            // djk20110925: fixed, audit rest of code for "DSonly"
+            setField("DSOnly", String.valueOf(dsOnly));
 	}
 
 	/**

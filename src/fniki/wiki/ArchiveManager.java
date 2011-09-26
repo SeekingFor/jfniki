@@ -28,6 +28,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -442,6 +445,96 @@ public class ArchiveManager {
             return nym;
         }
         return nym + "@" + publicKeyHash;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    // Support for updating out of date USKs
+    ////////////////////////////////////////////////////////////
+
+    // LATER: Use a StringBuffer / matcher to do all replacements
+    //        in a single pass.
+    //        This is a quick and dirty slash attack on the problem.
+    private void updateUsksOnPage(Map<String, Integer> latest, String pageName,
+                                  PrintStream out)
+        throws IOException {
+        String page = mOverlay.getPage(pageName);
+        String updated = page;
+        Matcher matcher = USK_REGEX.matcher(page);
+        out.println("[" + pageName + "]");
+        while (matcher.find()) {
+            int currentIndex = Integer.parseInt(matcher.group(3));
+            int latestIndex = latest.get(matcher.group(2));
+
+            if (currentIndex == latestIndex) {
+                continue;
+            }
+
+            String target = String.format("%s%d", matcher.group(2),
+                                          currentIndex);
+            String replacement = String.format("%s%d", matcher.group(2),
+                                               latestIndex);
+            out.println("t: " + target);
+            out.println("r: " + replacement);
+
+            updated = updated.replace(target, replacement);
+        }
+        if (updated.equals(page)) {
+            return;
+        }
+        mOverlay.putPage(pageName, updated);
+    }
+
+    // NOTE: added '.' to keep from hitting the "..." USKs on the FWS USK page.
+    private final static Pattern USK_REGEX = Pattern.compile("((USK@[^/.]+/[^/]+/)(\\d+))");
+    public void updateUsks(PrintStream out) throws IOException, InterruptedException {
+        out.println("----------------------------------------");
+        out.println("Finding USKs...");
+        out.println("----------------------------------------");
+
+        Map<String, Integer> latest = new HashMap<String, Integer>();
+        for (String pageName : mOverlay.getNames()) {
+            Matcher matcher = USK_REGEX.matcher(mOverlay.getPage(pageName));
+            int count = 0;
+            while (matcher.find()) {
+                if (count == 0) {
+                    out.println("[" + pageName +"]");
+                }
+                out.println(matcher.group());
+                int index = Integer.parseInt(matcher.group(3));
+                if (latest.get(matcher.group(2)) == null ||
+                    latest.get(matcher.group(2)) < index) {
+                    latest.put(matcher.group(2), index);
+                }
+                count++;
+            }
+        }
+
+        out.println("----------------------------------------");
+        out.println("Looking up latest versions...");
+        out.println("----------------------------------------");
+
+        FreesiteInserter runner = new  FreesiteInserter(mFcpHost, mFcpPort, "jfniki");
+
+        FreesiteInserter.setDebugOutput(out);
+        for (Map.Entry<String, Integer> entry : latest.entrySet()) {
+            String usk = String.format("%s%d/", entry.getKey(), entry.getValue());
+            FreesiteInserter.CheckUsk cmd = runner.sendCheckUsk(usk);
+            runner.waitUntilAllFinished();
+
+            if (!cmd.getUri().equals(usk)) {
+                String[] fields = cmd.getUri().split("/");
+                latest.put(entry.getKey(),
+                           Integer.parseInt(fields[fields.length -1]));
+            }
+        }
+
+        out.println("----------------------------------------");
+        out.println("Fixing pages...");
+        out.println("----------------------------------------");
+        for (String pageName : mOverlay.getNames()) {
+            updateUsksOnPage(latest, pageName, out);
+        }
     }
 
     ////////////////////////////////////////////////////////////

@@ -55,6 +55,7 @@ import fniki.wiki.child.SettingConfig;
 import fniki.wiki.child.StaticFile;
 import fniki.wiki.child.StaticWikiText;
 import fniki.wiki.child.Submitting;
+import fniki.wiki.child.UpdatingUsks;
 import fniki.wiki.child.WikiContainer;
 
 import fniki.freenet.filter.ContentFilterFactory;
@@ -130,6 +131,7 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("fniki/loadarchive", new LoadingArchive(mArchiveManager));
         mRoutes.put("fniki/resettoempty", new ResetToEmptyWiki(mArchiveManager));
         mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
+        mRoutes.put("fniki/updateusks", new UpdatingUsks(mArchiveManager));
 
         // Routes to files in the jar.
         // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.

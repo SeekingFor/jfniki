@@ -1,3 +1,4 @@
+// DCI: CHANGE NAME
 /* Helper class to do freesite insertion.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.pterodactylus.fcp.AllData;
+import net.pterodactylus.fcp.ClientGet;
 import net.pterodactylus.fcp.ClientHello;
 import net.pterodactylus.fcp.ClientPutComplexDir;
 import net.pterodactylus.fcp.CloseConnectionDuplicateClientName;
@@ -46,6 +48,7 @@ import net.pterodactylus.fcp.PutFailed;
 import net.pterodactylus.fcp.Priority;
 import net.pterodactylus.fcp.ProtocolError;
 import net.pterodactylus.fcp.PutSuccessful;
+import net.pterodactylus.fcp.ReturnType;
 import net.pterodactylus.fcp.SimpleProgress;
 import net.pterodactylus.fcp.Verbosity;
 
@@ -54,6 +57,7 @@ import wormarc.IOUtil;
 class FreesiteInserter {
     ////////////////////////////////////////////////////////////
     // C&P from wormarc.io.FCPCommandRunner
+    // because I didn't want to make it public in wormarc.
     ////////////////////////////////////////////////////////////
 
     private final static Verbosity VERBOSITY = Verbosity.ALL;
@@ -403,11 +407,65 @@ class FreesiteInserter {
         }
     }
 
+
+    static class CheckUsk extends Command {
+        public CheckUsk(String name, String usk, FreesiteInserter runner) {
+            super(name, usk, runner);
+        }
+
+        protected void handleData(long length, InputStream data) throws IOException {
+            handleDone("Not expecting AllData");
+        }
+
+        public void receivedGetFailed(FcpConnection fcpConnection, GetFailed getFailed) {
+            if (!getFailed.getIdentifier().equals(mFcpId)) {
+                return;
+            }
+
+            if (getFailed.getCode() == 27) {
+                // Stash the updated URI in the redirect.
+                mUri = getFailed.getRedirectURI();
+            }
+
+            // NOTE:
+            // We expect code 29 for locally available data.
+            // The request "fails" after checking for the redirect
+            // because we gave it a fake mime type.
+            // This is success.
+
+            // We don't care how we failed (DNF, RNF, etc.),
+            // just that we are done.
+            handleDone("");
+        }
+
+        protected FcpMessage getStartMessage() throws IOException {
+            ClientGet msg = new ClientGet(mUri, mFcpId, ReturnType.none);
+
+            msg.setVerbosity(VERBOSITY);
+            msg.setPriority(PRIORITY);
+            msg.setField(REAL_TIME_FIELD, REAL_TIME_VALUE);
+            msg.setMaxRetries(0);
+            msg.setAllowedMimeTypes("fakemimetypetoforcefailure");
+
+            // DON'T request data.
+            msg.setDataStoreOnly(true);
+            // NOTE: Also notice ReturnType.none above.
+
+            return msg;
+        }
+    }
+
     public synchronized InsertFreesite sendInsertFreesite(String insertUri,
                                                           Iterable <FileInfo> dataSource,
                                                           String defaultName) throws IOException  {
         InsertFreesite cmd = new InsertFreesite("insert_freesite", insertUri,
                                                 dataSource, defaultName, this);
+        start(cmd);
+        return cmd;
+    }
+
+    public synchronized CheckUsk sendCheckUsk(String usk) throws IOException  {
+        CheckUsk cmd = new CheckUsk("check_usk", usk, this);
         start(cmd);
         return cmd;
     }
