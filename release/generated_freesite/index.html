@@ -2,23 +2,45 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>jfniki version: ce3d2c7e212c</title>
+<title>jfniki version: 839fa407826d</title>
 </head>
 <body>
-<h4>jfniki version: ce3d2c7e212c</h4>
+<h4>jfniki version: 839fa407826d</h4>
 <div>
 <code>jfniki plugin.jar</code>:<br/>
-<pre><code><a href="/CHK@Nvq8Jnub7pdK1SFPC7CvwLJXYpJhZMgnk44tvQEriPk,bY2atCSkEZghF26HFNZwGwOaKskJN4Dyo0f6cPkW9aA,AAIC--8/jfniki.ce3d2c7e212c.jar">CHK@Nvq8Jnub7pdK1SFPC7CvwLJXYpJhZMgnk44tvQEriPk,bY2atCSkEZghF26HFNZwGwOaKskJN4Dyo0f6cPkW9aA,AAIC--8/jfniki.ce3d2c7e212c.jar</a></code></pre><p/>
+<pre><code><a href="/CHK@Sa4t5W8zCucACdMc8VvhiUN8LeOflrk2Hzhu9ffywtk,sbJJzDYp8PYqouhdg7K7lI19ii0Y7zjJQNvbrTNRi3Q,AAIC--8/jfniki.839fa407826d.jar">CHK@Sa4t5W8zCucACdMc8VvhiUN8LeOflrk2Hzhu9ffywtk,sbJJzDYp8PYqouhdg7K7lI19ii0Y7zjJQNvbrTNRi3Q,AAIC--8/jfniki.839fa407826d.jar</a></code></pre><p/>
 <code>source code zip:</code><br/>
-<pre><code><a href="/CHK@gqdMdcfyOcmVjQva~tN6EWbTFr-TCm6iLdyqhss6QW0,lDFxPGgj7NEoOFTIr8l0Z00u1rIf0bkUZC999ECwcEM,AAIC--8/jfniki.ce3d2c7e212c.zip">CHK@gqdMdcfyOcmVjQva~tN6EWbTFr-TCm6iLdyqhss6QW0,lDFxPGgj7NEoOFTIr8l0Z00u1rIf0bkUZC999ECwcEM,AAIC--8/jfniki.ce3d2c7e212c.zip</a></code></pre><p/>
+<pre><code><a href="/CHK@joYvo1XsQS4kSFL-Ny8iP5eyjIK25Zb5ag-~y88i510,RQBwqB4qPPG4jw9CE4ODrapPv0RGtR0XgCjWylK~JK8,AAIC--8/jfniki.839fa407826d.zip">CHK@joYvo1XsQS4kSFL-Ny8iP5eyjIK25Zb5ag-~y88i510,RQBwqB4qPPG4jw9CE4ODrapPv0RGtR0XgCjWylK~JK8,AAIC--8/jfniki.839fa407826d.zip</a></code></pre><p/>
 <a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/85/HgInfocalypse">hg infocalpse</a> repo:<br/>
 <code>
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/22
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/25
 </code>
 </div>
 <div>
 <h4>release notes</h4>
-<pre><code>I merged SeekingForAttention&apos;s changes to convert jfniki into
+<pre><code>Added support for image links.
+
+Here&apos;s example wikitext for an image link which goes to Toad&apos;s site.
+
+{{freenet:SSK@yGvITGZzrY1vUZK-4AaYLgcjZ7ysRqNTMfdcO8gS-LY,-ab5bJVD3Lp-LXEQqBAhJpMKrKJ19RnNaZMIkusU79s,AQACAAE/toad-41/activelink.png|This image is a link to Toad&apos;s freesite.|freenet:USK@yGvITGZzrY1vUZK-4AaYLgcjZ7ysRqNTMfdcO8gS-LY,-ab5bJVD3Lp-LXEQqBAhJpMKrKJ19RnNaZMIkusU79s,AQACAAE/toad/41}}
+
+Note that you must supply the alt text.
+
+Got rid of the hard coded link color in the plugin css, so links
+in the plugin should respect the fproxy theme, which I believe
+was SFA&apos;s intention.
+
+Added an &quot;Update&quot; link which tries to automatically update all
+USK&apos;s on all pages to the latest indexes.
+
+Added support for supplying an optional SSK key for site insertion.
+If you want to use this, supply an SSK private key (i.e.
+starting with &apos;SSK@&apos; and ending in &apos;/&apos; in the &apos;Site Private Key&apos;
+field before you hit the &apos;Confirm&apos; button. The value is not saved,
+so you need to supply it for every insert.
+
+ce3d2c7e212c
+I merged SeekingForAttention&apos;s changes to convert jfniki into
 a first class plugin (i.e. Toadlet).
 
 8b8d608e8198
@@ -113,7 +135,7 @@ has good documentation on jfniki. Activelink: <br/>
 <h4>site info</h4>
 <img src="activelink.png" alt="[jfniki releases activelink.png]" width="108" height="36"/>
 <p>
-<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/8/&amp;desc=jfniki releases">[bookmark!]</a>
+<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/9/&amp;desc=jfniki releases">[bookmark!]</a>
 </div>
 </body>
 </html>
