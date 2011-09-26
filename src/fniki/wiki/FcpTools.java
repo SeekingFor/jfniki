@@ -1,5 +1,4 @@
-// DCI: CHANGE NAME
-/* Helper class to do freesite insertion.
+/* Helper class to do freesite insertion an USK updating.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -54,7 +53,7 @@ import net.pterodactylus.fcp.Verbosity;
 
 import wormarc.IOUtil;
 
-class FreesiteInserter {
+class FcpTools {
     ////////////////////////////////////////////////////////////
     // C&P from wormarc.io.FCPCommandRunner
     // because I didn't want to make it public in wormarc.
@@ -79,7 +78,7 @@ class FreesiteInserter {
     }
 
     public static void setDebugOutput(PrintStream out) {
-        synchronized (FreesiteInserter.class) {
+        synchronized (FcpTools.class) {
             sDebugOut = out;
         }
     }
@@ -87,7 +86,7 @@ class FreesiteInserter {
     static abstract class Command extends FcpAdapter {
         protected String mName;
         protected String mUri;
-        protected FreesiteInserter mRunner;
+        protected FcpTools mRunner;
         protected String mFcpId;
 
         protected boolean mDone = false;
@@ -112,7 +111,7 @@ class FreesiteInserter {
             return IOUtil.randomHexString(16);
         }
 
-        protected Command(String name, String uri, FreesiteInserter runner) {
+        protected Command(String name, String uri, FcpTools runner) {
             mName = name;
             mUri = uri;
             mRunner = runner;
@@ -239,7 +238,7 @@ class FreesiteInserter {
 
     static class HelloCommand extends Command {
         private String mClientName;
-        protected HelloCommand(String clientName, FreesiteInserter runner) {
+        protected HelloCommand(String clientName, FcpTools runner) {
             super("client_hello", "", runner);
             mClientName = clientName;
         }
@@ -257,7 +256,7 @@ class FreesiteInserter {
     private List<Command> mPending = new ArrayList<Command>();
     private FcpConnection mConnection;
 
-    public FreesiteInserter(String host, int port, String clientName)
+    public FcpTools(String host, int port, String clientName)
         throws IOException, InterruptedException  {
         mConnection = new FcpConnection(host, port);
         mConnection.connect();
@@ -352,7 +351,7 @@ class FreesiteInserter {
         private final String mDefaultName;
 
         public InsertFreesite(String name, String insertUri, Iterable <FileInfo> dataSource,
-                              String defaultName, FreesiteInserter runner) {
+                              String defaultName, FcpTools runner) {
             super(name, insertUri, runner);
             mDataSource = dataSource;
             mDefaultName = defaultName;
@@ -409,7 +408,7 @@ class FreesiteInserter {
 
 
     static class CheckUsk extends Command {
-        public CheckUsk(String name, String usk, FreesiteInserter runner) {
+        public CheckUsk(String name, String usk, FcpTools runner) {
             super(name, usk, runner);
         }
 

@@ -87,7 +87,7 @@ public class SiteTheme {
                             if (fileName.length() < 1) {
                                 throw new IOException("Unexpected entry in theme zip file: " + name);
                             }
-                            staticFiles.add(FreesiteInserter.makeFileInfo(fileName, buffer.toByteArray(), null));
+                            staticFiles.add(FcpTools.makeFileInfo(fileName, buffer.toByteArray(), null));
                         } else {
                             throw new IOException("Unexpected entry in theme zip file: " + name);
                         }

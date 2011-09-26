@@ -514,12 +514,12 @@ public class ArchiveManager {
         out.println("Looking up latest versions...");
         out.println("----------------------------------------");
 
-        FreesiteInserter runner = new  FreesiteInserter(mFcpHost, mFcpPort, "jfniki");
+        FcpTools runner = new  FcpTools(mFcpHost, mFcpPort, "jfniki");
 
-        FreesiteInserter.setDebugOutput(out);
+        FcpTools.setDebugOutput(out);
         for (Map.Entry<String, Integer> entry : latest.entrySet()) {
             String usk = String.format("%s%d/", entry.getKey(), entry.getValue());
-            FreesiteInserter.CheckUsk cmd = runner.sendCheckUsk(usk);
+            FcpTools.CheckUsk cmd = runner.sendCheckUsk(usk);
             runner.waitUntilAllFinished();
 
             if (!cmd.getUri().equals(usk)) {
@@ -555,10 +555,10 @@ public class ArchiveManager {
 
         Iterable<FileInfo> dataSource = new WikiHtmlExporter(this, cfg.mTemplate, cfg.mStaticFiles).export();
 
-        FreesiteInserter runner = new  FreesiteInserter(mFcpHost, mFcpPort, "jfniki");
-        FreesiteInserter.setDebugOutput(out);
+        FcpTools runner = new  FcpTools(mFcpHost, mFcpPort, "jfniki");
+        FcpTools.setDebugOutput(out);
 
-        FreesiteInserter.InsertFreesite cmd = runner.sendInsertFreesite(insertUri,
+        FcpTools.InsertFreesite cmd = runner.sendInsertFreesite(insertUri,
                                                                         dataSource,
                                                                         cfg.mDefaultPage);
         runner.waitUntilAllFinished();
@@ -571,7 +571,7 @@ public class ArchiveManager {
         try {
             List<FileInfo> staticFiles = new ArrayList<FileInfo>();
             byte[] png = IOUtil.readAndClose(ArchiveManager.class.getResourceAsStream("/jfniki_activelink.png"));
-            staticFiles.add(FreesiteInserter.makeFileInfo("activelink.png", png, "image/png"));
+            staticFiles.add(FcpTools.makeFileInfo("activelink.png", png, "image/png"));
 
             return new SiteTheme(IOUtil.readUtf8StringAndClose(ArchiveManager.class.
                                                                getResourceAsStream("/wiki_dump_template.html")),

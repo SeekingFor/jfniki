@@ -86,7 +86,7 @@ public class WikiHtmlExporter {
             writer.flush();
             // LATER: back to this.
             // Yeah. I really am storing every single page in RAM.
-            FileInfo info = FreesiteInserter.
+            FileInfo info = FcpTools.
                 makeFileInfo(name + ".html", writer.toString().getBytes(IOUtil.UTF8), "text/html");
             infos.add(info);
         }
