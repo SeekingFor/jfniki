@@ -1,0 +1,6 @@
+I rebased my hg infocalpse repo to get rid of a copy of freenet.jar
+that was accidently committed when I merged SFA's changes.
+
+The release that was tagged as ce3d2c7e212c corresponds to
+41f60157df20 in the current repository.
+

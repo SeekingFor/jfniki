@@ -70,7 +70,7 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 
 FREENET_DOC_WIKI_IDX = 61
 FNIKI_IDX = 85
-REPO_IDX = 22
+REPO_IDX = 25
 
 ############################################################
 

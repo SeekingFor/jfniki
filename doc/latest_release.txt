@@ -1,3 +1,25 @@
+Added support for image links.
+
+Here's example wikitext for an image link which goes to Toad's site.
+
+{{freenet:SSK@yGvITGZzrY1vUZK-4AaYLgcjZ7ysRqNTMfdcO8gS-LY,-ab5bJVD3Lp-LXEQqBAhJpMKrKJ19RnNaZMIkusU79s,AQACAAE/toad-41/activelink.png|This image is a link to Toad's freesite.|freenet:USK@yGvITGZzrY1vUZK-4AaYLgcjZ7ysRqNTMfdcO8gS-LY,-ab5bJVD3Lp-LXEQqBAhJpMKrKJ19RnNaZMIkusU79s,AQACAAE/toad/41}}
+
+Note that you must supply the alt text.
+
+Got rid of the hard coded link color in the plugin css, so links
+in the plugin should respect the fproxy theme, which I believe
+was SFA's intention.
+
+Added an "Update" link which tries to automatically update all
+USK's on all pages to the latest indexes.
+
+Added support for supplying an optional SSK key for site insertion.
+If you want to use this, supply an SSK private key (i.e.
+starting with 'SSK@' and ending in '/' in the 'Site Private Key'
+field before you hit the 'Confirm' button. The value is not saved,
+so you need to supply it for every insert.
+
+ce3d2c7e212c
 I merged SeekingForAttention's changes to convert jfniki into
 a first class plugin (i.e. Toadlet).
 
