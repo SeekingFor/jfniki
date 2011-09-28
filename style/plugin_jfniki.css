@@ -14,3 +14,7 @@ div#content .talktitle {text-align:right;}
 div#content .notalktitle {color:#c0c0c0;text-align:right;}
 div#content .archiveuri {font-family: monospace; font-size: 70%;}
 div#content .archivever {font-family: monospace;}
+div#content .diffins {background:#e6ffe6;}
+div#content .diffdel {background:#ffe6e6;}
+div#content .diffequal {}
+div#content .difftext {font-family: monospace;}
