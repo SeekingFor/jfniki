@@ -1,4 +1,4 @@
-20110925
+20110928
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -147,6 +147,8 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+2cf5cd727366: BUG: Missing insert sitekey parameter causes freesite insert failure for USKs.
+4d24ce7d76ef: BUG: Diff coloring missing from jfniki.css.
 5686a2328b99: BUG: "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" in Discover for deleted
               identities on FMS.
 238c7dcc5ae3: BUG: incorrect drawing of rebased changes on discover page (since b963650876a7).

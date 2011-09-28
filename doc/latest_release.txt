@@ -1,3 +1,9 @@
+Fixed bug that was causing USK site insertion not to work
+when no custom private key was specified.
+
+Fixed diff coloring in jfniki.css.
+
+839fa407826d
 Added support for image links.
 
 Here's example wikitext for an image link which goes to Toad's site.
@@ -77,17 +83,3 @@ GOTCHAS:
 Fixed bug that was causing "Discover" to fail with an
 "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" error
 message on FMS. This only happened for deleted identities.
-
-da5f54f86710
-Fixed a bug in the display of '-' that was causing horizontal lines to
-be rendered incorrectly on the "Discover" page.
-
-Removed some unused files from the build. This should shrink the .jar and .zip.
-
-4f9255d698ae:
-Fixed bug on the "Discover" page that caused lines to be drawn incorrectly
-in some cases for graphs with rebased versions.
-
-Use .zip instead of .tgz for source release.
-
-
