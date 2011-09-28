@@ -105,7 +105,8 @@ public class InsertingFreesite extends AsyncTaskContainer {
         if (context.getQuery().get("keytype").equals("chk")) {
             mUri = "CHK@";
         } else {
-            if (context.getQuery().get("sitekey") != null) {
+            if (context.getQuery().get("sitekey") != null &&
+                context.getQuery().get("sitekey").length() > 3) {
                 // Support optional private key.
                 mUri = "USK" + context.getQuery().get("sitekey").substring(3) +
                 sitename + "/0/";
