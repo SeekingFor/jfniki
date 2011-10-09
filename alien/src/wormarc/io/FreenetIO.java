@@ -52,6 +52,7 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
     private LinkCache mCache;
     // Final on purpose. Look at sleazy threading code before making non-final!
     private final Map<String, String> mSha1ToChk;
+    private boolean mIgnoreChkCache;
 
     // Transient
     private HistoryLinkMap mLinkMap;
@@ -102,6 +103,11 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             sDebugOut = out;
             FCPCommandRunner.setDebugOutput(sDebugOut);
         }
+    }
+
+    // Forces insert of all CHKs when set true.
+    public void setIgnoreChkCache(boolean value) {
+        mIgnoreChkCache = value;
     }
 
     public String getInsertUri() { return mInsertUri; }
@@ -385,6 +391,8 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
         }
     }
 
+    // LATER: Rename this?  "precompute" doesn't sound right.
+    // NOTE: returns null for all blocks when mIgnoreChkCache is true.
     private List<FreenetTopKey.BlockDescription> precomputeDescriptions(HistoryLinkMap linkMap,
                                                                         List<Block> blocks)
         throws IllegalBase64Exception,
@@ -393,6 +401,12 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
 
         List<FreenetTopKey.BlockDescription> descriptions = new ArrayList<FreenetTopKey.BlockDescription>();
         for (Block block : blocks) {
+            if (mIgnoreChkCache) {
+                // hmmmm... wonky.
+                descriptions.add(null);
+                continue;
+            }
+
             String hexDigest = IOUtil.getFileDigest(linkMap.getBinaryRep(block)).toString();
             String chk = getCachedChk(hexDigest);
             if (chk != null) {

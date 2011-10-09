@@ -40,6 +40,7 @@ import static fniki.wiki.HtmlUtils.*;
 import fniki.wiki.WikiContext;
 
 public class Submitting extends AsyncTaskContainer {
+    private boolean mReinserting = true;
     public Submitting(ArchiveManager archiveManager) {
         super(archiveManager);
     }
@@ -59,23 +60,23 @@ public class Submitting extends AsyncTaskContainer {
             switch (getState()) {
             case STATE_WORKING:
                 showBuffer = true;
-                title = "Submitting Changes";
+                title = mReinserting ? "Reinserting Archive" : "Submitting Changes";
                 cancelTitle = "Cancel";
                 break;
             case STATE_WAITING:
                 showBuffer = false;
-                title = "Confirm Submit";
-                confirmTitle = "Submit";
+                title = mReinserting ? "Confirm Reinsert" : "Confirm Submit";
+                confirmTitle = mReinserting ? "Reinsert" : "Submit";
                 cancelTitle = "Cancel";
                 break;
             case STATE_SUCCEEDED:
                 showBuffer = true;
-                title = "Submission Succeeded";
+                title = mReinserting ? "Reinsert Succeeded" : "Submission Succeeded";
                 cancelTitle = "Done";
                 break;
             case STATE_FAILED:
                 showBuffer = true;
-                title = "Submission Failed";
+                title = mReinserting ? "Reinsert Failed" : "Submission Failed";
                 confirmTitle = "Retry";
                 cancelTitle = "Done";
                 break;
@@ -100,6 +101,18 @@ public class Submitting extends AsyncTaskContainer {
         }
     }
 
+    public void entered(WikiContext context) {
+        super.entered(context);
+        try {
+            // Should be fast enough to do in the UI thread.
+            mReinserting =
+                mArchiveManager.getLocalChanges().isUnmodified();
+        } catch (IOException ioe) {
+            // Should never happen.
+            ioe.printStackTrace();
+        }
+    }
+
     public boolean doWork(PrintStream out) throws Exception {
         if (mArchiveManager.getPrivateSSK() == null) {
             out.println("The private key isn't set.");
@@ -107,10 +120,17 @@ public class Submitting extends AsyncTaskContainer {
         }
 
         try {
-            out.println("Inserting. Please be patient...");
-            String requestUri = mArchiveManager.pushToFreenet(out);
-            out.println("Inserted: " + requestUri);
-            return true;
+            if (mReinserting) {
+                out.println("Reinserting. Please be patient...");
+                String requestUri = mArchiveManager.reinsertToFreenet(out);
+                out.println("Reinserted: " + requestUri);
+                return true;
+            } else {
+                out.println("Inserting. Please be patient...");
+                String requestUri = mArchiveManager.pushToFreenet(out);
+                out.println("Inserted: " + requestUri);
+                return true;
+            }
         } catch (IOException ioe) {
             out.println("Insert failed from background thread: " + ioe.getMessage());
             return false;

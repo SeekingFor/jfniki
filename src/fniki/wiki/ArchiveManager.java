@@ -283,6 +283,29 @@ public class ArchiveManager {
         return uri;
     }
 
+
+    public String reinsertToFreenet(PrintStream out) throws IOException {
+        FileManifest.Changes changes = mFileManifest.diffTo(mArchive, mOverlay);
+        if (!changes.isUnmodified()) {
+            throw new IOException("There are local changes. Can't re-insert.");
+        }
+
+        Archive copy = mArchive.deepCopy();
+
+        // Generate a unique SSK based on the SHA hash of the archive manifest.
+        String insertUri = getInsertUri(copy);
+
+        out.println("Re-insert URI: " + insertUri);
+
+        FreenetIO io = makeIO();
+        io.setInsertUri(insertUri);
+        io.setIgnoreChkCache(true); // Force re-insert of all chks.
+        out.println("Writing to Freenet...");
+        copy.write(io);
+
+        return io.getRequestUri();
+    }
+
     // DCI: commitAndPushToFreenet() ?
     public String pushToFreenet(PrintStream out) throws IOException {
         FileManifest.Changes changes = mFileManifest.diffTo(mArchive, mOverlay);

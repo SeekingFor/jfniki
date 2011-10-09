@@ -366,7 +366,7 @@ public class WikiContainer implements ChildContainer {
                                 StringBuilder buffer) throws IOException {
 
         buffer.append(makeLocalLink(context, "fniki/submit", null, "Submit"));
-        buffer.append(" local changes. <br>");
+        buffer.append(" local changes (or reinsert if there are no changes) <br>");
 
         buffer.append(makeLocalLink(context, "fniki/changelog", "confirm", "Show"));
         buffer.append(" change history for this version. <br>");
