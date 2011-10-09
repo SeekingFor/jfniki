@@ -1,4 +1,4 @@
-20110928
+20111009
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -86,6 +86,9 @@ Dev notes
 ---
 *BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 BUG: fix the discover UI to correctly handle posts from a different nym than the insert
+BUG: fix version hash generation code to ignore the nym part of the URL
+     i.e. version inserted by different nyms with the same info
+     after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version. 
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
 BUG: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
@@ -103,7 +106,8 @@ CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
 ---
 **IDEA: Staking.  add a biss message that says "I say this version is good"
       not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
-**IDEA: Toadlet based plugin that redirects to jfniki (i.e. to get on menu) [not sure this is possible]
+[PUNT: SFA provided toadlet code.] **IDEA: Toadlet based plugin that redirects to
+                                   jfniki (i.e. to get on menu) [not sure this is possible]
 *IDEA: Support links to other wikis. e.g.:b fniki://nntp/group/name[/SSK@some_version]
       [Not quite. Should be able to support mutliple transports (fms, ft, freemail?, fproxy usk?) in same url]
       [See notes below on ft fms interop. one NNTP to rule them all]
@@ -114,7 +118,6 @@ IDEA: Freetalk vs Freenet interop
       3) Convention or config to choose which private key is used for SSK insertion.
       Hmmm... not sure if people would use this feature because of the correlation of ids.
 IDEA: Add permenant static help page, with quickstart page. Clean up display of empty wiki.
-IDEA: linklint. checks version of all USK links and updates them [feature creep.]
 IDEA: Use magic pages for extra header and footers. Add options to disable them in config. emergency link on perm footer
       Completely replace top footer?
 IDEA: I KAN HAZ JAVA TEMPLATE ENGIN?
@@ -160,6 +163,7 @@ Fixed bugs:
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
 
 Added features:
+a7fb95669db4: IDEA: linklint. checks version of all USK links and updates them [feature creep.]
 f9b66084244d: IDEA: USK insert from inside fniki (feature creep :-( ) [From a real user]
 08d1b85d8ddd: IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
       from  http://selenic.com/repo/hg-stable/file/4ec34de8bbb1/hgext/graphlog.py

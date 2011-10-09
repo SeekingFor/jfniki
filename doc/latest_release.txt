@@ -1,3 +1,13 @@
+Added support for re-inserting existing versions.
+If you click the "Submit" link when there are no local changes
+it will cause the current version to be re-inserted.
+
+If you aren't using the private key that the version was
+inserted with, the data blocks will still be re-inserted, but
+the top key won't (i.e. it is inserted under your SSK keyspace
+instead).
+
+3cd715c98842
 Fixed bug that was causing USK site insertion not to work
 when no custom private key was specified.
 
