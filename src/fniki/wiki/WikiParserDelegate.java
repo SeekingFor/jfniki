@@ -97,7 +97,7 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         return true;
     }
 
-    // Depends on CSS in add_header.css
+    // USES 'archiveuri' in CSS.
     protected boolean processedArchiveUriMacro(StringBuilder sb, String text) {
         String uri = mArchiveManager.getParentUri();
         if (uri == null) {
@@ -111,7 +111,7 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         return true;
     }
 
-    // Depends on CSS in add_header.css
+    // USES 'archivever' in CSS.
     protected boolean processedArchiveVersionMacro(StringBuilder sb, String text) {
         String uri = mArchiveManager.getParentUri();
         if (uri == null) {
@@ -121,6 +121,78 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         sb.append("<span class=\"archivever\">");
         sb.append(escapeHTML(getVersionHex(uri)));
         sb.append("</span>");
+        return true;
+    }
+
+
+    private static int getUskIndex(String usk) {
+        return Integer.parseInt(usk.split("/")[2]);
+    }
+
+    private static String getSskForUsk(String usk, int index) {
+        String[] fields = usk.split("/");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(fields[0].replace("USK@", "SSK@"));
+        sb.append("/");
+        sb.append(fields[1]);
+        sb.append("-" + index);
+        index = 3;
+        while (index < fields.length) {
+            sb.append("/");
+            sb.append(fields[index]);
+            index++;
+        }
+        if (usk.endsWith("/")) {
+            // Because String.split() doesn't generate an empty field
+            // for this case.
+            sb.append("/");
+        }
+
+        return sb.toString();
+    }
+    //               0              1     2     3
+    // SskVersionLinks|freenet:USK@..|count|first
+    protected boolean processedSskVersionLinks(StringBuilder sb, String text) {
+        String[] fields = text.split("\\|"); // Because it's a regex.
+        if (fields.length < 2 ||
+            !isValidFreenetUri(fields[1]) ||
+            !fields[1].startsWith("freenet:USK@")) {
+            sb.append("{ERROR: NO VALID USK}");
+            return true;
+        }
+
+        String usk = fields[1];
+        int latest = getUskIndex(usk);
+        int count = 1;
+        String separator = "\n";
+
+        try {
+            if (fields.length > 2) {
+                count = Integer.parseInt(fields[2]);
+            }
+
+            if (fields.length > 3) {
+                latest = Integer.parseInt(fields[3]);
+            }
+
+        } catch (NumberFormatException nfe) {
+            sb.append("{ERROR: BAD ARGUMENTS}");
+            return true;
+        }
+
+        int index = latest;
+        while (index > latest - count && index >= 0) {
+            String ssk = getSskForUsk(usk, index);
+            sb.append("<a class=\"jfnikiLinkFreenet\" href=\""+ makeFreenetLink(ssk) +"\">");
+            sb.append("" + index);
+            sb.append("</a>");
+            if (index - 1 > latest - count && index - 1 >= 0) { // ugly
+                sb.append(separator);
+            }
+            index--;
+        }
+
         return true;
     }
 
@@ -135,6 +207,9 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
             return processedArchiveUriMacro(sb, text);
         } else if (text.equals("ArchiveVersion")) {
             return processedArchiveVersionMacro(sb, text);
+        } else if (text.startsWith("SskVersionLinks")) {
+            // LOOK ----^, has arguments.
+            return processedSskVersionLinks(sb, text);
         }
         return false;
     }

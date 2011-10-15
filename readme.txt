@@ -104,6 +104,9 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
+**IDEA: Fix automatic "freenet:..." link detection.  legit scheme://rest parsing is
+        built into creole parser, but freenet links don't use a standard scheme url. grrrrrr...
+        0) Preprocess? 1) hack creole parser [Not sure this is worth it.]
 **IDEA: Staking.  add a biss message that says "I say this version is good"
       not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
 [PUNT: SFA provided toadlet code.] **IDEA: Toadlet based plugin that redirects to
