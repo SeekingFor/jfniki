@@ -252,9 +252,15 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         }
 
         String[] link=split(text, '|');
-        if (isValidFreenetUri(link[0]) &&
-            !link[0].startsWith("freenet:USK@")) {
+        if (isValidFreenetUri(link[0])) {
             String alt=escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0]));
+
+            String imgUri = link[0];
+            if(imgUri.startsWith("freenet:USK@")) {
+                // "Freeze" usk image links.
+                // Notice that the alt text above will refer to the USK.
+                imgUri = getSskForUsk(imgUri, getUskIndex(imgUri));
+            }
 
             if (link.length == 3 &&
                 (isValidLocalLink(link[2].trim()) || isValidFreenetUri(link[2].trim()))) {
@@ -265,13 +271,13 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
                     sb.append(makeFreenetLink(link[2].trim()));
                 }
                 sb.append("\">");
-                sb.append("<img src=\"" + makeFreenetLink(link[0].trim())
+                sb.append("<img src=\"" + makeFreenetLink(imgUri.trim())
                           + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
                 sb.append("</a>");
                 return;
             } else {
                 // Hmmm... allows extra fields
-                sb.append("<img src=\"" + makeFreenetLink(link[0].trim())
+                sb.append("<img src=\"" + makeFreenetLink(imgUri.trim())
                           + "\" alt=\""+alt+"\" title=\""+alt+"\" />");
                 return;
             }
