@@ -124,9 +124,36 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         return true;
     }
 
-
     private static int getUskIndex(String usk) {
         return Integer.parseInt(usk.split("/")[2]);
+    }
+
+    private static String getShortTitle(String uri) {
+        if (uri.startsWith("freenet:")) {
+            uri = uri.substring("freenet:".length());
+        }
+
+        String[] fields = uri.split("/");
+        if (fields.length < 2) {
+            return uri;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(fields[0].substring(0, 10) + "...");
+        int index = 1;
+        while (index < fields.length) {
+            sb.append("/");
+            sb.append(fields[index]);
+            index++;
+        }
+        if (uri.endsWith("/")) {
+            // Because String.split() doesn't generate an empty field
+            // for this case.
+            sb.append("/");
+        }
+
+        return sb.toString();
     }
 
     private static String getSskForUsk(String usk, int index) {
@@ -219,8 +246,15 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
         String[] link=split(text, '|');
         if (getFreenetLinksAllowed() &&
             isValidFreenetUri(link[0])) {
+            String title = link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0];
+            if (title.equals("__short__")) {
+                title = getShortTitle(link[0]);
+            } else if (title.indexOf("__ordinal__") != -1 && link[0].startsWith("freenet:USK@")) {
+                // e.g. 'FMS@__ordinal__' -> 'FMS@123'
+                title = title.replace("__ordinal__", "" + getUskIndex(link[0]));
+            }
             sb.append("<a class=\"jfnikiLinkFreenet\" href=\""+ makeFreenetLink(link[0].trim()) +"\">");
-            sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
+            sb.append(escapeHTML(unescapeHTML(title)));
             sb.append("</a>");
             return;
         }
