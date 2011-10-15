@@ -200,9 +200,12 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
             }
 
             if (fields.length > 3) {
-                latest = Integer.parseInt(fields[3]);
+                if (fields[3].startsWith("+")) {
+                    latest += Integer.parseInt(fields[3].substring(1));
+                } else {
+                    latest = Integer.parseInt(fields[3]);
+                }
             }
-
         } catch (NumberFormatException nfe) {
             sb.append("{ERROR: BAD ARGUMENTS}");
             return true;
