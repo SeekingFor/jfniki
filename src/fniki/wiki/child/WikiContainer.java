@@ -403,6 +403,10 @@ public class WikiContainer implements ChildContainer {
         buffer.append(makeLocalLink(context, "fniki/updateusks", "view", "Update"));
         buffer.append(" the index values of all USK links in this wiki (experimental).<p/>\n");
 
+        buffer.append("<hr>\n");
+        buffer.append(makeLocalLink(context, "fniki/likeversion", "view", "Like"));
+        buffer.append(" this version so other users will know it is the latest.<p/>\n");
+
   }
 
     private void addFooter(WikiContext context, String name, boolean readOnly, StringBuilder buffer) throws IOException {

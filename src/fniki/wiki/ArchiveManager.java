@@ -57,8 +57,8 @@ public class ArchiveManager {
     public final static int FMS_PORT = 1119;
     public final static String FMS_GROUP = "biss.test000";
     public final static String BISS_NAME = "testwiki";
-    // Maximum number of versions to read from FMS.
-    private final static int MAX_VERSIONS = 50;
+    // Maximum number of articles to read from FMS.
+    private final static int MAX_ARTICLES = 200;
 
     String mFcpHost = FCP_HOST;
     int mFcpPort = FCP_PORT;
@@ -379,6 +379,34 @@ public class ArchiveManager {
         return mParentUri;
     }
 
+    // Send an announcement for the version, even though we didn't insert it.
+    // There is code in LoadingVersionList.getRevisionGraphHtml() which
+    // renders differently depending on whether or not the public key hash
+    // of the fms/freetalk id matches the public key hash of the version SSK.
+    public void stakeCurrentVersion(PrintStream out) throws IOException {
+        if (mFmsId == null) {
+            throw new IOException("Can't send NNTP message because FMS id is not set.");
+        }
+
+        if (mParentUri == null) {
+            throw new IOException("There is not wiki version loaded!");
+        }
+
+        FileManifest.Changes changes = getLocalChanges();
+        if (!changes.isUnmodified()) {
+            throw new IOException("Refused to send message because there are local changes.");
+        }
+
+        out.println("Sending 'Like' notification to... ");
+        out.println("group: " + mFmsGroup);
+        out.println("wiki : " + mBissName);
+
+        FMSUtil.sendBISSMsg(mFmsHost, mFmsPort, mFmsId, mFmsGroup,
+                            mBissName, mParentUri);
+
+        out.println("Finished.");
+    }
+
     public FileManifest.Changes getLocalChanges() throws IOException {
         return mFileManifest.diffTo(mArchive, mOverlay);
     }
@@ -413,7 +441,7 @@ public class ArchiveManager {
         out.println("Reading version announcements via NNTP...");
 
         List<FMSUtil.BISSRecord> records =
-            FMSUtil.getBISSRecords(mFmsHost, mFmsPort, mFmsId, mFmsGroup, mBissName, MAX_VERSIONS);
+            FMSUtil.getBISSRecords(mFmsHost, mFmsPort, mFmsId, mFmsGroup, mBissName, MAX_ARTICLES);
 
         out.println("Finished reading. Processing...");
         // LATER: do better.

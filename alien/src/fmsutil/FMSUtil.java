@@ -164,9 +164,12 @@ public class FMSUtil {
         }
     }
 
-    // LATER: Cleanup. Seems like there's too much code here, give how little this does.
+    // LATER: Cleanup. Seems like there's too much code here, given how little this does.
 
-    // LATER: other kinds of records. STAKE. SANCTION
+    // LATER: other kinds of records. STAKE. SANCTION [No. staking is implicit when
+    // the fmsid of the user doesn't match the public key of the SSK version.
+    // sanction implies negative trust.]
+    //
     // Requires user because it looks up trust.
     public static List<BISSRecord> getBISSRecords(String host, int port, String user,
                                                   String group, String nameToResolve,

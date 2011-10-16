@@ -46,6 +46,7 @@ import fniki.wiki.child.AsyncTaskContainer;
 import fniki.wiki.child.DefaultRedirect;
 import fniki.wiki.child.GotoRedirect;
 import fniki.wiki.child.InsertingFreesite;
+import fniki.wiki.child.LikingVersion;
 import fniki.wiki.child.LoadingArchive;
 import fniki.wiki.child.LoadingChangeLog;
 import fniki.wiki.child.LoadingVersionList;
@@ -132,6 +133,7 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("fniki/resettoempty", new ResetToEmptyWiki(mArchiveManager));
         mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
         mRoutes.put("fniki/updateusks", new UpdatingUsks(mArchiveManager));
+        mRoutes.put("fniki/likeversion", new LikingVersion(mArchiveManager));
 
         // Routes to files in the jar.
         // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.

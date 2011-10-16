@@ -18,3 +18,5 @@ div#content .diffins {background:#e6ffe6;}
 div#content .diffdel {background:#ffe6e6;}
 div#content .diffequal {}
 div#content .difftext {font-family: monospace;}
+div#content .versionStaker {}
+div#content .versionCreator {color:#006600;}

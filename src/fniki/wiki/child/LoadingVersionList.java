@@ -264,6 +264,34 @@ public class LoadingVersionList extends AsyncTaskContainer {
         }
     }
 
+    // LATER: Move this into FMSUtils?
+    // i.e. Same private key was used to post the message and
+    // insert the archive update.
+    private static boolean isInserter(FMSUtil.BISSRecord record) {
+        int keyStart = record.mKey.indexOf("@");
+        int keyEnd = record.mKey.indexOf(",");
+        if (keyStart == -1 || keyEnd == -1 || keyStart >= keyEnd) {
+            return false;
+        }
+        String keyPubHash = record.mKey.substring(keyStart + 1,
+                                                  keyEnd - keyStart + 3);
+
+
+        int idStart = record.mFmsId.indexOf("@");
+        if (idStart == -1 || idStart == record.mFmsId.length() - 1) {
+            return false;
+        }
+        String idPubHash = record.mFmsId.substring(idStart + 1);
+
+        // Special case code for FreeTalk.
+        if (idPubHash.endsWith(".freetalk") &&
+            idPubHash.length() > ".freetalk".length()) {
+            // djk20111016: I don't run FreeTalk. This code path is untested.
+            idPubHash = idPubHash.substring(0, idPubHash.length() - ".freetalk".length());
+        }
+        return idPubHash.equals(keyPubHash);
+    }
+
     public synchronized String getRevisionGraphHtml(PrintStream textLog, List<FMSUtil.BISSRecord> records)
         throws IOException {
 
@@ -335,16 +363,24 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 lines.add(versionLink + " " + rebaseLink);
 
                 for (FMSUtil.BISSRecord reference : references) {
+                    String symbol = "+";
+                    String cssClass = "versionStaker";
+                    if (isInserter(reference)) {
+                        symbol = "&exist;";
+                        cssClass = "versionCreator";
+                    }
 
                     // LATER: Sort by date
-                    lines.add(String.format("user: %s (%s, %s, %s, %s)",
-                                            reference.mFmsId,
+                    lines.add(String.format("%s <span class=\"%s\">%s</span> (%s, %s, %s, %s)",
+                                            symbol,
+                                            cssClass,
+                                            escapeHTML(reference.mFmsId),
                                             trustString(reference.msgTrust()),
                                             trustString(reference.trustListTrust()),
                                             trustString(reference.peerMsgTrust()),
                                             trustString(reference.peerTrustListTrust())
                                             ));
-                    lines.add(String.format("date: %s", reference.mDate)); // Reliable?
+                    lines.add(String.format("  %s", reference.mDate)); // Reliable?
                 }
                 String[] parentsAgain  = getParentVersions(references.get(0));
 
@@ -360,7 +396,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
         }
         out.write("</pre>\n");
         out.flush();
-        textLog.println("Finished.");
+        textLog.println("Finished. (It may take ~=15 seconds for the page to update.)");
 
         return out.toString();
     }
