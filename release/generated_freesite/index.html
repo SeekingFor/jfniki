@@ -2,23 +2,45 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>jfniki version: 6f5a806bd342-- a serverless wiki running over Freenet</title>
+<title>jfniki version: 6bfef4ae4b6e-- a serverless wiki running over Freenet</title>
 </head>
 <body>
-<h4>jfniki version: 6f5a806bd342</h4>
+<h4>jfniki version: 6bfef4ae4b6e</h4>
 <div>
 <code>jfniki plugin.jar</code>:<br/>
-<pre><code><a href="/CHK@VEjSWzFAfOw3t9xuNgz3-Ny2-ixAkuYyDQLuK9h1Mng,DELlRHaRYddjfPYsvVMvEx~HjKN04KjNByrtckthlDE,AAIC--8/jfniki.6f5a806bd342.jar">CHK@VEjSWzFAfOw3t9xuNgz3-Ny2-ixAkuYyDQLuK9h1Mng,DELlRHaRYddjfPYsvVMvEx~HjKN04KjNByrtckthlDE,AAIC--8/jfniki.6f5a806bd342.jar</a></code></pre><p/>
+<pre><code><a href="/CHK@yiHNHq1XULf0wARlhNEh28dq85NNMMqQ7tbulQAz~cQ,iuxP7SbaM3kpPhSYKgavlVgtnSML6KAj4FInabI7wDc,AAIC--8/jfniki.6bfef4ae4b6e.jar">CHK@yiHNHq1XULf0wARlhNEh28dq85NNMMqQ7tbulQAz~cQ,iuxP7SbaM3kpPhSYKgavlVgtnSML6KAj4FInabI7wDc,AAIC--8/jfniki.6bfef4ae4b6e.jar</a></code></pre><p/>
 <code>source code zip:</code><br/>
-<pre><code><a href="/CHK@hOK~y9pDhPWQdLr0H9122~Z3CyleZgO~adtyPMMikh4,oxHaxq9bSyK62r8r5ZRHdcrBNZire2LGLHu07CIavkc,AAIC--8/jfniki.6f5a806bd342.zip">CHK@hOK~y9pDhPWQdLr0H9122~Z3CyleZgO~adtyPMMikh4,oxHaxq9bSyK62r8r5ZRHdcrBNZire2LGLHu07CIavkc,AAIC--8/jfniki.6f5a806bd342.zip</a></code></pre><p/>
+<pre><code><a href="/CHK@lX06WWgLK~4wkuNiWqgb2TLAFhwfKu~wDP9l0MDtd-M,9QhsRXIcVRh0G2H2wInn6nBwnylfp8KhPRTyGWd0vG8,AAIC--8/jfniki.6bfef4ae4b6e.zip">CHK@lX06WWgLK~4wkuNiWqgb2TLAFhwfKu~wDP9l0MDtd-M,9QhsRXIcVRh0G2H2wInn6nBwnylfp8KhPRTyGWd0vG8,AAIC--8/jfniki.6bfef4ae4b6e.zip</a></code></pre><p/>
 <a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/85/HgInfocalypse">hg infocalpse</a> repo:<br/>
 <code>
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/27
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/28
 </code>
 </div>
 <div>
 <h4>release notes</h4>
-<pre><code>Added support for re-inserting existing versions.
+<pre><code>Added SskVersionLinks macro to generate links to previous versions of a USK. Example:
+&lt;&lt;&lt;SskVersionLinks|freenet:USK@Dtz9FjDPmOxiT54Wjt7JwMJKWaqSOS-UGw4miINEvtg,cuIx2THw7G7cVyh9PuvNiHa1e9BvNmmfTcbQ7llXh2Q,AQACAAE/irclogs/143/|14|+7&gt;&gt;&gt;
+Arguments are: usk|count|latest_index
+If latest_index is prefixed with &apos;+&apos; then the value is interpreted as relative to
+the current USK index.
+
+Allow USK links for images but render them as SSKs. Example:
+{{freenet:USK@940RYvj1-aowEHGsb5HeMTigq8gnV14pbKNsIvUO~-0,FdTbR3gIz21QNfDtnK~MiWgAf2kfwHe-cpyJXuLHdOE,AQACAAE/publish/3/activelink.png|Automatically frozen SSK link for a USK}}
+
+Added handling for  &apos;__short__&apos; and &apos;__ordinal__&apos; in freenet link titles. Examples:
+[[freenet:USK@940RYvj1-aowEHGsb5HeMTigq8gnV14pbKNsIvUO~-0,FdTbR3gIz21QNfDtnK~MiWgAf2kfwHe-cpyJXuLHdOE,AQACAAE/publish/3/|__short__]]
+[[freenet:USK@940RYvj1-aowEHGsb5HeMTigq8gnV14pbKNsIvUO~-0,FdTbR3gIz21QNfDtnK~MiWgAf2kfwHe-cpyJXuLHdOE,AQACAAE/publish/3/|publish:__ordinal__]]
+
+Add a &apos;Like&apos; link to send an NNTP message recommending the currently loaded wiki version.
+&apos;Likers&apos; show up preceded by &apos;+&apos; on the &apos;Discover&apos; page, the initial inserter shows
+up with a &apos;there exists&apos; symbol (looks like a backwards capital &apos;E&apos;).
+Note: I was not able to test this on FreeTalk.  If there are bugs post bug reports on FMS
+and I will fix them.
+Note: This doesn&apos;t prune out redundant messages from the same id yet.
+That will be fixed eventually.
+
+6f5a806bd342
+Added support for re-inserting existing versions.
 If you click the &quot;Submit&quot; link when there are no local changes
 it will cause the current version to be re-inserted.
 
@@ -137,7 +159,7 @@ has good documentation on jfniki. Activelink: <br/>
 <h4>site info</h4>
 <img src="activelink.png" alt="[jfniki releases activelink.png]" width="108" height="36"/>
 <p>
-<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/11/&amp;desc=jfniki releases">[bookmark!]</a>
+<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/12/&amp;desc=jfniki releases">[bookmark!]</a>
 </div>
 </body>
 </html>
