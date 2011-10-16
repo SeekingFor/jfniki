@@ -323,6 +323,7 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 lut.put(child, recordsEntry);
             }
             if (!lut.get(child).contains(record)) {
+                // Can have multiple records from the same fmsid.
                 lut.get(child).add(record);
             }
 
@@ -369,6 +370,10 @@ public class LoadingVersionList extends AsyncTaskContainer {
                         symbol = "&exist;";
                         cssClass = "versionCreator";
                     }
+
+                    // LATER: This still needs some love. Only show the latest record per id?
+                    //        0) can I trust dates? 1) can I parse them? 3) punt and rely on
+                    //        date implicit in message order? [CHECK, does that work?]
 
                     // LATER: Sort by date
                     lines.add(String.format("%s <span class=\"%s\">%s</span> (%s, %s, %s, %s)",

@@ -1,3 +1,25 @@
+Added SskVersionLinks macro to generate links to previous versions of a USK. Example:
+<<<SskVersionLinks|freenet:USK@Dtz9FjDPmOxiT54Wjt7JwMJKWaqSOS-UGw4miINEvtg,cuIx2THw7G7cVyh9PuvNiHa1e9BvNmmfTcbQ7llXh2Q,AQACAAE/irclogs/143/|14|+7>>>
+Arguments are: usk|count|latest_index
+If latest_index is prefixed with '+' then the value is interpreted as relative to
+the current USK index.
+
+Allow USK links for images but render them as SSKs. Example:
+{{freenet:USK@940RYvj1-aowEHGsb5HeMTigq8gnV14pbKNsIvUO~-0,FdTbR3gIz21QNfDtnK~MiWgAf2kfwHe-cpyJXuLHdOE,AQACAAE/publish/3/activelink.png|Automatically frozen SSK link for a USK}}
+
+Added handling for  '__short__' and '__ordinal__' in freenet link titles. Examples:
+[[freenet:USK@940RYvj1-aowEHGsb5HeMTigq8gnV14pbKNsIvUO~-0,FdTbR3gIz21QNfDtnK~MiWgAf2kfwHe-cpyJXuLHdOE,AQACAAE/publish/3/|__short__]]
+[[freenet:USK@940RYvj1-aowEHGsb5HeMTigq8gnV14pbKNsIvUO~-0,FdTbR3gIz21QNfDtnK~MiWgAf2kfwHe-cpyJXuLHdOE,AQACAAE/publish/3/|publish:__ordinal__]]
+
+Add a 'Like' link to send an NNTP message recommending the currently loaded wiki version.
+'Likers' show up preceded by '+' on the 'Discover' page, the initial inserter shows
+up with a 'there exists' symbol (looks like a backwards capital 'E').
+Note: I was not able to test this on FreeTalk.  If there are bugs post bug reports on FMS
+and I will fix them.
+Note: This doesn't prune out redundant messages from the same id yet.
+That will be fixed eventually.
+
+6f5a806bd342
 Added support for re-inserting existing versions.
 If you click the "Submit" link when there are no local changes
 it will cause the current version to be re-inserted.

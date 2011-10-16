@@ -22,7 +22,7 @@ re-import your configuration every time you load the plugin.
 
 ==Authoritative Source Code==
 
-[[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/7/|Official jFniki release site]]
+[[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/12/|Official jFniki release site]]
 
 ==Contributors==
 * ##SeekingForAttention## -- Improved to the jfniki Freenet Plugin code.

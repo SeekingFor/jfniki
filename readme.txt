@@ -1,4 +1,4 @@
-20111009
+20111016
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -85,14 +85,15 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 Dev notes
 ---
 *BUG: Fix dumpwiki to set CSS class for "Discussion" links.
-BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 BUG: fix version hash generation code to ignore the nym part of the URL
      i.e. version inserted by different nyms with the same info
      after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version. 
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
-BUG: MUST show in the UI when edited wikitext has been truncated because it's too big.
+**BUG: MUST show in the UI when edited wikitext has been truncated because it's too big. [horrible.]
 BUG: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
 ---
+CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
+       e.g.:__RELEASE_SCRIPT_IGNORES_PAST_THIS_LINE__
 CHORE: Fix references to "library" in file headers.
 CHORE: Fix references to "FMS" to reflect the fact that either Freetalk or FMS may be used.
 CHORE: Add links to previous pages to release page. [encode head and date into tag?]
@@ -107,8 +108,6 @@ CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
 **IDEA: Fix automatic "freenet:..." link detection.  legit scheme://rest parsing is
         built into creole parser, but freenet links don't use a standard scheme url. grrrrrr...
         0) Preprocess? 1) hack creole parser [Not sure this is worth it.]
-**IDEA: Staking.  add a biss message that says "I say this version is good"
-      not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
 [PUNT: SFA provided toadlet code.] **IDEA: Toadlet based plugin that redirects to
                                    jfniki (i.e. to get on menu) [not sure this is possible]
 *IDEA: Support links to other wikis. e.g.:b fniki://nntp/group/name[/SSK@some_version]
@@ -149,10 +148,13 @@ IDEA: Caching in FreenetIO
 IDEA: Ditch human readable name <--> SSK fixup and generate arbitrary names from
       SSK public key hash (== big number). <n_first>*<m_middle>*<o_last> == big number
       let n = 1000, m = 1000,  o == 1000 => ???? [NOT QUITE. LOOK UP Combinatorics. USABILITY QUESTIONABLE]
+      [I think zwister might be working on something similar. rtfs his source before coding this from scratch.]
+
 IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the latest and
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+68813294196d: BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 2cf5cd727366: BUG: Missing insert sitekey parameter causes freesite insert failure for USKs.
 4d24ce7d76ef: BUG: Diff coloring missing from jfniki.css.
 5686a2328b99: BUG: "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" in Discover for deleted
@@ -166,6 +168,9 @@ Fixed bugs:
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
 
 Added features:
+68813294196d: IDEA: Staking.  add a biss message that says "I say this version is good"
+                   not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
+                   [like == stake]
 a7fb95669db4: IDEA: linklint. checks version of all USK links and updates them [feature creep.]
 f9b66084244d: IDEA: USK insert from inside fniki (feature creep :-( ) [From a real user]
 08d1b85d8ddd: IDEA: Pillage glog graph drawing code from hg to improve discover versions UI
