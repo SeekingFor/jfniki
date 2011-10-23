@@ -236,11 +236,13 @@ public class FMSUtil {
                     continue;
                 }
 
+                // DCI: Parse optional "re-announce"?
                 if (!bissLine.startsWith(nameToResolve + "|") ||
                     bissLine.length() <= nameToResolve.length() + 1) {
                     continue; // Expected a BISS name -> key mapping entry. Give up.
                 }
 
+                // DCI: DOH! would break old code!!!
                 String key = bissLine.substring(nameToResolve.length() + 1);
 
                 if (!isValidKey(key)) {

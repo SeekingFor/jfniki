@@ -31,13 +31,14 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import wormarc.Archive;
 import wormarc.BinaryLinkRep;
 import wormarc.HistoryLink;
 import wormarc.HistoryLinkMap;
 import wormarc.LinkDataFactory;
 import wormarc.LinkDigest;
 
-public class LinkCache {
+public class LinkCache implements Archive.LinkSource {
     protected File mDirectory;
 
     // Flat directory for now. Could use subdirs based on start of digest, like git.

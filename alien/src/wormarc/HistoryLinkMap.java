@@ -127,17 +127,18 @@ public class HistoryLinkMap {
     public List<HistoryLink> getChain(LinkDigest linkDigest, boolean stopAtEnd) {
         throwIfNullOrNullDigest(linkDigest);
         
-        //System.out.println("Starting: " + linkDigest);
+        //System.out.println("Starting: " + linkDigest + " stopAtEnd:" + stopAtEnd);
         ArrayList<HistoryLink> links = new ArrayList<HistoryLink>();
         HistoryLink link = new HistoryLink(0, false, null, linkDigest, null);
-        int traversalCount = 33; // Hmmm
+        int traversalCount = 33; // Hmmm DCI: fix. put in constant
         while (!link.mParent.isNullDigest() &&
                (!(stopAtEnd && link.mIsEnd))) {
             //System.out.println("Looking up parent: " + link);
             link = getLink(link.mParent);
             links.add(link);
             traversalCount--;
-            if (traversalCount == 0 && !stopAtEnd) {
+            if (traversalCount == 0 && stopAtEnd) {
+                // How do you construct a loop? SHA1 hash collision?
                 throw new RuntimeException("getChain() gave up.  Possible loop: " + linkDigest);
             }
         }

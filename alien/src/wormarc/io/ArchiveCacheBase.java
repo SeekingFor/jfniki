@@ -34,9 +34,16 @@ import wormarc.LinkDataFactory;
 import wormarc.LinkDigest;
 
 public abstract class ArchiveCacheBase extends LinkCache implements Archive.IO {
-    // INTENT: Hook for LATER to allow CLI client to store version data by
-    //         ArchiveManifest chain head LinkDigest.
-    protected abstract Archive.ArchiveData readArchiveData(HistoryLinkMap linkMap, LinkDataFactory linkFactory) throws IOException;
+    protected abstract Archive.ArchiveData
+        readArchiveData(HistoryLinkMap linkMap,
+                        LinkDataFactory linkFactory)
+        throws IOException;
+
+    protected abstract void
+        writeArchiveData(HistoryLinkMap linkMap,
+                         List<Block> blocks,
+                         List<Archive.RootObject> rootObjects)
+        throws IOException;
 
     public ArchiveCacheBase(String directory) throws IOException {
         super(directory);
@@ -57,6 +64,7 @@ public abstract class ArchiveCacheBase extends LinkCache implements Archive.IO {
                 writeLink(linkMap.getLink(digest));
             }
         }
+        writeArchiveData(linkMap, blocks, rootObjects);
     }
 
     public Archive.ArchiveData read(HistoryLinkMap linkMap, LinkDataFactory linkFactory) throws IOException {

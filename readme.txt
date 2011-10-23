@@ -84,14 +84,18 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
+***BUG: insert top key to CHK if the end user doesnt have the private key. i.e. don't leave a trace of re-insertions in SSK keyspace.
 *BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 BUG: fix version hash generation code to ignore the nym part of the URL
      i.e. version inserted by different nyms with the same info
-     after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version. 
+     after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version.
+     [Not sure about this. How do you determine attribution then?] 
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 **BUG: MUST show in the UI when edited wikitext has been truncated because it's too big. [horrible.]
 BUG: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
 ---
+CHORE: Fix SskVersionLinks macro to take '-' too.
+CHORE: Fix commented out assertion in release script.
 CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
        e.g.:__RELEASE_SCRIPT_IGNORES_PAST_THIS_LINE__
 CHORE: Fix references to "library" in file headers.
@@ -105,6 +109,17 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
+IDEA: 0) Make a new KIND_AM_CHAIN_HEAD external key key type and save the archive manifest hash
+      corresponding to parent / rebase links in ExternalRefs.
+      1) Fix the external link format to use it instead of the sha1 of the contents[thats what I should have done in the first place]
+      2) Fix all the places that the change above ripples through (ui, validation, auditing, new validation to make sure amch and uri match)
+      3) Update the CLI client to be able to "checkout" by amch, then it should be possible to reinsert blocks for any version
+         if you have the links locally cached.
+      4) It should be possible to regenerate topkey for any version.
+      5) It should be possible to traverse history w/o hitting fn.
+
+**IDEA: Save / Load page for local copies [Requested by user.Code is already written but needs to be cleaned up + UI]
+**IDEA: Add code / .css to colorize links to missing pages. [requested by user]
 **IDEA: Fix automatic "freenet:..." link detection.  legit scheme://rest parsing is
         built into creole parser, but freenet links don't use a standard scheme url. grrrrrr...
         0) Preprocess? 1) hack creole parser [Not sure this is worth it.]
@@ -154,6 +169,7 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+e835feaad222: BUG: Archive.mergeBlocks doesn't drop unreferenced links. [Damn. Dunno how this evaded capture so long]
 68813294196d: BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 2cf5cd727366: BUG: Missing insert sitekey parameter causes freesite insert failure for USKs.
 4d24ce7d76ef: BUG: Diff coloring missing from jfniki.css.

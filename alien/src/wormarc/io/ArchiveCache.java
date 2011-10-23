@@ -50,63 +50,73 @@ import wormarc.LinkDigest;
 //        Should be rewritten to read / write ArchiveData.
 //        DCI: This breaks the IO contract which doesn't require an ARCHIVE_MANIFEST.
 public class ArchiveCache extends ArchiveCacheBase {
-    String mName;
+    private String mName;
+    private LinkDigest mArchiveManifestChainHead;
+
+    private void setChainHead(File file) throws IOException {
+        if (mArchiveManifestChainHead != null) {
+            return;
+        }
+
+        mArchiveManifestChainHead =
+            new LinkDigest(IOUtil.
+                           readUtf8StringAndClose(new FileInputStream(file)).
+                           trim());
+    }
 
     protected Archive.ArchiveData readArchiveData(HistoryLinkMap linkMap,
                                                   LinkDataFactory linkFactory)
         throws IOException {
-        File file = new File(mDirectory, mName);
-        DataInputStream dis = new DataInputStream(new FileInputStream(file));
-        boolean raisedReadingDigest = true;
-        try {
-            // <digest><archive manifest bytes>
-            LinkDigest digest = BinaryLinkRep.readLinkDigest(dis);
-            raisedReadingDigest = false;
-            ArchiveManifest manifest = ArchiveManifest.fromBytes(dis, digest);
-            return manifest.makeArchiveData();
-        } finally {
-            if (raisedReadingDigest) {
-                dis.close();
-            }
-        }
+        setChainHead(new File(mDirectory, mName));
+
+
+        ArchiveManifest manifest =
+            ArchiveManifest.fromBytes(Archive.
+                                      readFile(mArchiveManifestChainHead, this),
+                                      mArchiveManifestChainHead);
+        return manifest.makeArchiveData();
     }
+
+    protected void
+        writeArchiveData(HistoryLinkMap linkMap,
+                         List<Block> blocks,
+                         List<Archive.RootObject> rootObjects)
+        throws IOException {
+        if (mName == null) {
+            throw new IllegalStateException("Name not set!");
+        }
+        LinkDigest digest = ArchiveManifest.getArchiveManifestDigest(rootObjects);
+
+        ArchiveManifest manifest =
+            ArchiveManifest.fromBytes(Archive.
+                                      readFile(digest, this),
+                                      digest);
+
+        if (!manifest.makeArchiveData().equals(new Archive.ArchiveData(blocks, rootObjects))) {
+            throw new IOException("Missing or malformed Archive Manifest!");
+        }
+        // Update the pointer file.
+        String fileName = new File(mDirectory, mName).getAbsolutePath();
+        IOUtil.writeFully(digest.toString().getBytes(IOUtil.UTF8),
+                          fileName);
+    }
+
 
     public ArchiveCache(String directory) throws IOException {
         super(directory);
     }
 
     // The named version of the archive to read / write next.
-    public void setName(String name) { mName = name; }
+    public void setName(String name) {
+        mName = name;
+        mArchiveManifestChainHead = null;
+    }
+
     public String getName() { return mName; }
 
-    // Override to dump ArchiveData after dumping links.
-    public void write(HistoryLinkMap linkMap, List<Block> blocks, List<Archive.RootObject> rootObjects) throws IOException {
-        if (mName == null) {
-            throw new IllegalStateException("Name not set!");
-        }
-
-        // Raises for no / multiple ARCHIVE_MANIFEST objects.
-        LinkDigest digest = ArchiveManifest.getArchiveManifestDigest(rootObjects);
-
-        super.write(linkMap, blocks, rootObjects);
-
-        // Write the manifest so it's available for subsequent read.
-        File file = new File(mDirectory, mName);
-        OutputStream outputStream = new FileOutputStream(file);
-        InputStream inputStream = null;
-        boolean raised = true;
-        try {
-            inputStream = (new ArchiveManifest(rootObjects, blocks)).toBytes();
-            raised = false;
-        } finally {
-            if (raised) {
-                outputStream.close();
-            }
-        }
-
-        // <digest><archive manifest bytes>
-        IOUtil.copyAndClose(new SequenceInputStream(new ByteArrayInputStream(digest.getBytes()),
-                                                    inputStream),
-                            outputStream);
+    // Setting this causes the name pointer file to be ignored
+    // for the next write.
+    public void setArchiveManifestChainHead(LinkDigest digest) {
+        mArchiveManifestChainHead = digest;
     }
 }

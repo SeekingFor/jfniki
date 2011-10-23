@@ -310,6 +310,8 @@ public class FCPCommandRunner {
         }
 
 	public void receivedPutSuccessful(FcpConnection fcpConnection, PutSuccessful putSuccessful) {
+            // BUG: DCI: why  does it hash "" when chk cache is disabled for re-insert.
+            // is this a race condition???
             LinkDigest digest = new LinkDigest(mData.getMessageDigest().digest());
             mHexDigest = digest.toString();
 

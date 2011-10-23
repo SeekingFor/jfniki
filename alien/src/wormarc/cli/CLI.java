@@ -39,11 +39,16 @@ import java.util.Set;
 
 import fmsutil.FMSUtil;
 import wormarc.Archive;
+import wormarc.ArchiveManifest;
 import wormarc.AuditArchive;
 import wormarc.FileManifest;
+import wormarc.HistoryLink;
+import wormarc.HistoryLinkMap;
 import wormarc.IOUtil;
+import wormarc.LinkDataFactory;
 import wormarc.LinkDigest;
 import wormarc.ExternalRefs;
+import wormarc.RamLinkDataFactory;
 import wormarc.RootObjectKind;
 
 import wormarc.io.FileIO;
@@ -628,6 +633,135 @@ public class CLI {
                 archive.write(io);
             }
         },
+
+
+        // DCI: 0) rename to checkout 1) create a separate reinsertblocks
+        new Command("resurrect", true, false, " <manifest_digest>",
+                    "Tries to resurrect a version from a full manifest hash.") {
+            public boolean canParse(String[] args) { return args.length >= 2; }
+            public void invoke(String[] args, CLICache cache) throws Exception {
+                sOut.println("Trying to resurrect archive manifest:");
+                sOut.println(args[1]);
+                sOut.println("");
+                sOut.println("This will FAIL if all links are not locally cached...");
+
+                LinkDigest digest = new LinkDigest(args[1]);
+                cache.setArchiveManifestChainHead(digest);
+
+                Archive archive = Archive.load(cache);
+                cache.setName("resurrected");
+                archive.write(cache);
+                cache.saveHead(cache.getName());
+                sOut.println("");
+                sOut.println("Success!");
+
+                FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
+                io.setInsertUri("CHK@");
+                sOut.println(String.format("Pushing version: %s to Freenet Insert URI:", cache.getName()));
+
+                archive.write(io);
+                //DCI: stoppped here. document horrific hacks
+
+                sOut.println(String.format("Pushed to: %s", io.getRequestUri()));
+            }
+        },
+
+        new Command("chain", true, false, " <chainId>", "dump link hashes for a chain") {
+            public boolean canParse(String[] args) { return args.length == 2; }
+            public void invoke(String[] args, CLICache cache) throws Exception {
+                String chainId = args[1];
+                Archive archive = null;
+                try {
+                    archive = loadHead(cache);
+                } catch (IOException ioe) {
+                    sOut.println("No head found!");
+                    return;
+                }
+
+                HistoryLinkMap linkMap = new HistoryLinkMap();
+                LinkDataFactory linkFactory = new RamLinkDataFactory();
+
+                LinkDigest chainHead = getChainHead(archive, chainId, true);
+                System.err.println("BC0");
+                // LATER: Option to allow you to go past the end of the chain.
+                List<LinkDigest> chain = archive.getChain(chainHead, true);
+                for (LinkDigest digest : chain) {
+                    String isEnd = "???";
+                    try {
+                        HistoryLink link = cache.readLink(linkMap, linkFactory, digest);
+                        if (link.mIsEnd) {
+                            isEnd = "YES";
+                        } else {
+                            isEnd = "NO";
+                        }
+                    } catch (IOException ignore) {}
+                    sOut.println(digest.toString() + " END: " + isEnd);
+                }
+            }
+        },
+        // not "stats" because then you would need to type "statu" for status.
+        new Command("info", true, false, null, "Show some stats") {
+            public boolean canParse(String[] args) { return args.length == 1; }
+            public void invoke(String[] args, CLICache cache) throws Exception {
+                Archive archive = null;
+                try {
+                    archive = loadHead(cache);
+                } catch (IOException ioe) {
+                    sOut.println("No head found!");
+                    return;
+                }
+
+                Set<LinkDigest> all = archive.allLinks();
+                int referenced = 0;
+                Map<Integer, Integer> stats = archive.linkStats();
+                for (Integer value : stats.values()) {
+                    referenced += value;
+                }
+
+                sOut.println(String.format("Links: %d total, %d used (%f)",
+                                           all.size(),
+                                           referenced,
+                                           1.0*referenced/all.size()));
+
+                long sizeBytes = archive.sizeInBytes(false);
+                long usedBytes = archive.sizeInBytes(true);
+
+                sOut.println(String.format("Bytes: %d total, %d used (%f)",
+                                           sizeBytes,
+                                           usedBytes,
+                                           1.0*usedBytes/sizeBytes));
+
+                sOut.println("");
+                sOut.println("Used links by kind:");
+                List<Integer> keys = new ArrayList<Integer>(stats.keySet());
+                Collections.sort(keys);
+                for (Integer key : keys) {
+                    sOut.println("   kind[" + key + "]: " + stats.get(key));
+                }
+
+                sOut.println("");
+                sOut.println("Blocks:");
+
+                List<Integer> blockCounts = archive.blockLinkCounts(false);
+                List<Integer> usedBlockCounts = archive.blockLinkCounts(true);
+
+                List<Long> lengths = archive.blockLengths(false);
+                List<Long> usedLengths = archive.blockLengths(true);
+                for (int i = 0; i < lengths.size(); i++) {
+                    sOut.println(String.format("  [%d]: %d bytes, %d used (%f), %d links, %d used (%f)",
+                                               i,
+                                               lengths.get(i),
+                                               usedLengths.get(i),
+                                               1.0*usedLengths.get(i) / lengths.get(i),
+                                               blockCounts.get(i),
+                                               usedBlockCounts.get(i),
+                                               1.0*usedBlockCounts.get(i) / blockCounts.get(i))
+                                 );
+
+                }
+            }
+        },
+
 
         // Debugging hack. Remove.
         new Command("showargs", false, false, " <arg list>", "print the args passed to it.") {

@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import wormarc.hgdeltacoder.HgDeltaCoder;
@@ -124,6 +126,10 @@ public class Archive {
         void write(HistoryLinkMap linkMap, List<Block> blocks, List<Archive.RootObject> rootObjects) throws IOException;
         // ArchiveData == blocks, rootObjects
         Archive.ArchiveData read(HistoryLinkMap linkMap, LinkDataFactory linkFactory) throws IOException;
+    }
+
+    public interface LinkSource {
+        HistoryLink readLink(HistoryLinkMap linkMap, LinkDataFactory linkFactory, LinkDigest digest) throws IOException;
     }
 
     public final static int REPARTITION_MULTIPLE = 2;
@@ -289,7 +295,7 @@ public class Archive {
         return addAllLinks(new HashSet<LinkDigest>());
     }
 
-    protected Set<LinkDigest> referencedLinks() throws IOException {
+    public Set<LinkDigest> referencedLinks() throws IOException {
         // DCI: DOG SLOW.
         // DCI: cache value? notion of archive being "dirty"
         // Set<LinkDigest> getReferencedLinks(Achive archive, Archive.RootObject obj);
@@ -455,6 +461,65 @@ public class Archive {
     }
 
     ////////////////////////////////////////////////////////////
+    // Why so complicated?
+    // It would have been simpler to instantiate the delta coder
+    // and link map directly, but I don't want to break the
+    // encapsulation of that functionality in Archive.
+
+    // INTENT: Used to bootstrap loading Archive instances out of a
+    // cache from an ArchiveManifest file chainHead digest.
+    //
+    // Read a single file from a source of history links without
+    // an Archive instance.
+    public static InputStream readFile(final LinkDigest chainHead,
+                                       final LinkSource source)
+        throws IOException {
+        if (chainHead.isNullDigest()) {
+            throw new IllegalArgumentException("chainHead is null");
+        }
+        IO singleFileIO = new IO() {
+                public void write(HistoryLinkMap linkMap,
+                                  List<Block> blocks,
+                                  List<Archive.RootObject> rootObjects)
+                    throws IOException { throw new IOException("ENOTIMPL"); }
+                public Archive.ArchiveData read(HistoryLinkMap linkMap,
+                                                LinkDataFactory linkDataFactory)
+                    throws IOException {
+                    HistoryLink current = source.readLink(linkMap,
+                                                          linkDataFactory,
+                                                          chainHead);
+                    // Add every link in the file's chain.
+                    while (true) {
+                        linkMap.addLink(current);
+                        if (current.mIsEnd ||
+                            current.mParent.isNullDigest()) {
+                            break;
+                        }
+                        current = source.readLink(linkMap,
+                                                  linkDataFactory,
+                                                  current.mParent);
+                    }
+
+                    // Create ArchiveData for a temporary Archive that
+                    // can read the file.
+                    List<Block> blocks = new ArrayList<Block>();
+                    blocks.
+                        add(new Block
+                            (new ArrayList<LinkDigest>(linkMap.
+                                                       getUnmodifiableMap().
+                                                       keySet()
+                                                       ))
+                            );
+
+                    return new ArchiveData(blocks, new ArrayList<RootObject>());
+                }
+            };
+
+        // At least this is simple.
+        return Archive.load(singleFileIO).getFile(chainHead);
+    }
+
+    ////////////////////////////////////////////////////////////
     public void setRootObject(final LinkDigest value, final int kind, final boolean replace) {
         final RootObject obj = new RootObject(value, kind);
         if (replace) {
@@ -579,4 +644,71 @@ public class Archive {
     }
 
     public boolean isUpdating() { return mUpdates != null; }
+
+    ////////////////////////////////////////////////////////////
+    // Stats, for debugging only. PUNISHINGLY SLOW.
+    //
+    // LATER: rethink interfaces. clean up. speed up.
+    //
+    // No counts because you can get those from allLinks() / referencedLinks()
+    public long sizeInBytes(boolean skipUnreferenced) throws IOException {
+        if (skipUnreferenced) {
+            return mLinkMap.getLength(new ArrayList<LinkDigest>(referencedLinks()));
+        }
+        return mLinkMap.getLength(new ArrayList<LinkDigest>(allLinks()));
+    }
+
+    public Map<Integer, Integer> linkStats() throws IOException {
+        Map<Integer, Integer> values = new HashMap<Integer, Integer>();
+        for (RootObject obj : mRootObjects) {
+            if (obj.mDigest.isNullDigest()) {
+                continue;
+            }
+
+            if (values.get(obj.mKind) == null) {
+                values.put(obj.mKind, 0);
+            }
+
+            int fileChainLength = getChain(obj.mDigest, true).size();
+            values.put(obj.mKind, fileChainLength +
+                       values.get(obj.mKind) +
+                       RootObjectKind.getContainer(this, obj).
+                       getReferencedLinks(mLinkMap).size());
+        }
+        return values;
+    }
+
+    public List<Integer> blockLinkCounts(boolean skipUnreferenced) throws IOException {
+        Set<LinkDigest> skip = new HashSet<LinkDigest>();
+        if (skipUnreferenced) {
+            skip = allLinks();
+            skip.removeAll(referencedLinks());
+        }
+
+        List<Integer> values = new ArrayList<Integer>();
+
+        for (Block block : mBlocks) {
+            Set<LinkDigest> digests = new HashSet<LinkDigest>(block.getDigests());
+            digests.removeAll(skip);
+            values.add(digests.size());
+        }
+        return values;
+    }
+
+    public List<Long> blockLengths(boolean skipUnreferenced) throws IOException {
+        Set<LinkDigest> skip = new HashSet<LinkDigest>();
+        if (skipUnreferenced) {
+            skip = allLinks();
+            skip.removeAll(referencedLinks());
+        }
+
+        List<Long> values = new ArrayList<Long>();
+
+        for (Block block : mBlocks) {
+            Set<LinkDigest> digests = new HashSet<LinkDigest>(block.getDigests());
+            digests.removeAll(skip);
+            values.add(mLinkMap.getLength(new ArrayList<LinkDigest>(digests)));
+        }
+        return values;
+    }
 }
