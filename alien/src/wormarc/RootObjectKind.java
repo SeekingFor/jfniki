@@ -46,15 +46,10 @@ public class RootObjectKind {
         case FILE_MANIFEST:
             return FileManifest.fromBytes(archive.getFile(obj.mDigest));
 
+        // The Archive already adds the links for the files these are persisted in.
         case ARCHIVE_MANIFEST: // Drop through on purpose.
         case SINGLE_FILE:
         case PARENT_REFERENCES:
-            final Set<LinkDigest> linkSet = new HashSet<LinkDigest>(archive.getChain(obj.mDigest, true));
-            return new LinkContainer() {
-                public Set<LinkDigest> getReferencedLinks(HistoryLinkMap linkMap) {
-                    return linkSet;
-                }
-            };
         default:
             return new LinkContainer() {
                 public Set<LinkDigest> getReferencedLinks(HistoryLinkMap linkMap) {

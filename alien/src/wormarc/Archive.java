@@ -295,15 +295,23 @@ public class Archive {
         // Set<LinkDigest> getReferencedLinks(Achive archive, Archive.RootObject obj);
         final Set<LinkDigest> links = new HashSet<LinkDigest>();
         for (RootObject obj : mRootObjects) {
-            if (!obj.mDigest.isNullDigest()) {
-                links.add(obj.mDigest);
+            if (obj.mDigest.isNullDigest()) {
+                continue;
             }
+
+            // Adds the links for the file that the object is stored in.
+            links.addAll(getChain(obj.mDigest, true));
+
+            // Marshal an instance of the object and ask it if it has any additional
+            // links.
             links.addAll(RootObjectKind.getContainer(this, obj).getReferencedLinks(mLinkMap));
         }
         return links;
     }
 
-    protected static List<Block> mergeBlocks(final List<Block> blocks, final List<PartitioningMath.Partition> partitions) {
+    protected static List<Block> mergeBlocks(final List<Block> blocks,
+                                             final List<PartitioningMath.Partition> partitions,
+                                             final Set<LinkDigest> survivors) {
         final List<Block> merged = new ArrayList<Block>();
         for (PartitioningMath.Partition partition : partitions) {
             if (partition.getStart() == partition.getEnd()) {
@@ -314,9 +322,18 @@ public class Archive {
             for (int index = partition.getStart(); index <= partition.getEnd(); index++) {
                 digests.addAll(blocks.get(index).getDigests());
             }
-            merged.add(new Block(digests));
+
+            List<LinkDigest> filtered = new ArrayList<LinkDigest>();
+            for (LinkDigest digest : digests) {
+                if (!survivors.contains(digest)) {
+                    //System.out.println("DROPPED: " + digest);
+                    continue;
+                }
+                filtered.add(digest);
+                survivors.remove(digest); // i.e. no duplicates.
+            }
+            merged.add(new Block(filtered));
         }
-        // DCI: prune duplicates? keep a set and don't add them in the first place?
 
         return merged;
     }
@@ -390,7 +407,7 @@ public class Archive {
             return false;
         }
 
-        mBlocks = mergeBlocks(mBlocks, compressed);
+        mBlocks = mergeBlocks(mBlocks, compressed, referencedLinks());
         return true;
     }
 
