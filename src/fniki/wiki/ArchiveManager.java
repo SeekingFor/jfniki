@@ -48,7 +48,7 @@ import wormarc.IOUtil;
 import wormarc.LinkDigest;
 import wormarc.RootObjectKind;
 import wormarc.io.FreenetIO;
-import wormarc.io.RamBlobIO;
+import wormarc.io.ByteArrayIO;
 
 public class ArchiveManager {
     public final static String FCP_HOST = "127.0.0.1";
@@ -598,7 +598,7 @@ public class ArchiveManager {
             throw new IOException("Can't load secondary archive because no primary archive is loaded yet!");
         }
 
-        RamBlobIO io = new RamBlobIO();
+        ByteArrayIO io = new ByteArrayIO();
         io.setData(blob);
         Archive archive;
         try {
@@ -660,7 +660,7 @@ public class ArchiveManager {
         if (!changes.isUnmodified()) {
             throw new IOException("There are unsubmitted local changes!");
         }
-        RamBlobIO io = new RamBlobIO();
+        ByteArrayIO io = new ByteArrayIO();
         try {
             // null values are allowed and are converted to "null"
             io.setMetaData(String.format("%s|%s|%s", mParentUri, mFmsGroup, mBissName));

@@ -1,5 +1,4 @@
-// DCI: Should this be called StreamIO?
-/* An Archive.IO implementation to read/write an Archive to/from a BLOB.
+/* An Archive.IO implementation for streams.
  *
  *  Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -54,7 +53,7 @@ import wormarc.LinkDigest;
 //
 // BINARY FORMAT:
 // <version><archive manifest chain head digest><metadata length><metadata>[<link>]+
-public class BlobIO implements Archive.IO {
+public class StreamIO implements Archive.IO {
     protected final StreamFactory mStreamFactory;
     protected String mVersion;
     protected String mMetaData;
@@ -63,7 +62,7 @@ public class BlobIO implements Archive.IO {
     // REQUIRES: Length must not change.
     protected final static String VERSION_2 = "BLOB0002";
 
-    // Anything that you can read or write a BLOB from/to.
+    // Anything that you can read or write a streams from/to.
     public interface StreamFactory {
         InputStream getInputStream() throws IOException;
         OutputStream getOutputStream() throws IOException;
@@ -201,7 +200,7 @@ public class BlobIO implements Archive.IO {
         return knownLinks;
     }
 
-    public BlobIO(StreamFactory streamFactory, String metaData) {
+    public StreamIO(StreamFactory streamFactory, String metaData) {
         if (streamFactory == null) {
             throw new IllegalArgumentException("streamFactory is null");
         }

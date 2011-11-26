@@ -31,7 +31,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class FileIO extends BlobIO {
+public class FileIO extends StreamIO {
     private File mFile;
 
     protected File getFile() throws IOException {

@@ -1,0 +1,15 @@
+<!-- IMPORTANT: There are hard coded exceptions for the Freenet content filter to make -->
+<!--            file uploading work. See WikiContentFilter.EXCEPTIONS. -->
+<table>
+  <tr>
+    <td>
+      <form method="post"
+            action="%1$s"
+            enctype="multipart/form-data"
+            accept-charset="UTF-8">
+        <input name="export" type="submit" value="Export Archive"/>
+        <input type="hidden" name="formPassword" value="%2$s"/>
+      </form>
+    </td>
+  </tr>
+</table>

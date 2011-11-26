@@ -1,5 +1,4 @@
-// DCI: Should this be called BlobIO?
-/* An Archive.IO implementation for BLOBs of RAM.
+/* An Archive.IO implementation for byte arrays.
  *
  *  Copyright (C) 2010, 2011 Darrell Karbott
  *
@@ -38,11 +37,11 @@ import wormarc.Block;
 import wormarc.HistoryLinkMap;
 import wormarc.LinkDataFactory;
 
-public class RamBlobIO extends BlobIO {
+public class ByteArrayIO extends StreamIO {
     private byte[] mBlob;
     private ByteArrayOutputStream mBuffer;
 
-   public RamBlobIO() {
+   public ByteArrayIO() {
         super(new StreamFactoryImpl(), "");
         ((StreamFactoryImpl)mStreamFactory).setTarget(this);
     }
@@ -75,9 +74,9 @@ public class RamBlobIO extends BlobIO {
     }
 
     private static class StreamFactoryImpl implements StreamFactory {
-        private RamBlobIO mTarget;
+        private ByteArrayIO mTarget;
 
-        public void setTarget(RamBlobIO io) {
+        public void setTarget(ByteArrayIO io) {
             mTarget = io;
         }
 
