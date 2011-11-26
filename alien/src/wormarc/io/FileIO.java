@@ -62,6 +62,6 @@ public class FileIO extends BlobIO {
     }
 
     public void setFile(String fileName) {
-        mFile = new File(fileName);
+        setFile(new File(fileName));
     }
 }

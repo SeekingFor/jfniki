@@ -24,7 +24,6 @@
 
 package fniki.wiki.child;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,6 +57,7 @@ import fniki.wiki.WikiTextStorage;
 
 public class WikiContainer implements ChildContainer {
     private final static String ENCODING = "UTF-8";
+    private final static int MAX_PAGE_LENGTH = 128 * 1024;
 
     public ChildContainerResult handle(WikiContext context) throws ChildContainerException {
         try {
@@ -155,6 +155,10 @@ public class WikiContainer implements ChildContainer {
         // Name is included in the query data.
         String name = form.get("savepage");
         String wikiText = form.get("savetext");
+
+        if (wikiText.length() > MAX_PAGE_LENGTH) {
+            context.raiseAccessDenied("Page too big, sorry :-(");
+        }
 
         if (name == null || wikiText == null) {
             context.raiseAccessDenied("Couldn't parse parameters from POST.");
@@ -362,6 +366,46 @@ public class WikiContainer implements ChildContainer {
 
     }
 
+    private String getImportArchiveForm(WikiContext context) throws IOException {
+        String template = null;
+        try {
+            // IMPORTANT: Only multipart/form-data encoding works in plugins.
+            // IMPORTANT: Must be multipart/form-data even for standalone because
+            //            the Freenet ContentFilter rewrites the encoding in all forms
+            //            to this value.
+            template = IOUtil.readUtf8StringAndClose(WikiContainer.class.getResourceAsStream("/import_form.html"));
+        } catch (IOException ioe) {
+            return "Couldn't load import_form.html template from jar???";
+        }
+        String formAction = context.makeLink("/fniki/import");
+        String formPassword = context.getString("form_password", "FORM_PASSWORD_NOT_SET");
+
+        return String.format(template,
+                             formAction,  // %1$s
+                             formPassword // %2$s
+                             );
+    }
+
+    private String getExportArchiveForm(WikiContext context) throws IOException {
+        String template = null;
+        try {
+            // IMPORTANT: Only multipart/form-data encoding works in plugins.
+            // IMPORTANT: Must be multipart/form-data even for standalone because
+            //            the Freenet ContentFilter rewrites the encoding in all forms
+            //            to this value.
+            template = IOUtil.readUtf8StringAndClose(WikiContainer.class.getResourceAsStream("/export_form.html"));
+        } catch (IOException ioe) {
+            return "Couldn't load export_form.html template from jar???";
+        }
+        String formAction = context.makeLink("/fniki/export");
+        String formPassword = context.getString("form_password", "FORM_PASSWORD_NOT_SET");
+
+        return String.format(template,
+                             formAction,  // %1$s
+                             formPassword // %2$s
+                             );
+    }
+
     private void addStaticLinks(WikiContext context, String name,
                                 StringBuilder buffer) throws IOException {
 
@@ -389,12 +433,16 @@ public class WikiContainer implements ChildContainer {
         // TRICKY: You only see the default check state change on initial load.
         buffer.append("   <tr><td><input type=\"radio\" name=\"secondary\" value=\"false\" checked />primary</td>\n");
         buffer.append("   <td><input type=\"radio\" name=\"secondary\" value=\"true\" />rebase</td>\n");
-        buffer.append("   </tr></table>\n");
+        buffer.append("   </tr></table></form>\n");
+        buffer.append("<hr>\n");
+        buffer.append(getImportArchiveForm(context));
+        buffer.append("<hr>\n");
+        buffer.append(getExportArchiveForm(context));
+        buffer.append("<br>(Wiki can't have local changes or a secondary archive.) <br>");
         buffer.append("<hr>\n");
         buffer.append(makeLocalLink(context, "fniki/resettoempty", "view", "Create Wiki!"));
         buffer.append(" (<em>careful:</em> This deletes all content and history without confirmation.)<p/>\n");
         buffer.append("<hr>\n");
-
         buffer.append(makeLocalLink(context, "fniki/insertsite", "view", "Insert"));
         buffer.append(" a static version of this wiki as a freesite.<p/>\n");
 

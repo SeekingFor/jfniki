@@ -1,4 +1,4 @@
-/* A class to marshal instances of root object classes from Archive root object LinkDigest references.
+/* A class to describe things that can be stored as Archive.RootObject's.
  *
  *  Copyright (C) 2010, 2011 Darrell Karbott
  *

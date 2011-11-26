@@ -69,4 +69,8 @@ public interface WikiContext extends Request {
     // This is so we can play nice with the Freenet plugin API.
     // Force a download to disk of data.
     void raiseDownload(byte[] data, String filename, String mimeType) throws DownloadException;
+
+    // Raise an AccessDeniedException if the form password
+    // is not present and valid.
+    void checkFormPassword() throws AccessDeniedException;
 }

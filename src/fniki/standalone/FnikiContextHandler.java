@@ -67,6 +67,9 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                     break;
                 }
                 count++;
+                if (count > WikiApp.MAX_POST_LENGTH) {
+                    throw new IOException("Uploaded file too big.");
+                }
                 baos.write(oneByte);
             }
 
@@ -171,7 +174,10 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
             mApp.setRequest(new WikiRequest(req, mContainerPrefix));
             try {
                 WikiContext context = mApp.getContext();
-
+                if (req.getMethod().equals("POST")) {
+                    // Require form password for all posts, like toadlet framework.
+                    context.checkFormPassword();
+                }
                 ChildContainerResult appResult = mApp.handle(context);
                 // NOTE: We don't have to worry about the meta refresh here.
                 //       That is done for us in by HtmlResultFactory.

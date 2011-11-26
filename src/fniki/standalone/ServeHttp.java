@@ -36,6 +36,7 @@ import fniki.wiki.ArchiveManager;
 public class ServeHttp {
     private final static int DEFAULT_PORT = 8080;
 
+    // DCI: update. can't run from jar without class?
     private final static String HELP_TEXT =
         "ServeHttp: Experimental distributed anonymous wiki over Freenet + FMS\n" +
         "written as part of the fniki Freenet Wiki project\n" +

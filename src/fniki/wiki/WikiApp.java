@@ -44,7 +44,9 @@ import static fniki.wiki.Validations.*;
 
 import fniki.wiki.child.AsyncTaskContainer;
 import fniki.wiki.child.DefaultRedirect;
+import fniki.wiki.child.Exporting;
 import fniki.wiki.child.GotoRedirect;
+import fniki.wiki.child.Importing;
 import fniki.wiki.child.InsertingFreesite;
 import fniki.wiki.child.LikingVersion;
 import fniki.wiki.child.LoadingArchive;
@@ -63,6 +65,8 @@ import fniki.freenet.filter.ContentFilterFactory;
 
 // Aggregates a bunch of other ChildContainers and runs UI state machine.
 public class WikiApp implements ChildContainer {
+    public final static int MAX_POST_LENGTH = 1024 * 1024 * 16;
+
     public final static int LISTEN_PORT = 8083;
     private final static String FPROXY_PREFIX = "http://127.0.0.1:8888/";
     private final static boolean ALLOW_IMAGES = false;
@@ -134,6 +138,8 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
         mRoutes.put("fniki/updateusks", new UpdatingUsks(mArchiveManager));
         mRoutes.put("fniki/likeversion", new LikingVersion(mArchiveManager));
+        mRoutes.put("fniki/export", new Exporting(mArchiveManager));
+        mRoutes.put("fniki/import", new Importing(mArchiveManager));
 
         // Routes to files in the jar.
         // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.
@@ -158,6 +164,8 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("from_code/wiki_container", new WikiContainer());
 
         resetContentFilter();
+
+        mFormPassword = mArchiveManager.generateRandomHexString();
     }
 
     public void setFproxyPrefix(String value) {
@@ -523,6 +531,14 @@ public class WikiApp implements ChildContainer {
 
         public void raiseDownload(byte[] data, String filename, String mimeType) throws DownloadException {
             throw new DownloadException(data, filename, mimeType);
+        }
+
+        public void checkFormPassword() throws AccessDeniedException {
+            if (getQuery().get("formPassword") != null &&
+                getQuery().get("formPassword").equals(mFormPassword)) {
+                return;
+            }
+            raiseAccessDenied("Invalid form password");
         }
 
         public void logError(String msg, Throwable t) {

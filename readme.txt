@@ -77,6 +77,9 @@ o FMS Id displays "???" when importing config with non-default FCP host and/or p
 
 CONTRIBUTORS:
 ---
+SeekingForAttention
+ o made the jfniki Freenet Plugin into a real toadlet.
+
 sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
  o patch to make jfniki work with Freetalk.
  o patch to dump jfniki to html for insertion as a freesite (DumpWiki)
@@ -86,6 +89,7 @@ Dev notes
 ---
 ***BUG: insert top key to CHK if the end user doesnt have the private key. i.e. don't leave a trace of re-insertions in SSK keyspace.
 *BUG: Fix dumpwiki to set CSS class for "Discussion" links.
+BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks bad. not critical.]
 BUG: fix version hash generation code to ignore the nym part of the URL
      i.e. version inserted by different nyms with the same info
      after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version.
@@ -109,6 +113,9 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
+IDEA: FMS and FreeTalk "Wizard" tools. To AUTOMATICALLY EXTRACT PRIVATE KEYS FROM YOUR LOCAL fproxy/FMS instance.
+      [I wrote a quick and dirty test to do this for FreetTalk. I don't want to put that much time into it
+       because I'm afraid it would be contrued as an attack, and the pages I'm scraping disabled.]
 IDEA: 0) Make a new KIND_AM_CHAIN_HEAD external key key type and save the archive manifest hash
       corresponding to parent / rebase links in ExternalRefs.
       1) Fix the external link format to use it instead of the sha1 of the contents[thats what I should have done in the first place]

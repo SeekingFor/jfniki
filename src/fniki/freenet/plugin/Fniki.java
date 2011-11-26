@@ -172,7 +172,7 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
                             if (data == null) {
                                 throw new IOException("Couldn't read uploaded file data from bucket.");
                             }
-                            if (data.length > 128 * 1024) {
+                            if (data.length > WikiApp.MAX_POST_LENGTH) {
                                 throw new IOException("Uploaded file too big.");
                             }
                             mParamTable.put(part, data);

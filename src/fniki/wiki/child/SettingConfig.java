@@ -100,6 +100,8 @@ public class SettingConfig implements ModalContainer {
         if (query.containsKey("export")) {
             // Pop a save-as dialog for configuration.
             try {
+                // Double check the form password before allowing export.
+                context.checkFormPassword();
                 // Save any changes the user made.
                 mConfig = parseConfigFromPost(context, query, context.getInt("listen_port", 8083), mPrivateSSK);
                 mConfig.validate();

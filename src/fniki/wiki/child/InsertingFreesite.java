@@ -125,7 +125,7 @@ public class InsertingFreesite extends AsyncTaskContainer {
                 startTask();
                 sendRedirect(context, context.getPath());
                 return "Unreachable code";
-            } else  if (context.getAction().toLowerCase().equals("sentfile")) {
+            } else if (context.getAction().toLowerCase().equals("sentfile")) {
                 handleThemeUpload(context);
                 sendRedirect(context, context.getPath());
             }

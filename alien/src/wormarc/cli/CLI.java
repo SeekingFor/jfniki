@@ -558,6 +558,7 @@ public class CLI {
                 FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
                 sOut.println(String.format("Reading Top Key: %s", requestUri));
                 FreenetTopKey topKey = io.readTopKey(requestUri);
+                sOut.println("");
                 sOut.println(String.format("Version: %s", topKey.mVersion));
                 sOut.println("Root Objects:");
                 for (Archive.RootObject obj : topKey.mRootObjects) {
@@ -608,10 +609,21 @@ public class CLI {
                 cache.saveHead(cache.getName());
                 sOut.println(String.format("Read and switched head to: %s", cache.getName()));
                 sOut.println(String.format("File metadata: %s", io.getMetaData()));
+                // jfniki stores "<URI>|<fms_group>|<wiki_name>" in the
+                // metadata.
+                String[] fields = io.getMetaData().split("\\|");
+                if (fields.length > 0 ||
+                    (fields[0].trim().startsWith("SSK@") ||
+                     fields[0].trim().startsWith("CHK@"))) {
+                    cache.saveValue("remote", fields[0].trim());
+                    sOut.println("Looks like the metadata has a URI...");
+                    sOut.println(String.format("Set remote to: %s",
+                                               fields[0].trim()));
+                }
             }
         },
 
-        new Command("save", true, false, " <file_name>",
+        new Command("save", true, false, " <file_name> [<metadata>]",
                     "Writes an archive version to a blob file.") {
             public boolean canParse(String[] args) { return args.length >= 2; }
             public void invoke(String[] args, CLICache cache) throws Exception {
@@ -700,7 +712,7 @@ public class CLI {
             }
         },
         // not "stats" because then you would need to type "statu" for status.
-        new Command("info", true, false, null, "Show some stats") {
+        new Command("info", true, false, "", "Show some stats") {
             public boolean canParse(String[] args) { return args.length == 1; }
             public void invoke(String[] args, CLICache cache) throws Exception {
                 Archive archive = null;
@@ -794,8 +806,11 @@ public class CLI {
         for (Command candidate : COMMANDS) {
             if (candidate.mName.startsWith(abbrev)) {
                 if (hit != null) {
+                    // i.e. type more letters.
                     return HELP;
                 }
+                // Don't break.
+                // Continue checking for ambiguous matches.
                 hit = candidate;
             }
         }

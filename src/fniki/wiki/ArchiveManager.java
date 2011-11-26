@@ -48,6 +48,7 @@ import wormarc.IOUtil;
 import wormarc.LinkDigest;
 import wormarc.RootObjectKind;
 import wormarc.io.FreenetIO;
+import wormarc.io.RamBlobIO;
 
 public class ArchiveManager {
     public final static String FCP_HOST = "127.0.0.1";
@@ -589,6 +590,88 @@ public class ArchiveManager {
     }
 
     ////////////////////////////////////////////////////////////
+    // Support for reading and writing archives from blobs
+    ////////////////////////////////////////////////////////////
+
+    public String[] loadArchiveFromBlob(byte[] blob, boolean isSecondary) throws IOException {
+        if (isSecondary && mFileManifest == null) {
+            throw new IOException("Can't load secondary archive because no primary archive is loaded yet!");
+        }
+
+        RamBlobIO io = new RamBlobIO();
+        io.setData(blob);
+        Archive archive;
+        try {
+            archive = Archive.load(io);
+        } finally {
+            // Releases blob memory, but not metadata.
+            io.release();
+        }
+
+        // uri|nttp_group|wiki_name
+        String[] metaData = io.getMetaData().split("\\|");
+        if (metaData.length != 3) {
+            throw new IOException("Error parsing metadata");
+        }
+        for (int i = 0; i < metaData.length; i++) {
+            if (metaData[i].equals("null")) {
+                metaData[i] = "";
+                continue;
+            }
+            metaData[i] = metaData[i].trim();
+        }
+
+        validateUriHashes(archive, metaData[0], true);
+
+        FileManifest manifest = FileManifest.fromArchiveRootObject(archive);
+
+        if (isSecondary) {
+            WikiTextChanges remoteChanges = new RemoteWikiTextChanges(mFileManifest, archive, manifest);
+            // Survived possible exceptions.
+            mSecondaryArchive = archive;
+            mSecondaryFileManifest = manifest;
+            mSecondaryChanges = remoteChanges;
+            mSecondaryUri = metaData[0];
+            return metaData;
+        }
+
+        LocalWikiChanges localChanges = new LocalWikiChanges(archive, manifest);
+        // Survived possible exceptions.
+        mArchive = archive;
+        mFileManifest = manifest;
+        mOverlay = localChanges;
+        mParentUri = metaData[0];
+
+        // Loading primary resets secondary.
+        mSecondaryArchive = null;
+        mSecondaryFileManifest = null;
+        mSecondaryChanges = null;
+        mSecondaryUri = null;
+
+        return metaData;
+    }
+
+    public String makeBlobFileName() throws IOException {
+        return mBissName + "_" + makeUriNamePart(mArchive) + ".dat";
+    }
+
+    public byte[] savePrimaryArchiveToBlob() throws IOException {
+        FileManifest.Changes changes = mFileManifest.diffTo(mArchive, mOverlay);
+        if (!changes.isUnmodified()) {
+            throw new IOException("There are unsubmitted local changes!");
+        }
+        RamBlobIO io = new RamBlobIO();
+        try {
+            // null values are allowed and are converted to "null"
+            io.setMetaData(String.format("%s|%s|%s", mParentUri, mFmsGroup, mBissName));
+            mArchive.write(io);
+            return io.getData();
+        } finally {
+            io.release();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
     // Support for Freesite insertion.
     ////////////////////////////////////////////////////////////
     public String insertSite(String insertUri, PrintStream out) throws IOException, InterruptedException {
@@ -668,5 +751,11 @@ public class ArchiveManager {
             throw new RuntimeException("Theme doesn't exist: " + name);
         }
         mCurrentThemeName = name;
+    }
+
+    ////////////////////////////////////////////////////////////
+    // NOT CRYPTO GRADE! but better than nothing.
+    public static String generateRandomHexString() {
+        return IOUtil.getHexDigest("" + Math.random() + "" + System.currentTimeMillis(), 20);
     }
 }

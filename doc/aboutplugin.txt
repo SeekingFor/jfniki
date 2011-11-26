@@ -25,7 +25,7 @@ re-import your configuration every time you load the plugin.
 [[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/12/|Official jFniki release site]]
 
 ==Contributors==
-* ##SeekingForAttention## -- Improved to the jfniki Freenet Plugin code.
+* ##SeekingForAttention## -- Made the jfniki Freenet Plugin into a real toadlet.
 * ##sethcg## -- Freetalk support, and support for dumping wikis for insertion as websites.
 * ##djk## -- Principal developer.
 

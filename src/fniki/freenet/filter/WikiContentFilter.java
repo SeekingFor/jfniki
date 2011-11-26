@@ -155,6 +155,13 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
         // Allowed
         "<input name=\"import\" type=\"submit\" value=\"Import Theme\"/>\n" +
         "<input type=\"file\" name=\"upload\" size=\"64\">\n",
+
+        // Mangled import archive upload form
+        "<input name=\"import\" type=\"submit\" value=\"Import Archive\" />\n",
+
+        // Allowed
+        "<input name=\"import\" type=\"submit\" value=\"Import Archive\"/>\n" +
+        "<input type=\"file\" name=\"upload\" size=\"64\">\n",
     };
 
 
