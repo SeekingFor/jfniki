@@ -24,7 +24,6 @@
 
 package fniki.wiki.child;
 
-import java.net.SocketAddress;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -419,43 +418,12 @@ public class WikiContainer implements ChildContainer {
         buffer.append(" other recent version of this wiki.<br/>");
 
         buffer.append(makeLocalLink(context, "fniki/config", "view", "View"));
-        buffer.append(" configuration.<p/>\n");
+        buffer.append(" configuration.<br/>\n");
+        buffer.append(makeLocalLink(context, "fniki/tools", null, "Display"));
+        buffer.append(" more tools...<p/>\n");
         buffer.append(gotoPageFormHtml(context.makeLink("/" + name),
                                        context.getString("default_page", "Front_Page")));
-
-        buffer.append("<hr>\n");
-        // LATER: Quick hack. Clean this up. Use CSS instead of table
-        buffer.append(String.format("<p><form method=\"get\" action=\"%s\" accept-charset=\"UTF-8\">\n",
-                                    context.makeLink("/fniki/loadarchive"), null, null, null, null));
-        buffer.append("   <table><tr>\n");
-        buffer.append("   <td><input type=submit value=\"Load Archive\"/></td>\n");
-        buffer.append("   <td><input style=\"font-size:60%;\" type=text name=\"uri\" size=\"140\" value=\"\"/></td></tr>\n");
-        // TRICKY: You only see the default check state change on initial load.
-        buffer.append("   <tr><td><input type=\"radio\" name=\"secondary\" value=\"false\" checked />primary</td>\n");
-        buffer.append("   <td><input type=\"radio\" name=\"secondary\" value=\"true\" />rebase</td>\n");
-        buffer.append("   </tr></table></form>\n");
-        buffer.append("<hr>\n");
-        buffer.append(getImportArchiveForm(context));
-        buffer.append("<hr>\n");
-        buffer.append(getExportArchiveForm(context));
-        buffer.append("<br>(Wiki can't have local changes or a secondary archive.) <br>");
-        buffer.append("<hr>\n");
-        buffer.append(makeLocalLink(context, "fniki/resettoempty", "view", "Create Wiki!"));
-        buffer.append(" (<em>careful:</em> This deletes all content and history without confirmation.)<p/>\n");
-        buffer.append("<hr>\n");
-        buffer.append(makeLocalLink(context, "fniki/insertsite", "view", "Insert"));
-        buffer.append(" a static version of this wiki as a freesite.<p/>\n");
-
-        buffer.append("<hr>\n");
-
-        buffer.append(makeLocalLink(context, "fniki/updateusks", "view", "Update"));
-        buffer.append(" the index values of all USK links in this wiki (experimental).<p/>\n");
-
-        buffer.append("<hr>\n");
-        buffer.append(makeLocalLink(context, "fniki/likeversion", "view", "Like"));
-        buffer.append(" this version so other users will know it is the latest.<p/>\n");
-
-  }
+   }
 
     private void addFooter(WikiContext context, String name, boolean readOnly, StringBuilder buffer) throws IOException {
         buffer.append("<hr>\n");

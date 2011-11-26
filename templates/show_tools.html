@@ -1,0 +1,65 @@
+<!-- IMPORTANT: There are hard coded exceptions for the Freenet content filter to make -->
+<!--            file uploading work. See WikiContentFilter.EXCEPTIONS. -->
+
+<h1 class="pagetitle">
+%1$s
+</h1>
+<hr>
+<p>
+<form method="get" action="%2$s/fniki/loadarchive" accept-charset="UTF-8">
+  <table>
+    <tr>
+      <td><input type=submit value="Load Archive"/></td>
+      <td><input style="font-size:60%%;" type=text name="uri" size="140" value=""/></td>
+    </tr>
+    <tr>
+      <td><input type="radio" name="secondary" value="false" checked />primary</td>
+      <td><input type="radio" name="secondary" value="true" />rebase</td>
+    </tr>
+  </table>
+</form>
+<hr>
+<table>
+  <tr>
+    <td>
+      <form method="post"
+            action="%2$s/fniki/import"
+            enctype="multipart/form-data"
+            accept-charset="UTF-8">
+        <input name="import" type="submit" value="Import Archive"/>
+        <input type="file" name="upload" size="64">
+        <input type="hidden" name="action" value="sentfile">
+        <input type="hidden" name="formPassword" value="%3$s"/>
+      </form>
+    </td>
+  </tr>
+</table>
+<hr>
+<table>
+  <tr>
+    <td>
+      <form method="post"
+            action="%2$s/fniki/export"
+            enctype="multipart/form-data"
+            accept-charset="UTF-8">
+        <input name="export" type="submit" value="Export Archive"/>
+        <input type="hidden" name="formPassword" value="%3$s"/>
+      </form>
+    </td>
+  </tr>
+</table>
+(Wiki can't have local changes or a secondary archive.)
+<hr>
+<a href = "%2$s/fniki/resettoempty?action=view">Create Wiki!</a>
+(<em>careful:</em> This deletes all content and history without confirmation.)
+<p/>
+<hr>
+<a href = "%2$s/fniki/insertsite?action=view">Insert</a>
+a static version of this wiki as a freesite.<p/>
+<hr>
+<a href = "%2$s/fniki/updateusks?action=view">Update</a>
+the index values of all USK links in this wiki (experimental).<p/>
+<hr>
+<a href = "%2$s/fniki/updateusks?action=view">Like</a>
+this version so other users will know it is the latest.
+<p/>

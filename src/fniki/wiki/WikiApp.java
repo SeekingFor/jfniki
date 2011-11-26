@@ -55,6 +55,7 @@ import fniki.wiki.child.LoadingVersionList;
 import fniki.wiki.child.QueryError;
 import fniki.wiki.child.ResetToEmptyWiki;
 import fniki.wiki.child.SettingConfig;
+import fniki.wiki.child.ShowingTools;
 import fniki.wiki.child.StaticFile;
 import fniki.wiki.child.StaticWikiText;
 import fniki.wiki.child.Submitting;
@@ -140,7 +141,7 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("fniki/likeversion", new LikingVersion(mArchiveManager));
         mRoutes.put("fniki/export", new Exporting(mArchiveManager));
         mRoutes.put("fniki/import", new Importing(mArchiveManager));
-
+        mRoutes.put("fniki/tools", new ShowingTools());
         // Routes to files in the jar.
         // IMPORTANT: Paths MUST not contain '.' or you won't be able to create links to them.
         // IMPORTANT: These are included in the .jar so they should be small.
@@ -539,6 +540,16 @@ public class WikiApp implements ChildContainer {
                 return;
             }
             raiseAccessDenied("Invalid form password");
+        }
+
+        public String fillInTemplate(String templateName, String... values)
+            throws ServerErrorException {
+            String template = getString("/" + templateName, null);
+            if (template == null) {
+                raiseServerError("Couldn't load template: " + templateName +
+                                 " from jar.");
+            }
+            return String.format(template, (Object[])values);
         }
 
         public void logError(String msg, Throwable t) {

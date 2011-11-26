@@ -73,4 +73,9 @@ public interface WikiContext extends Request {
     // Raise an AccessDeniedException if the form password
     // is not present and valid.
     void checkFormPassword() throws AccessDeniedException;
+
+    // Reads a template file out of the jar and fills
+    // in the values.
+    String fillInTemplate(String templateName, String... values)
+        throws ServerErrorException;
 }

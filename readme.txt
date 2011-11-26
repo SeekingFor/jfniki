@@ -98,6 +98,7 @@ BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
 **BUG: MUST show in the UI when edited wikitext has been truncated because it's too big. [horrible.]
 BUG: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
 ---
+** CHORE: Fix all the places I should be using context.fillInTemplate
 CHORE: Fix SskVersionLinks macro to take '-' too.
 CHORE: Fix commented out assertion in release script.
 CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
