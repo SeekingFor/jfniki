@@ -20,3 +20,5 @@ div#content .diffequal {}
 div#content .difftext {font-family: monospace;}
 div#content .versionStaker {}
 div#content .versionCreator {color:#006600;}
+div#content .jfnikiLinkInternal {}
+div#content .jfnikiLinkMissing {color:#800000;}

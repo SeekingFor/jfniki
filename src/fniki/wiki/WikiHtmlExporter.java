@@ -67,6 +67,13 @@ public class WikiHtmlExporter {
         return "Talk_" + name  + ".html";
     }
 
+    private String getTalkCssClass(String name) throws IOException {
+        if (mArchiveManager.getStorage().hasPage("Talk_" + name)) {
+            return "talktitle";
+        }
+        return "notalktitle";
+    }
+
     public Iterable<FileInfo> export() throws IOException {
         List<String> pages = mArchiveManager.getStorage().getNames();
         if ( !mArchiveManager.getStorage().hasPage("PageDoesNotExist")) {
@@ -82,7 +89,13 @@ public class WikiHtmlExporter {
             StringWriter writer = new StringWriter();
             String cleanName = unescapeHTML(name.replace("_", " "));
             String talkName = getTalkName(name);
-            writer.write(String.format(mTemplate, cleanName, cleanName, talkName, dumpPage(name)));
+            writer.write(String.format(mTemplate,
+                                       cleanName,            // %1$s
+                                       cleanName,            // %2$s Historical, should fix
+                                       talkName,             // %3$s
+                                       dumpPage(name),       // %4$s
+                                       getTalkCssClass(name) // %5$s
+                                       ));
             writer.flush();
             // LATER: back to this.
             // Yeah. I really am storing every single page in RAM.

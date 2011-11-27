@@ -118,7 +118,9 @@ public class DumpWiki {
         for (String name : pages) {
             try {
                 // sethcg: Do wiki page names already have bad characters stripped out? I'm assuming so. [yes]
-                PrintStream out = new PrintStream(new FileOutputStream(ouputDirectory + "/" + name + ".html"));
+                PrintStream out = new PrintStream(new FileOutputStream(ouputDirectory + "/" + name + ".html"),
+                                                  false, // no autoflush
+                                                  "UTF-8");
                 String cleanName = unescapeHTML(name.replace("_", " "));
 
                 String talkName = "Talk_" + name  + ".html";
@@ -142,7 +144,7 @@ public class DumpWiki {
                 out.printf(wikiTemplate,
                            cleanName, // %1$s
                            cleanName, // %2$s // Historical, should fix
-                           talkName,  // %3$s // Historical, should fix
+                           talkName,  // %3$s
                            html,      // %4$s
                            talkCssClass // %5$s
                            );

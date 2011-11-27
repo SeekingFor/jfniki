@@ -266,7 +266,19 @@ public abstract class WikiParserDelegate implements FreenetWikiTextParser.Parser
 
         if (isValidLocalLink(link[0])) {
             // Link to an internal wiki page.
-            sb.append("<a class=\"jfnikiLinkInternal\" href=\""+ makeHref(makeLink("/" + link[0].trim())) +"\">");
+            String cssClass = "jfnikiLinkInternal";
+
+            try {
+                // The no slash check weeds out non-page links. i.e. 'finki/import'
+                if (link[0].trim().indexOf("/") == -1 &&
+                    (!mArchiveManager.getStorage().hasPage(link[0].trim()))) {
+                    cssClass = "jfnikiLinkMissing";
+                }
+            } catch (IOException ignored) {
+                // This shouldn't happen.
+            }
+
+            sb.append("<a class=\"" + cssClass  + "\" href=\""+ makeHref(makeLink("/" + link[0].trim())) +"\">");
             sb.append(escapeHTML(unescapeHTML(link.length>=2 && !isEmpty(link[1].trim())? link[1]:link[0])));
             sb.append("</a>");
             return;
