@@ -2,23 +2,47 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>jfniki version: 6bfef4ae4b6e-- a serverless wiki running over Freenet</title>
+<meta name="description"
+      content="Release page for the jfniki serverless anonymous wiki plugin." />
+<style type="text/css">
+body {
+  background-color: #ffffff;
+  font-family: monospace, fixedsys;
+}
+</style>
+<title>jfniki version: __HEAD</title>
 </head>
 <body>
-<h4>jfniki version: 6bfef4ae4b6e</h4>
+<h4>jfniki version: f66ccc08c13e</h4>
 <div>
 <code>jfniki plugin.jar</code>:<br/>
-<pre><code><a href="/CHK@yiHNHq1XULf0wARlhNEh28dq85NNMMqQ7tbulQAz~cQ,iuxP7SbaM3kpPhSYKgavlVgtnSML6KAj4FInabI7wDc,AAIC--8/jfniki.6bfef4ae4b6e.jar">CHK@yiHNHq1XULf0wARlhNEh28dq85NNMMqQ7tbulQAz~cQ,iuxP7SbaM3kpPhSYKgavlVgtnSML6KAj4FInabI7wDc,AAIC--8/jfniki.6bfef4ae4b6e.jar</a></code></pre><p/>
+<pre><code><a href="/CHK@fYlHqxk03jcz~dTqXFZ~xlU6HsuTQ4WX78O9id4RnAY,S~eiPJQTFGn-bsBGGKEopxk9r3bXKCRoTGDcgzPuFWY,AAIC--8/jfniki.f66ccc08c13e.jar">CHK@fYlHqxk03jcz~dTqXFZ~xlU6HsuTQ4WX78O9id4RnAY,S~eiPJQTFGn-bsBGGKEopxk9r3bXKCRoTGDcgzPuFWY,AAIC--8/jfniki.f66ccc08c13e.jar</a></code></pre><p/>
 <code>source code zip:</code><br/>
-<pre><code><a href="/CHK@lX06WWgLK~4wkuNiWqgb2TLAFhwfKu~wDP9l0MDtd-M,9QhsRXIcVRh0G2H2wInn6nBwnylfp8KhPRTyGWd0vG8,AAIC--8/jfniki.6bfef4ae4b6e.zip">CHK@lX06WWgLK~4wkuNiWqgb2TLAFhwfKu~wDP9l0MDtd-M,9QhsRXIcVRh0G2H2wInn6nBwnylfp8KhPRTyGWd0vG8,AAIC--8/jfniki.6bfef4ae4b6e.zip</a></code></pre><p/>
-<a href="/USK@Gq-FBhpgvr11VGpapG~y0rGFOAHVfzyW1WoKGwK-fFw,MpzFUh5Rmw6N~aMKwm9h2Uk~6aTRhYaY0shXVotgBUc,AQACAAE/fniki/85/HgInfocalypse">hg infocalpse</a> repo:<br/>
+<pre><code><a href="/CHK@G1P8MrjC1k86xzq1Pf8Tn7LDbw3OCEHCJRTzaBT4b-s,GRX~M4N~d023bF5FKcRUOCBNnGCwAQti-trss0aE3yU,AAIC--8/jfniki.f66ccc08c13e.zip">CHK@G1P8MrjC1k86xzq1Pf8Tn7LDbw3OCEHCJRTzaBT4b-s,GRX~M4N~d023bF5FKcRUOCBNnGCwAQti-trss0aE3yU,AAIC--8/jfniki.f66ccc08c13e.zip</a></code></pre><p/>
+<a href="/USK@-bk9znYylSCOEDuSWAvo5m72nUeMxKkDmH3nIqAeI-0,qfu5H3FZsZ-5rfNBY-jQHS5Ke7AT2PtJWd13IrPZjcg,AQACAAE/feral_codewright/21/infocalypse_howto.html">hg infocalpse</a> repo:<br/>
 <code>
-USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/28
+USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki.R1/29
 </code>
 </div>
 <div>
 <h4>release notes</h4>
-<pre><code>Added SskVersionLinks macro to generate links to previous versions of a USK. Example:
+<pre><code>Added importing and exporting of wiki versions. Note that you can only export
+submitted, unmodified versions with no rebase archive loaded.
+
+Moved some less used links onto a &quot;Display more tools...&quot; page in the UI.
+
+Fixed re-inserting to re-insert to a CHK when you don&apos;t have the
+private key.
+
+Changed UI to color missing local links red.
+
+Fixed a bug in the underlying wormarc library that was keeping unreferenced
+data from being discarded. Archives should grow much more slowly.
+
+Fixes for correct utf-8 character rendering when running standalone.
+
+6bfef4ae4b6e
+Added SskVersionLinks macro to generate links to previous versions of a USK. Example:
 &lt;&lt;&lt;SskVersionLinks|freenet:USK@Dtz9FjDPmOxiT54Wjt7JwMJKWaqSOS-UGw4miINEvtg,cuIx2THw7G7cVyh9PuvNiHa1e9BvNmmfTcbQ7llXh2Q,AQACAAE/irclogs/143/|14|+7&gt;&gt;&gt;
 Arguments are: usk|count|latest_index
 If latest_index is prefixed with &apos;+&apos; then the value is interpreted as relative to
@@ -131,10 +155,6 @@ GOTCHAS:
 * Error reporting for problems with .zip files is poor so if you mess
   up the theme .zip file, you won&apos;t get much useful feedback. Sorry.
 
-5686a2328b99
-Fixed bug that was causing &quot;Discover&quot; to fail with an
-&quot;Error reading log: XGETTRUST NNTP request failed: 480 Identity not found&quot; error
-message on FMS. This only happened for deleted identities.
 </code></pre>
 <h4>about jfniki</h4>
 <ul>
@@ -159,7 +179,7 @@ has good documentation on jfniki. Activelink: <br/>
 <h4>site info</h4>
 <img src="activelink.png" alt="[jfniki releases activelink.png]" width="108" height="36"/>
 <p>
-<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/12/&amp;desc=jfniki releases">[bookmark!]</a>
+<a href="/?newbookmark=USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/13/&amp;desc=jfniki releases">[bookmark!]</a>
 </div>
 </body>
 </html>
