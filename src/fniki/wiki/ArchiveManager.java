@@ -296,7 +296,17 @@ public class ArchiveManager {
         // Generate a unique SSK based on the SHA hash of the archive manifest.
         String insertUri = getInsertUri(copy);
 
-        out.println("Re-insert URI: " + insertUri);
+        out.println("Checking to see if we have the private key...");
+        String publicKey = invertPrivateSSK(mPrivateSSK, 30 * 1000);
+        if (mParentUri.startsWith(publicKey)) {
+            out.println("We do :-)");
+        } else {
+            out.println("We don't.  All blocks will still be re-inserted ");
+            out.println("but we can't re-insert the top key.");
+            insertUri = "CHK@/"  + insertUri.split("/")[1];
+            out.println("Re-insert URI: " + insertUri);
+        }
+        //out.println("Re-insert URI: " + insertUri);
 
         FreenetIO io = makeIO();
         io.setInsertUri(insertUri);
@@ -352,7 +362,7 @@ public class ArchiveManager {
         // Generate a unique SSK based on the SHA hash of the archive manifest.
         String insertUri = getInsertUri(copy);
 
-        out.println("Insert URI: " + insertUri);
+        //out.println("Insert URI: " + insertUri);
 
         // Push the updated version into Freenet.
         FreenetIO io = makeIO();
