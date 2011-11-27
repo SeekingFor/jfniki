@@ -1,3 +1,19 @@
+Added importing and exporting of wiki versions. Note that you can only export
+submitted, unmodified versions with no rebase archive loaded.
+
+Moved some less used links onto a "Display more tools..." page in the UI.
+
+Fixed re-inserting to re-insert to a CHK when you don't have the
+private key.
+
+Changed UI to color missing local links red.
+
+Fixed a bug in the underlying wormarc library that was keeping unreferenced
+data from being discarded. Archives should grow much more slowly.
+
+Fixes for correct utf-8 character rendering when running standalone.
+
+6bfef4ae4b6e
 Added SskVersionLinks macro to generate links to previous versions of a USK. Example:
 <<<SskVersionLinks|freenet:USK@Dtz9FjDPmOxiT54Wjt7JwMJKWaqSOS-UGw4miINEvtg,cuIx2THw7G7cVyh9PuvNiHa1e9BvNmmfTcbQ7llXh2Q,AQACAAE/irclogs/143/|14|+7>>>
 Arguments are: usk|count|latest_index
@@ -111,6 +127,7 @@ GOTCHAS:
 * Error reporting for problems with .zip files is poor so if you mess
   up the theme .zip file, you won't get much useful feedback. Sorry.
 
+~~~END_OF_PUBLISHED_RELEASE_NOTES~~~
 5686a2328b99
 Fixed bug that was causing "Discover" to fail with an
 "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" error

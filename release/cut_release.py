@@ -46,6 +46,10 @@ from minimalfms import get_connection, send_msgs
 #JUST_STAGE = True
 JUST_STAGE = False
 
+# Stages, but doesn't insert the .jar or .zip, inserts site
+# to a CHK, doesn't announce to fms.
+JUST_CHECK_HTML = False
+
 # CAUTION: This directory is recursively deleted!
 STAGING_DIR = '/tmp/staging'
 
@@ -70,8 +74,11 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 
 FREENET_DOC_WIKI_IDX = 61
 FNIKI_IDX = 85
-REPO_IDX = 28
+REPO_IDX = 29
+DFC_IDX = 21
 
+############################################################
+RELEASE_NOTES_SENTINEL = "~~~END_OF_PUBLISHED_RELEASE_NOTES~~~"
 ############################################################
 
 THIS_FILES_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -193,6 +200,11 @@ def html_escape(text):
 
 ############################################################
 
+def get_release_notes():
+    # i.e. only include the text from the start of the file
+    # up to the last character before the sentinel sting.
+    return open(RELEASE_NOTES).read().split(RELEASE_NOTES_SENTINEL)[0]
+
 def update_html(head, jar_chk, zip_chk):
     ui_ = ui.ui()
     repo = hg.repository(ui_, REPO_DIR)
@@ -202,16 +214,21 @@ def update_html(head, jar_chk, zip_chk):
                              {'__HEAD__':head,
                               '__JAR_CHK__': jar_chk,
                               '__SRC_CHK__': zip_chk,
-                              '__RELEASE_NOTES__' : html_escape(open(RELEASE_NOTES).read()),
+                              '__RELEASE_NOTES__' : html_escape(get_release_notes()),
                               '__SITE_USK__': site_usk,
                               '__INDEX_FDW__': FREENET_DOC_WIKI_IDX,
                               '__INDEX_FNIKI__': FNIKI_IDX,
                               '__INDEX_REPO__': REPO_IDX,
+                              '__INDEX_DFC__': DFC_IDX,
                               })
 
     updated = open(INDEX_HTML, 'w')
     updated.write(html)
     updated.close()
+
+    if JUST_CHECK_HTML:
+        print "Just checking html. Didn't tag repo."
+        return
 
     commit_msg = "index.html:%s" % head
     commands.commit(ui_, repo, pat = (INDEX_HTML, ),
@@ -232,6 +249,19 @@ def insert_freesite():
     target_index = latest_site_index(repo)
     assert target_index >= 0
 
+    if JUST_CHECK_HTML:
+        # BUG: There are case when this can fail with error code == 0
+        #      e.g. when private key can't be read.
+        # DCI: Test. does fn-putsite set error code on failure?
+        subprocess.check_call(["/usr/bin/hg",
+                               "-R",
+                               REPO_DIR,
+                               "fn-putsite",
+                               "--key",
+                               "CHK@"])
+        print "Just checking html, only inserted to CHK."
+        return "CHK@", 0
+
     # BUG: There are case when this can fail with error code == 0
     #      e.g. when private key can't be read.
     # DCI: Test. does fn-putsite set error code on failure?
@@ -246,6 +276,9 @@ def insert_freesite():
     return PUBLIC_SITE % target_index, target_index
 
 def send_fms_notification(site_uri, target_index, head, jar_chk, zip_chk):
+    if JUST_CHECK_HTML:
+        print "Just checking html, didn't notify on FMS."
+        return
 
     connection = get_connection(FMS_HOST, FMS_PORT, FMS_ID)
 
@@ -271,7 +304,7 @@ def release():
     print
     print
     print "RELEASE NOTES:"
-    print open(RELEASE_NOTES).read()
+    print get_release_notes()
     print
     print "------------------------------------------------------------"
 
@@ -279,8 +312,13 @@ def release():
 
     if JUST_STAGE:
         return
+    if JUST_CHECK_HTML:
+        print "Just checking html. Skipped insert of .zip and .jar."
+        jar_chk = "CHK@/fake.jar"
+        zip_chk = "CHK@/fake.zip"
+    else:
+        jar_chk, zip_chk = insert_files(FCP_HOST, FCP_PORT, [jar_file, zip_file])
 
-    jar_chk, zip_chk = insert_files(FCP_HOST, FCP_PORT, [jar_file, zip_file])
     update_html(head, jar_chk, zip_chk)
     site_uri, target_index = insert_freesite()
     send_fms_notification(site_uri, target_index, head, jar_chk, zip_chk)

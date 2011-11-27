@@ -1,4 +1,4 @@
-20111016
+20111127
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -90,6 +90,7 @@ Dev notes
 BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks ugly. not critical. punt for now.]
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line) [punt for now]
 ---
+CHORE: Fix release script to use the new hg infocalypse links on the dfc blog.
 ** CHORE: Fix all the places I should be using context.fillInTemplate
 CHORE: Fix commented out assertion in release script.
 CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
@@ -105,8 +106,6 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
-**IDEA: Add code / .css to colorize links to missing pages. [requested by user]
-
 IDEA: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
 IDEA:fix version hash generation code to ignore the nym part of the URL
      i.e. version inserted by different nyms with the same info
@@ -194,6 +193,7 @@ e835feaad222: BUG: Archive.mergeBlocks doesn't drop unreferenced links. [Damn. D
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
 
 Added features:
+647e2975d84a: IDEA: Add code / .css to colorize links to missing pages. [requested by user]
 df2184da22ae: IDEA: Save / Load page for local copies
                [Requested by user.Code is already written but needs to be cleaned up + UI]
 68813294196d: IDEA: Staking.  add a biss message that says "I say this version is good"
