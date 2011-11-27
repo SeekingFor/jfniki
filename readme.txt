@@ -87,7 +87,7 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
-BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks bad. not critical. punt for now.]
+BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks ugly. not critical. punt for now.]
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line) [punt for now]
 ---
 ** CHORE: Fix all the places I should be using context.fillInTemplate
@@ -105,12 +105,13 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
+**IDEA: Add code / .css to colorize links to missing pages. [requested by user]
+
 IDEA: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
 IDEA:fix version hash generation code to ignore the nym part of the URL
      i.e. version inserted by different nyms with the same info
      after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version.
      [Not sure about this. How do you determine attribution then?] 
-
 
 IDEA: FMS and FreeTalk "Wizard" tools. To AUTOMATICALLY EXTRACT PRIVATE KEYS FROM YOUR LOCAL fproxy/FMS instance.
       [I wrote a quick and dirty test to do this for FreetTalk. I don't want to put that much time into it
@@ -124,8 +125,6 @@ IDEA: 0) Make a new KIND_AM_CHAIN_HEAD external key key type and save the archiv
       4) It should be possible to regenerate topkey for any version.
       5) It should be possible to traverse history w/o hitting fn.
 
-**IDEA: Save / Load page for local copies [Requested by user.Code is already written but needs to be cleaned up + UI]
-**IDEA: Add code / .css to colorize links to missing pages. [requested by user]
 **IDEA: Fix automatic "freenet:..." link detection.  legit scheme://rest parsing is
         built into creole parser, but freenet links don't use a standard scheme url. grrrrrr...
         0) Preprocess? 1) hack creole parser [Not sure this is worth it.]
@@ -195,6 +194,8 @@ e835feaad222: BUG: Archive.mergeBlocks doesn't drop unreferenced links. [Damn. D
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
 
 Added features:
+df2184da22ae: IDEA: Save / Load page for local copies
+               [Requested by user.Code is already written but needs to be cleaned up + UI]
 68813294196d: IDEA: Staking.  add a biss message that says "I say this version is good"
                    not "I published this version".  Add feedback in UI to show how many nyms staked a given version.
                    [like == stake]
@@ -215,7 +216,7 @@ f9b66084244d: IDEA: USK insert from inside fniki (feature creep :-( ) [From a re
                because of the way the version is string is generated.
 
 Finished Chores:
-???????????: CHORE: Fix SskVersionLinks macro to take '-' too.
+6e3a56e63ac3: CHORE: Fix SskVersionLinks macro to take '-' too.
 7c982a8a1ea9: CHORE: Prune out unused files in alien/src directory.
 d29fdea8222e: CHORE: Make cut_release.py use .zip files.  .tgz files are risky to extract.
        http://stackoverflow.com/questions/458436/adding-folders-to-a-zip-file-using-python

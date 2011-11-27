@@ -31,16 +31,12 @@ import freenet.clients.http.PageMaker;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContainer;
 import freenet.l10n.BaseL10n.LANGUAGE;
-import freenet.pluginmanager.AccessDeniedPluginHTTPException;
-import freenet.pluginmanager.DownloadPluginHTTPException;
 import freenet.pluginmanager.FredPlugin;
-import freenet.pluginmanager.FredPluginHTTP;
 import freenet.pluginmanager.FredPluginL10n;
 import freenet.pluginmanager.FredPluginThreadless;
-import freenet.pluginmanager.NotFoundPluginHTTPException;
 import freenet.pluginmanager.PluginHTTPException;
 import freenet.pluginmanager.PluginRespirator;
-import freenet.pluginmanager.RedirectPluginHTTPException;
+
 import freenet.support.api.Bucket;
 import freenet.support.api.HTTPRequest;
 import freenet.support.api.HTTPUploadedFile;

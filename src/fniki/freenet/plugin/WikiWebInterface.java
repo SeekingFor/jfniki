@@ -1,4 +1,4 @@
-/* Toadlet used as by the Plugin implmentation.
+/* Toadlet used by the Plugin implmentation.
  *
  * Copyright (C) 2010, 2011 SeekingForAttention
  * Changes Copyright (C) 2010, 2011 Darrell Karbott
@@ -45,12 +45,9 @@ import freenet.clients.http.PageNode;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContext;
 import freenet.clients.http.ToadletContextClosedException;
-import freenet.pluginmanager.AccessDeniedPluginHTTPException;
-import freenet.pluginmanager.DownloadPluginHTTPException;
-import freenet.pluginmanager.NotFoundPluginHTTPException;
 import freenet.pluginmanager.PluginHTTPException;
-import freenet.pluginmanager.RedirectPluginHTTPException;
 import freenet.support.api.HTTPRequest;
+import freenet.support.MultiValueTable;
 
 public class WikiWebInterface extends Toadlet {
     private String mNameSpace;
@@ -117,8 +114,25 @@ public class WikiWebInterface extends Toadlet {
         } catch(RedirectException redirected) {
             writeTemporaryRedirect(ctx, redirected.getLocalizedMessage(), redirected.getLocation());
         } catch(DownloadException forceDownload) {
-            // This is to allow exporting the configuration.
-            writeReply(ctx, 200, forceDownload.mMimeType, "OK", forceDownload.mData, 0, forceDownload.mData.length);
+            // This is to allow exporting files. e.g. configuration, archive exports.
+
+            MultiValueTable<String, String> headers
+                = new MultiValueTable<String, String>();
+            // Required to set the suggested file name.
+            headers.put("Content-disposition",
+                        String.format("attachment; filename=%s",
+                                      forceDownload.mFilename));
+            ctx.sendReplyHeaders(200, "sending file", headers,
+                                 forceDownload.mMimeType,
+                                 forceDownload.mData.length);
+	    ctx.writeData(forceDownload.mData, 0,
+                          forceDownload.mData.length);
+
+            // Can't do this for Toadlet's.
+            // throw new DownloadPluginHTTPException(forceDownload.mData,
+            //                                       forceDownload.mFilename,
+            //                                       forceDownload.mMimeType);
+
         } catch(ChildContainerException childError) {
             writeReply(ctx, 500, "text/plain", "Internal Server Error", childError.getMessage());
         }
