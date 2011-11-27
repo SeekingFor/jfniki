@@ -62,7 +62,9 @@ public class DumpWiki {
         "The template_file should contain 4 %s place holders. The first two will be replaced \n"+
         "with the title. The third will be replaced by the href value for the discusion page.\n" +
         "The fourth will be replaced with the wiki content.\n"+
-        "You can use the literal value 'default' to get the built in template file.\n\n"+
+        "You can use the positional notation '%5$s' to get the CSS class for the talk link,\n" +
+        "from an optional fifth argument.\n" +
+        "You can use the literal value 'default' to get the built in template file.\n\n" +
         "DumpWiki was written as part of the fniki Freenet Wiki project\n\n";
 
     ////////////////////////////////////////////////////////////
@@ -113,22 +115,38 @@ public class DumpWiki {
             pages.add("PageDoesNotExist");
         }
 
-        String cleanName;
         for (String name : pages) {
             try {
-                // sethcg: Do wiki page names already have bad characters stripped out? I'm assuming so.
-                FileOutputStream out = new FileOutputStream(ouputDirectory + "/" + name + ".html");
-                PrintStream p = new PrintStream(out);
-                cleanName = unescapeHTML(name.replace("_", " "));
-                String talkName = (archiveManager.getStorage().hasPage("Talk_" + name)) ? "Talk_" + name  + ".html":
-                    "PageDoesNotExist.html";
-                p.printf(wikiTemplate, cleanName, cleanName,
-                         talkName,
-                        (archiveManager.getStorage().hasPage(name)) ?
-                        new FreenetWikiTextParser(archiveManager.getStorage().getPage(name), mParserDelegate).toString() :
-                        "Page doesn't exist in the wiki yet."
-                        );
-                p.close();
+                // sethcg: Do wiki page names already have bad characters stripped out? I'm assuming so. [yes]
+                PrintStream out = new PrintStream(new FileOutputStream(ouputDirectory + "/" + name + ".html"));
+                String cleanName = unescapeHTML(name.replace("_", " "));
+
+                String talkName = "Talk_" + name  + ".html";
+                String talkCssClass = "talktitle";
+                if (!archiveManager.getStorage().hasPage("Talk_" + name)) {
+                    talkName = "PageDoesNotExist.html";
+                    talkCssClass = "notalktitle";
+                }
+
+                String html = "Page doesn't exist in the wiki yet.";
+                if (archiveManager.getStorage().hasPage(name)) {
+                    html = new FreenetWikiTextParser(archiveManager.
+                                                     getStorage().
+                                                     getPage(name),
+                                                     mParserDelegate).
+                        toString();
+                }
+                // djk: sethcg, look at my example wiki_dump_template.html
+                //      We should get rid of the duplicates and use ordinals
+                //      in the templates.
+                out.printf(wikiTemplate,
+                           cleanName, // %1$s
+                           cleanName, // %2$s // Historical, should fix
+                           talkName,  // %3$s // Historical, should fix
+                           html,      // %4$s
+                           talkCssClass // %5$s
+                           );
+                out.close();
             } catch ( IOException e) {
                 System.out.println("Error writing " + name + " to file.");
             }

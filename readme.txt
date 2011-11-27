@@ -87,16 +87,9 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
-***BUG: insert top key to CHK if the end user doesnt have the private key. i.e. don't leave a trace of re-insertions in SSK keyspace.
 *BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks bad. not critical.]
-BUG: fix version hash generation code to ignore the nym part of the URL
-     i.e. version inserted by different nyms with the same info
-     after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version.
-     [Not sure about this. How do you determine attribution then?] 
-BUG: wikitext should use unix line terminators not DOS (+1 byte per line)
-**BUG: MUST show in the UI when edited wikitext has been truncated because it's too big. [horrible.]
-BUG: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
+BUG: wikitext should use unix line terminators not DOS (+1 byte per line) []
 ---
 ** CHORE: Fix all the places I should be using context.fillInTemplate
 CHORE: Fix SskVersionLinks macro to take '-' too.
@@ -114,6 +107,13 @@ CHORE: Fix crappy code: fix places where I am using signed int values from DataI
 CHORE: Fix cut_release.py to use USK insertion for site so hints are inserted.
        Write stand alone tool?
 ---
+IDEA: Make Freetalk configuration keys work like fms configuration? i.e. no need for public key.
+IDEA:fix version hash generation code to ignore the nym part of the URL
+     i.e. version inserted by different nyms with the same info
+     after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version.
+     [Not sure about this. How do you determine attribution then?] 
+
+
 IDEA: FMS and FreeTalk "Wizard" tools. To AUTOMATICALLY EXTRACT PRIVATE KEYS FROM YOUR LOCAL fproxy/FMS instance.
       [I wrote a quick and dirty test to do this for FreetTalk. I don't want to put that much time into it
        because I'm afraid it would be contrued as an attack, and the pages I'm scraping disabled.]
@@ -177,6 +177,10 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+54e4f3b61ef8: BUG: insert top key to CHK if the end user doesnt have the private key.
+                   i.e. don't leave a trace of re-insertions in SSK keyspace.
+5ef857e76ea9: BUG: Problem rendering some utf-8 characters when running stand alone.
+2c5313882a83: BUG: MUST show in the UI when edited wikitext has been truncated because it's too big. [horrible.]
 e835feaad222: BUG: Archive.mergeBlocks doesn't drop unreferenced links. [Damn. Dunno how this evaded capture so long]
 68813294196d: BUG: fix the discover UI to correctly handle posts from a different nym than the insert
 2cf5cd727366: BUG: Missing insert sitekey parameter causes freesite insert failure for USKs.
