@@ -87,12 +87,10 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
-*BUG: Fix dumpwiki to set CSS class for "Discussion" links.
-BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks bad. not critical.]
-BUG: wikitext should use unix line terminators not DOS (+1 byte per line) []
+BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks bad. not critical. punt for now.]
+BUG: wikitext should use unix line terminators not DOS (+1 byte per line) [punt for now]
 ---
 ** CHORE: Fix all the places I should be using context.fillInTemplate
-CHORE: Fix SskVersionLinks macro to take '-' too.
 CHORE: Fix commented out assertion in release script.
 CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
        e.g.:__RELEASE_SCRIPT_IGNORES_PAST_THIS_LINE__
@@ -177,6 +175,7 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+ac35943f6761: BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 54e4f3b61ef8: BUG: insert top key to CHK if the end user doesnt have the private key.
                    i.e. don't leave a trace of re-insertions in SSK keyspace.
 5ef857e76ea9: BUG: Problem rendering some utf-8 characters when running stand alone.
@@ -216,7 +215,8 @@ f9b66084244d: IDEA: USK insert from inside fniki (feature creep :-( ) [From a re
                because of the way the version is string is generated.
 
 Finished Chores:
-7c982a8a1ea9 CHORE: Prune out unused files in alien/src directory.
+???????????: CHORE: Fix SskVersionLinks macro to take '-' too.
+7c982a8a1ea9: CHORE: Prune out unused files in alien/src directory.
 d29fdea8222e: CHORE: Make cut_release.py use .zip files.  .tgz files are risky to extract.
        http://stackoverflow.com/questions/458436/adding-folders-to-a-zip-file-using-python
        (or just shell execute zip) [just executed in shell]
