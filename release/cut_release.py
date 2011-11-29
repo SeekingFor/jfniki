@@ -74,7 +74,7 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 
 FREENET_DOC_WIKI_IDX = 61
 FNIKI_IDX = 85
-REPO_IDX = 29
+REPO_IDX = 30
 DFC_IDX = 21
 
 ############################################################
@@ -287,7 +287,7 @@ def send_fms_notification(site_uri, target_index, head, jar_chk, zip_chk):
                               '__JAR_CHK__': jar_chk,
                               '__SRC_CHK__': zip_chk,
                               '__SITE_USK__' : site_uri,
-                              '__RELEASE_NOTES__' : open(RELEASE_NOTES).read(),
+                              '__RELEASE_NOTES__' : get_release_notes(),
                               })
 
     send_msgs(connection,

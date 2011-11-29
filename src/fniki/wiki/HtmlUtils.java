@@ -98,6 +98,18 @@ public class HtmlUtils {
         try {
             return new URI(fproxyPrefix + freenetUri).toString();
         } catch (URISyntaxException se) {
+            // djk20111128 -- saw spurious filter warning because of this.
+            // Added println. not reproducible.
+            if (fproxyPrefix == null) {
+                fproxyPrefix = "[NULL]";
+            }
+
+            if (freenetUri == null) {
+                freenetUri = "[NULL]";
+            }
+            System.err.println("HtmlUtils.makeFproxyHref failed: " +
+                               fproxyPrefix + " : " + freenetUri);
+
             return "HTML_UTILS_MAKE_FPROXY_HREF_FAILED";
         }
     }

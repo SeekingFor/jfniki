@@ -1,4 +1,4 @@
-20111127
+20111128
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -87,10 +87,12 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
+?BUG: Saw spurious content filter trip viewing ChangeLog on freenetdocwiki. couldn't repro standalone.
+      loading the wiki again made it go away?
+BUG: mSecondary not reset after submit?[verified, fix it!]
 BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks ugly. not critical. punt for now.]
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line) [punt for now]
 ---
-CHORE: Fix release script to use the new hg infocalypse links on the dfc blog.
 ** CHORE: Fix all the places I should be using context.fillInTemplate
 CHORE: Fix commented out assertion in release script.
 CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
@@ -216,6 +218,7 @@ f9b66084244d: IDEA: USK insert from inside fniki (feature creep :-( ) [From a re
                because of the way the version is string is generated.
 
 Finished Chores:
+f66ccc08c13e: CHORE: Fix release script to use the new hg infocalypse links on the dfc blog.
 6e3a56e63ac3: CHORE: Fix SskVersionLinks macro to take '-' too.
 7c982a8a1ea9: CHORE: Prune out unused files in alien/src directory.
 d29fdea8222e: CHORE: Make cut_release.py use .zip files.  .tgz files are risky to extract.

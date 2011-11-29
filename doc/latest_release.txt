@@ -1,3 +1,6 @@
+Fixed bug that was keeping "Like" from working.
+
+f66ccc08c13e
 Added importing and exporting of wiki versions. Note that you can only export
 submitted, unmodified versions with no rebase archive loaded.
 

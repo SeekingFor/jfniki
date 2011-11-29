@@ -45,6 +45,7 @@ public class FcpMessage implements Iterable<String> {
 	/** The fields of the message. */
 	private final Map<String, String> fields = new HashMap<String, String>();
 
+        // DCI: how does this get closed?
 	/** The optional payload input stream. */
 	private InputStream payloadInputStream;
 
