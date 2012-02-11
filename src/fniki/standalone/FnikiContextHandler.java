@@ -86,6 +86,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                     continue;
                 }
                 mParamTable.put(name, parentParams.get(name).getBytes(IOUtil.UTF8));
+                //System.err.println("PARAM: " + name + "=" +  get(name));
             }
 
             // Then read multipart params if there are any.
@@ -98,6 +99,7 @@ public class FnikiContextHandler implements HTTPServer.ContextHandler {
                         continue;
                     }
                     mParamTable.put(part.name, readAsBytes(part));
+                    //System.err.println("PARAMS(1): " + part.name + "=" + get(part.name));
                     if (allParams.contains(part.name + ".filename") && part.filename != null) {
                         // Special case for file uploading.
                         mParamTable.put(part.name + ".filename", part.filename.getBytes(IOUtil.UTF8));

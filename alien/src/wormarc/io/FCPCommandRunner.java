@@ -266,8 +266,10 @@ public class FCPCommandRunner {
 
         protected void handleData(long length, InputStream data) throws IOException {
             debug(String.format("[%s]:handleData received %d bytes", mName, length));
-            if (mLength != length) {
-                System.err.println("BLOCK IS WRONG LENGTH.");
+            // I sometimes want to ignore the length from CLI.java
+            // to implement debugging functions.  Real client code should
+            // never do that.
+            if (mLength != -1 && mLength != length) {
                 throw new IOException("Block is wrong length!");
             }
             if (data == null) {
@@ -284,7 +286,12 @@ public class FCPCommandRunner {
             ClientGet msg = new ClientGet(mUri, mFcpId);
             msg.setVerbosity(VERBOSITY);
             msg.setPriority(PRIORITY);
-            msg.setMaxSize(mLength); // DCI: test?
+            if (mLength != -1) {
+                // Intent: Don't allow download of blocks larger
+                // than the length they declare in the top key.
+                // i.e. lying about the length is an attack.
+                msg.setMaxSize(mLength);
+            }
             msg.setField(REAL_TIME_FIELD, REAL_TIME_VALUE);
             msg.setMaxRetries(MAX_RETRIES);
             return msg;

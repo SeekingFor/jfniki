@@ -117,6 +117,7 @@ public final class Configuration {
     }
 
     public String toStringRep() throws ConfigurationException {
+        // WHY didn't I include a format version number!!!
         return String.format("%d\n%s\n%d\n%s\n%d\n%s\n%d\n%s\n%s\n%s\n%s\n",
                              mListenPort,
                              mFcpHost,

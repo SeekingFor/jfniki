@@ -46,9 +46,13 @@ import wormarc.HistoryLinkMap;
 import wormarc.IOUtil;
 import wormarc.LinkDataFactory;
 import wormarc.LinkDigest;
+import wormarc.RamLinkDataFactory;
 import wormarc.RootObjectKind;
 
 public class FreenetIO implements Archive.IO, ArchiveResolver {
+    // Note: grok code. This is not used pervasively.
+    public static int FCP_TIMEOUT_MS = 60 * 10 * 1000;
+
     private LinkCache mCache;
     // Final on purpose. Look at sleazy threading code before making non-final!
     private final Map<String, String> mSha1ToChk;
@@ -116,7 +120,7 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
     public String getRequestUri() { return mRequestUri; }
     public void setRequestUri(String uri) { mRequestUri = uri; }
 
-    public FreenetTopKey readTopKey(String uri) throws IOException {
+    public FreenetTopKey readTopKey(String uri,  int timeoutMs) throws IOException {
         FCPCommandRunner runner = null;
         try {
             runner = new FCPCommandRunner(mHost, mPort,
@@ -125,12 +129,35 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
             FCPCommandRunner.GetTopKey requestTopKey =
                 runner.sendGetTopKey(uri);
 
-            runner.waitUntilAllFinished();
+            runner.waitUntilAllFinished(timeoutMs);
             requestTopKey.raiseOnFailure();
             return requestTopKey.getTopKey();
 
         } catch (InterruptedException ie) {
             throw new IOException("FreenetTopKey read timed out.", ie);
+        } finally {
+            if (runner != null) {
+                runner.disconnect();
+            }
+        }
+    }
+
+    public void loadBlock(String uri,  int timeoutMs) throws IOException {
+        mLinkMap = new HistoryLinkMap();
+        mLinkDataFactory = new RamLinkDataFactory();
+
+        FCPCommandRunner runner = null;
+        try {
+            runner = new FCPCommandRunner(mHost, mPort,
+                                          mClientName +
+                                          IOUtil.randomHexString(12));
+            FCPCommandRunner.GetBlock get = runner.sendGetBlock(uri, -1 /* don't check length */,
+                                                                0, this);
+            runner.waitUntilAllFinished(timeoutMs);
+            get.raiseOnFailure();
+ 
+        } catch (InterruptedException ie) {
+            throw new IOException("loadBlock read timed out.", ie);
         } finally {
             if (runner != null) {
                 runner.disconnect();
@@ -159,7 +186,7 @@ public class FreenetIO implements Archive.IO, ArchiveResolver {
         }
 
         String topKeyUri = refs.mRefs.get(0).mExternalKey;
-        mPreviousTopKey = readTopKey(topKeyUri);
+        mPreviousTopKey = readTopKey(topKeyUri, FCP_TIMEOUT_MS);
     }
 
     public String invertPrivateSSK(String privateSSKKey, int timeoutMs) throws IOException {

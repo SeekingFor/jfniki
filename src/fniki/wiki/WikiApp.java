@@ -262,7 +262,6 @@ public class WikiApp implements ChildContainer {
         return setState(request, mRoutes.get("from_code/wiki_container"));
     }
 
-
     // All requests are serialized! Hmmmm....
     public synchronized ChildContainerResult handle(WikiContext context)
         throws ChildContainerException {
@@ -473,7 +472,7 @@ public class WikiApp implements ChildContainer {
                     return "???";
                 }
             } catch (IOException ioe) {
-                logError("getPublicFmsId failed", ioe);
+                logError("getPublicFmsId failed. Trapped exception and returned '???'", ioe);
                 return "???";
             }
         }

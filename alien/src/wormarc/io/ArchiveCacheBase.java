@@ -34,6 +34,11 @@ import wormarc.LinkDataFactory;
 import wormarc.LinkDigest;
 
 public abstract class ArchiveCacheBase extends LinkCache implements Archive.IO {
+    private boolean mIgnoreMissingLinks;
+
+    // So you can attempt to read pieces of archives with missing blocks.
+    public void setIgnoreMissingLinks(boolean value) { mIgnoreMissingLinks = value; }
+
     protected abstract Archive.ArchiveData
         readArchiveData(HistoryLinkMap linkMap,
                         LinkDataFactory linkFactory)
@@ -79,7 +84,15 @@ public abstract class ArchiveCacheBase extends LinkCache implements Archive.IO {
 
         for (Block block : data.mBlocks) {
             for (LinkDigest digest : block.getDigests()) {
-                readLink(linkMap, linkFactory, digest);
+                if (mIgnoreMissingLinks) {
+                    try {
+                        readLink(linkMap, linkFactory, digest);
+                    } catch (IOException ioe) {
+                        // NOP
+                    }
+                } else {
+                    readLink(linkMap, linkFactory, digest);
+                }
             }
         }
 

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -551,41 +552,101 @@ public class CLI {
                 sOut.println(String.format("Set remote to: %s", requestUri));
             }
         },
-        new Command("topkey", true, false, " <request_uri>", "Dump the contents of a top key.") {
-            public boolean canParse(String[] args) { return args.length == 2; }
+
+        new Command("topkey", true, false, " <request_uri> [justchk]",
+                    "Dump the contents of a top key.",
+                    "If 'justchk' is set it only dumps the list of block CHKs.") {
+            public boolean canParse(String[] args) { return args.length >= 2; }
             public void invoke(String[] args, CLICache cache) throws Exception {
                 String requestUri = args[1];
+                boolean everything = !(args.length == 3 && args[2].equals("justchk"));
                 FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
-                sOut.println(String.format("Reading Top Key: %s", requestUri));
-                FreenetTopKey topKey = io.readTopKey(requestUri);
-                sOut.println("");
-                sOut.println(String.format("Version: %s", topKey.mVersion));
-                sOut.println("Root Objects:");
-                for (Archive.RootObject obj : topKey.mRootObjects) {
-                    sOut.println(String.format("   [%d] -> %s", obj.mKind, obj.mDigest.toString()));
+                if (everything) {
+                    sOut.println(String.format("Reading Top Key: %s", requestUri));
                 }
-                int count = 0;
-                sOut.println("Blocks:");
+                FreenetTopKey topKey = io.readTopKey(requestUri, 60 * 10 * 1000);
+                int count = 0; // hmmmmm...
+                if (everything) {
+                    sOut.println("");
+                    sOut.println(String.format("Version: %s", topKey.mVersion));
+                    sOut.println("Root Objects:");
+                    for (Archive.RootObject obj : topKey.mRootObjects) {
+                        sOut.println(String.format("   [%d] -> %s", obj.mKind, obj.mDigest.toString()));
+                    }
+                    sOut.println("Blocks:");
+                }
                 for (FreenetTopKey.BlockDescription desc : topKey.mBlockDescriptions) {
-                    sOut.println(String.format("   Block[%d]: %d", count++, desc.mLength));
+                    if (everything) {
+                        sOut.println(String.format("   Block[%d]: %d", count++, desc.mLength));
+                    }
                     for (int index = 0; index < desc.mCHKs.size(); index++) {
-                        sOut.println(String.format("      %s", desc.getCHK(index)));
+                        if (everything) {
+                            sOut.println(String.format("      %s", desc.getCHK(index)));
+                        } else {
+                            // just chk
+                            sOut.println(desc.getCHK(index));
+                        }
                     }
                 }
             }
         },
-        new Command("resolvename", false, false, " <fmsuser> <fmsgroup> <name_to_resolve>",
-                    "Read BISS name resolution records.") {
+        new Command("resolvename", false, false, " <fmsuser> <fmsgroup> <name_to_resolve> [justuri]",
+                    "Read BISS name resolution records.",
+                    "If 'justuri' is appended only a list of uris is dumped.") {
+            public boolean canParse(String[] args) { return args.length >= 4; }
+            public void invoke(String[] args, CLICache cache) throws Exception {
+                boolean justUri = (args.length == 5 && args[4].equals("justuri"));
+
+                List<FMSUtil.BISSRecord> records =
+                    FMSUtil.getBISSRecords("127.0.0.1", 1119, args[1], args[2], args[3], 20);
+
+                for (FMSUtil.BISSRecord record : records) {
+                    if (justUri) {
+                        sOut.println(record.mKey);
+                    } else {
+                        sOut.println(record);
+                    }
+                }
+            }
+        },
+
+        new Command("cacheall", true, false, " <fmsuser> <fmsgroup> <name_to_resolve>",
+                    "Look up every topkey with the given bissname and attempt to cache the blocks.",
+                    "") {
+
             public boolean canParse(String[] args) { return args.length == 4; }
             public void invoke(String[] args, CLICache cache) throws Exception {
                 List<FMSUtil.BISSRecord> records =
                     FMSUtil.getBISSRecords("127.0.0.1", 11119, args[1], args[2], args[3], 20);
-
+                int timeout_ms = 15 * 1000;
+                Set<String> failed = new HashSet<String>();
                 for (FMSUtil.BISSRecord record : records) {
-                    sOut.println(record);
+                    try {
+                        FreenetIO io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
+                        FreenetTopKey topKey = io.readTopKey(record.mKey, timeout_ms);
+                        int count = 0; // hmmmmm...
+                        for (FreenetTopKey.BlockDescription desc : topKey.mBlockDescriptions) {
+                            for (int index = 0; index < desc.mCHKs.size(); index++) {
+                                if (failed.contains(desc.getCHK(index))) {
+                                    continue;
+                                }
+                                try {
+                                    // hmmmm... punishes fcp server.
+                                    io = new FreenetIO(getFcpHost(), getFcpPort(), cache);
+                                    io.loadBlock(desc.getCHK(index), timeout_ms);
+                                } catch (IOException bioe) {
+                                    failed.add(desc.getCHK(index));
+                                    sOut.println("CHK_FAILED: " + desc.getCHK(index));
+                                }
+                            }
+                        }
+                    } catch (IOException ioe) {
+                        sOut.println("TOP_FAILED: " + record.mKey);
+                    }
                 }
             }
         },
+
         new Command("setname", false, false, " <fmsuser> <fmsgroup> <name_to_set> <value>",
                     "Send a BISS name update msg.") {
             public boolean canParse(String[] args) { return args.length == 5; }
@@ -659,9 +720,22 @@ public class CLI {
 
                 LinkDigest digest = new LinkDigest(args[1]);
                 cache.setArchiveManifestChainHead(digest);
-
+                cache.setIgnoreMissingLinks(true);
                 Archive archive = Archive.load(cache);
                 cache.setName("resurrected");
+
+                FileManifest mf =
+                    FileManifest.fromArchiveRootObject(archive);
+
+                for (String name : mf.allFiles()) {
+                    try {
+                        IOUtil.readAndClose(mf.getFile(archive, name));
+                        sOut.println(name + " : OK");
+                    } catch (IOException ioe) {
+                        sOut.println(name + " : LOST");
+                    }
+                }
+
                 archive.write(cache);
                 cache.saveHead(cache.getName());
                 sOut.println("");

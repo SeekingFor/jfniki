@@ -47,7 +47,7 @@
   <tr>
     <td><input type="checkbox" name="images" %12$s/>Enable Images</td>
   </tr>
-  <input type="hidden" name="formPassword" value="%13$s"/>
+  <input type="hidden" name="formPassword" value="%14$s"/>
 </table>
 <input name="defaults" type="submit" value="Reset Defaults"/>
 <input name="done" type="submit" value="Done"/>
@@ -57,4 +57,18 @@
 <hr />
 <input name="export" type="submit" value="Export Configuration"/>
 <hr>
+<table>
+  <tr>
+    <td>FMS prefix</td>
+    <td><input type="text" name="fmsprefix" size="64" value="%15$s" /></td>
+  </tr>
+  <tr>
+    <td>
+      <input name="fmsread" type="submit" value="Read FMS identities"/>
+    </td>
+  </tr>
+  <tr>
+     %13$s
+  </tr>
+</table>
 </form>

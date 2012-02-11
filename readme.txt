@@ -87,6 +87,7 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes
 ---
+BUG: Coalesce creation and "like" messages in the version graph.
 ?BUG: Saw spurious content filter trip viewing ChangeLog on freenetdocwiki. couldn't repro standalone.
       loading the wiki again made it go away?
 BUG: mSecondary not reset after submit?[verified, fix it!]
@@ -114,9 +115,6 @@ IDEA:fix version hash generation code to ignore the nym part of the URL
      after the slash are CRYPTOGRAPHICALLY VERIFIED to be the same version.
      [Not sure about this. How do you determine attribution then?] 
 
-IDEA: FMS and FreeTalk "Wizard" tools. To AUTOMATICALLY EXTRACT PRIVATE KEYS FROM YOUR LOCAL fproxy/FMS instance.
-      [I wrote a quick and dirty test to do this for FreetTalk. I don't want to put that much time into it
-       because I'm afraid it would be contrued as an attack, and the pages I'm scraping disabled.]
 IDEA: 0) Make a new KIND_AM_CHAIN_HEAD external key key type and save the archive manifest hash
       corresponding to parent / rebase links in ExternalRefs.
       1) Fix the external link format to use it instead of the sha1 of the contents[thats what I should have done in the first place]
@@ -151,8 +149,6 @@ IDEA: <<<SaidBy|public_key|sig>>> -- macro which allows you to drop a cryptograp
       1) Is it possible to implement block level macros with t4?
       Intent: signed discussion entries, changlog entries
 IDEA: Headers / Footers (not sure how to implement yet. macros? <<<header>>> possibly referencing <<<this_page>>>) [From two different nyms]
-IDEA: write code to 0) compile a list of referenced USKS and 1) update them to the latest versions.
-
 IDEA: shrink blocks by using a token map?  use short token in binary rep, fixup to full 20byte hash on read / write?
 IDEA: Caching in FreenetIO
       Make LinkCache and interface
@@ -195,6 +191,8 @@ e835feaad222: BUG: Archive.mergeBlocks doesn't drop unreferenced links. [Damn. D
 cab9533f4cb8: BUG: Can the <<<TOC>>> macro be made to play nice with the ContentFilter? [suggestion from sethcg]
 
 Added features:
+????????????: IDEA: FMS and FreeTalk "Wizard" tools. To AUTOMATICALLY EXTRACT PRIVATE KEYS FROM YOUR LOCAL fproxy/FMS instance.
+              [Implemented for FMS. See the bottom of the Configuration page. Punted on Freetalk. No one uses it.]
 647e2975d84a: IDEA: Add code / .css to colorize links to missing pages. [requested by user]
 df2184da22ae: IDEA: Save / Load page for local copies
                [Requested by user.Code is already written but needs to be cleaned up + UI]
