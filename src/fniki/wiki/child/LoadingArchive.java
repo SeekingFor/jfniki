@@ -49,12 +49,10 @@ public class LoadingArchive extends AsyncTaskContainer {
         try {
             if (context.getQuery().get("uri") != null && mUri == null) {
                 mUri = context.getQuery().get("uri");
-                System.err.println("handle -- set uri: " + mUri);
             }
 
             if (context.getQuery().get("secondary") != null) {
                 mSecondary = context.getQuery().get("secondary").toLowerCase().equals("true");
-                System.err.println("handle -- set secondary true");
             }
 
             if (context.getAction().equals("confirm")) {
