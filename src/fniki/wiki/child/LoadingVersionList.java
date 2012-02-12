@@ -37,8 +37,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 
 import static ys.wikiparser.Utils.*;
 
@@ -292,6 +295,37 @@ public class LoadingVersionList extends AsyncTaskContainer {
         return idPubHash.equals(keyPubHash);
     }
 
+    // ASSUMES: all refer to the same archive SSK!
+    // Filter out redundant values, keeping the ones which appear
+    // first in the list. This implictly keeps the most recent
+    // by arrival date, at least for FMS.
+    private static List<FMSUtil.BISSRecord>
+        removeRedundantEntries(List<FMSUtil.BISSRecord> references) {
+        Set<String> known = new HashSet<String>();
+        List<FMSUtil.BISSRecord> pruned = new ArrayList<FMSUtil.BISSRecord>();
+        for (FMSUtil.BISSRecord reference : references) {
+            // LATER: Clean up C&P, factor out into getPubKeyHash() helper
+            int idStart = reference.mFmsId.indexOf("@");
+            if (idStart == -1 || idStart == reference.mFmsId.length() - 1) {
+                continue;
+            }
+            String idPubHash = reference.mFmsId.substring(idStart + 1);
+            // Special case code for FreeTalk.
+            if (idPubHash.endsWith(".freetalk") &&
+                idPubHash.length() > ".freetalk".length()) {
+                // djk20111016: I don't run FreeTalk. This code path is untested.
+                idPubHash = idPubHash.substring(0, idPubHash.length() - ".freetalk".length());
+            }
+            if (known.contains(idPubHash)) {
+                continue;
+            }
+
+            known.add(idPubHash);
+            pruned.add(reference);
+        }
+        return pruned;
+    }
+
     public synchronized String getRevisionGraphHtml(PrintStream textLog, List<FMSUtil.BISSRecord> records)
         throws IOException {
 
@@ -351,6 +385,9 @@ public class LoadingVersionList extends AsyncTaskContainer {
             GraphLog.AsciiState state = GraphLog.asciistate();
             for (GraphLog.DAGNode value : dag) {
                 List<FMSUtil.BISSRecord> references = lut.get(value.mTag);
+                // Filter out redundant references, keeping the most "recent"
+                // ones.
+                references = removeRedundantEntries(references);
 
                 List<String> lines = new ArrayList<String>();
                 String versionLink = getShortVersionLink(mContainerPrefix, "/jfniki/loadarchive",
@@ -370,10 +407,6 @@ public class LoadingVersionList extends AsyncTaskContainer {
                         symbol = "&exist;";
                         cssClass = "versionCreator";
                     }
-
-                    // LATER: This still needs some love. Only show the latest record per id?
-                    //        0) can I trust dates? 1) can I parse them? 3) punt and rely on
-                    //        date implicit in message order? [CHECK, does that work?]
 
                     // LATER: Sort by date
                     lines.add(String.format("%s <span class=\"%s\">%s</span> (%s, %s, %s, %s)",
