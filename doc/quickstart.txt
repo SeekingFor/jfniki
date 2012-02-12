@@ -8,16 +8,18 @@ jfniki can be configured to either use FMS or Freetalk, but not both at the same
 ===Configuration for FMS===
 # Click on the "View" link below to view (and edit) the configuration. \\
   //Hint: Open the "View" link in a separate tab or window.//
-# Set the "FMS Name" to the human readable part of your FMS ID (everything before the '@').
-# Set the FMS Private SSK to your private FMS SSK (see below if you don't know how to find this).
+# Scroll to the bottom and double check that the "FMS prefix" is set to where you access the FMS web interface from. The default will work for most people. Then click the "Read FMS Identities" button.  This should read the available identities.  Select the identity you want to use and click the "Use Selected Identity!" button.
 # Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.
 # Click the "Done" button to save the configuration changes.
 
 ===Configuration for Freetalk===
-Same as configuring for FMS, except read "Freetalk" any time you see "FMS".
-# Change the "FMS Port" to 1199, which is Freetalk's default port
+
 # Set the "FMS Name" to your full Freetalk identity as shown at the top of the Freetalk => Identities page.
+# Set the FMS Private SSK to your private FreeTalk SSK (see below if you don't know how to find this).
+# Change the "FMS Port" to 1199, which is Freetalk's default port
 # Change the "FMS Group" from "biss.test000" to "mul.biss.test000"
+# Adjust any other values as necessary.  If you're running FMS and Fred on the same machine on the default ports this shouldn't be necessary.
+# Click the "Done" button to save the configuration changes.
 
 === Finding Other Versions Of the testwiki===
 Click the "Discover" link below to search for other versions of the wiki.
@@ -36,6 +38,7 @@ Try entering "freenetdocwiki" in for the "Wiki Name" on the configuration page, 
 
 ----
 === Finding Your Private SSK in FMS===
+// Note: Use the "Read FMS Identities" button.  It should no longer be necessary to manual set your FMS identity and private key. //
 # Go to http://127.0.0.1:18080/localidentities.htm in the FMS web interface and click the "Export Identities" button
 to save your FMS indentities to a file.
 # In the text editor of your choice, open the file you saved above and look for the Name and PrivateKey values for the identity you want to use.
@@ -62,7 +65,7 @@ SSK@YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY,YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
 ----
 
 === Finding Your Private SSK in Freetalk===
-#Go to your "Own anonymous identities" page in Freetalk (http://127.0.0.1:8888/WebOfTrust/OwnIdentities) and click "Edit" for the ID you want to use. 
+#Go to your "Own anonymous identities" page in Freetalk (http://127.0.0.1:8888/WebOfTrust/OwnIdentities) and click "Edit" for the ID you want to use.
 #Take the USK from the "Insert URI (KEEP THIS SECRET!)" field and replace the "USK" with "SSK" and strip off the "WebOfTrust/xx" stuff off the end.
 
 For example:
@@ -102,3 +105,6 @@ If you can't find the group, add it.
 Also, Freetalk does not have the NNTP server enabled by default. You can do that in the Freetalk settings page (http://127.0.0.1:8888/Freetalk/Settings) by setting the "Enable NNTP server?" option to "true" in the "Global settings" section.
 
 It claims that you have to restart your node for the settings to take effect, but you can just go to your Freenet plugins page and click the "Reload" button for the Freetalk plugin to make these settings take effect.
+
+===Getting Help===
+If you have trouble getting jfniki to work, post a message on the ##freenet## group in ##fms## describing your problem. 

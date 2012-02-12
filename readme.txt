@@ -1,4 +1,4 @@
-20111128
+20120212
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -12,7 +12,7 @@ DON'T USE IT if violation of your anonymity would put you at risk.
 ABOUT:
 * jfniki is an experimental serverless wiki implementation which runs over Freenet / FMS.
 * It is written in Java and has no external build dependencies except for freenet.jar.
-* jfniki is INCOMPATIBLE with the existing server based python fniki implementation.
+* jfniki is INCOMPATIBLE with the old circa 2011 server based python fniki implementation.
 * It can run either as a standalone web app or as a Freenet Plugin.
 
 REQUIREMENTS:
@@ -43,11 +43,12 @@ RUN STAND ALONE:
 
 Look at http://127.0.0.1:8083 with your web browser.
 
-Click on the "View" Configuration link and set the "FMS Private SSK" and "FMS name" fields.
-If you want you can use the "Export" button on the Configuration page to export your
+Follow the "Quick Start" instructions.
+
+Once you have successfully set the configuration, use the "Export" button on the Configuration page to export your
 configuration to a file.
 
-Once you've done that you can start the script with the saved configuration. i.e.:
+Then you can start the script with the saved configuration. i.e.:
 
 ./script/jfniki.sh path_to_your_saved_config
 
@@ -64,7 +65,7 @@ java(w) -cp freenet.jar;jfniki.jar fniki.standalone.ServeHttp [jfniki.cfg|port]
 RUN AS A FREENET PLUGIN:
 Load the jar file from ./build/jar/jfniki.jar
 
-Click on the "View" Configuration link and set the "FMS Private SSK" and "FMS ID" fields.
+Follow the "Quick Start" intructions.
 
 OTHER DOC:
 See quickstart.txt in the doc directory (The default page when an empty wiki is displayed).
@@ -85,7 +86,7 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
  o patch to dump jfniki to html for insertion as a freesite (DumpWiki)
 
 ---
-Dev notes
+Dev notes -- Personal notes about work in progress. Take everything you see below here with a grain of salt.
 ---
 BUG: Coalesce creation and "like" messages in the version graph.
 ?BUG: Saw spurious content filter trip viewing ChangeLog on freenetdocwiki. couldn't repro standalone.

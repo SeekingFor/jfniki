@@ -1,3 +1,11 @@
+Added "Read FMS Identities" button to the configuration page which imports
+identity configuration directly from FMS so that users don't have
+to deal with manually exporting private keys.
+
+Fixed the version graph to coalesce multiple submissions / "Likes" of
+the same version.
+
+c9ad3afced26
 Fixed bug that was keeping "Like" from working.
 
 f66ccc08c13e
@@ -15,6 +23,8 @@ Fixed a bug in the underlying wormarc library that was keeping unreferenced
 data from being discarded. Archives should grow much more slowly.
 
 Fixes for correct utf-8 character rendering when running standalone.
+
+~~~END_OF_PUBLISHED_RELEASE_NOTES~~~
 
 6bfef4ae4b6e
 Added SskVersionLinks macro to generate links to previous versions of a USK. Example:
@@ -130,7 +140,6 @@ GOTCHAS:
 * Error reporting for problems with .zip files is poor so if you mess
   up the theme .zip file, you won't get much useful feedback. Sorry.
 
-~~~END_OF_PUBLISHED_RELEASE_NOTES~~~
 5686a2328b99
 Fixed bug that was causing "Discover" to fail with an
 "Error reading log: XGETTRUST NNTP request failed: 480 Identity not found" error
