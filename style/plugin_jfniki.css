@@ -22,3 +22,8 @@ div#content .versionStaker {}
 div#content .versionCreator {color:#006600;}
 div#content .jfnikiLinkInternal {}
 div#content .jfnikiLinkMissing {color:#800000;}
+div#content .verLoadedHead {color:#006600;}
+div#content .verNonLoadedHead {color:#006600;}
+div#content .verNewHead {color:#cccc00;}
+div#content .verLoadedNonHead {color:#cc0000;}
+div#content .verNonHead {}

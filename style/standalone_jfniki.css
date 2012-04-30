@@ -17,3 +17,8 @@ a { color: #1f6b9e;}
 .versionCreator {color:#006600;}
 .jfnikiLinkInternal {}
 .jfnikiLinkMissing {color:#800000;}
+.verLoadedHead {color:#006600;}
+.verNonLoadedHead {color:#006600;}
+.verNewHead {color:#cccc00;}
+.verLoadedNonHead {color:#cc0000;}
+.verNonHead {}

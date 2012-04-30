@@ -209,14 +209,19 @@ public class HtmlUtils {
 
     // DCI: Change name: getLoadVersionLink
     public static String getVersionLink(String prefix, String name, String uri, String action,
-                                        boolean hexLabel) {
+                                        boolean hexLabel, String cssClass) {
+        if (cssClass == null) {
+            cssClass = "";
+        }
         String label = uri;
         if (hexLabel) {
             label = getVersionHex(uri);
         }
         String href = makeHref(prefix + name, action, null, uri, null, null);
-
-        return String.format("<a href=\"%s\">%s</a>", href, escapeHTML(label));
+        if (cssClass.length() > 0) {
+            cssClass=" class=\"" + cssClass + "\" ";
+        }
+        return String.format("<a%shref=\"%s\">%s</a>", cssClass, href, escapeHTML(label));
     }
 
     // DCI: Think through arguments
@@ -234,7 +239,7 @@ public class HtmlUtils {
     }
 
     public static String getVersionLink(String prefix, String name, String uri, String action) {
-        return  getVersionLink(prefix, name, uri, action, false);
+        return  getVersionLink(prefix, name, uri, action, false, null);
     }
 
     // Hmmmm...
@@ -243,7 +248,12 @@ public class HtmlUtils {
     }
 
     public static String getShortVersionLink(String prefix, String name, String uri) {
-        return getVersionLink(prefix, name, uri, "finished", true);
+        return getVersionLink(prefix, name, uri, "finished", true, null);
+    }
+
+    public static String getShortVersionLink(String prefix, String name, String uri,
+                                             String cssClass) {
+        return getVersionLink(prefix, name, uri, "finished", true, cssClass);
     }
 
     public static String gotoPageFormHtml(String basePath, String defaultPage) {
@@ -254,6 +264,47 @@ public class HtmlUtils {
             "</form> \n";
         return String.format(fmt, makeHref(basePath), defaultPage);
     }
+
+    public static String switchWikiFormHtml(String loadArchivePath,
+                                            List<String> sortedNameBarGroups,
+                                            boolean isUnmodified) {
+        if (sortedNameBarGroups.size() == 0) {
+            return "<p>No stored info about wikis to switch to.\n";
+        }
+        if (!isUnmodified) {
+            return "<p>Can't switch wikis because the current wiki is modified.\n" +
+                "You can discard all your changes by clicking 'Display' \n" +
+                "and then 'Create Wiki'.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("<form method=\"get\" action=\"");
+        sb.append(makeHref(loadArchivePath));
+        sb.append("\" accept-charset=\"UTF-8\">\n");
+        // "confirm" query parametercauses the version search
+        // to start immediately without waiting for the Confirm
+        // button press.
+        sb.append("   <input type=hidden name=\"action\" value=\"confirm\"/>\n");
+        sb.append("   <input type=submit value=\"Switch to Wiki\"/>\n");
+        // i.e. a <name>|<group> string value that the ArchiveManager
+        // can use to lookup a WikiInfo
+        sb.append("   <select name=\"wikiName\">\n");
+
+        for (String nameBarGroup :  sortedNameBarGroups) {
+            sb.append("      <option value=\"");
+            // Safe to append without escaping. Is only alphanum or '_'.
+            sb.append(nameBarGroup);
+            sb.append("\">");
+            sb.append(escapeHTML(nameBarGroup));
+            sb.append("</option>\n");
+        }
+        sb.append("   </select>\n");
+        sb.append("</form>\n");
+
+        return sb.toString();
+    }
+
 
     // Returns a pretty html diff of the wikitext.
     public static String getDiffHtml(String fromWikiText, String toWikiText) {

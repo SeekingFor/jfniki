@@ -327,25 +327,6 @@ class FcpTools {
 
     ////////////////////////////////////////////////////////////
     // Added code for site insertion.
-    static class RAMFileInfo implements FileInfo {
-        private final String mName;
-        private final byte[] mData;
-        private final String mMimeType;
-
-        RAMFileInfo(String name, byte[] data, String mimeType) {
-            mName = name;
-            mData = data;
-            mMimeType = mimeType;
-        }
-
-        public String getName() { return mName; }
-        public String getMimeType() { return mMimeType; }
-        public int getLength() { return mData.length; }
-        public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(mData);
-        }
-    }
-
     static class InsertFreesite extends Command {
         private final Iterable <FileInfo> mDataSource;
         private final String mDefaultName;

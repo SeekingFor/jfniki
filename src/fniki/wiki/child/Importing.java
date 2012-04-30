@@ -59,8 +59,8 @@ public class Importing implements ChildContainer {
             String group = metaData[1];
             String name = metaData[2];
             if (!(group.equals("")) || name.equals("")) {
-                System.err.println("Set group and wiki name from imported archive:");
-                System.err.println(group + ":" + name);
+                //System.err.println("Set group and wiki name from imported archive:");
+                //System.err.println(group + ":" + name);
                 mArchiveManager.setFmsGroup(group);
                 mArchiveManager.setBissName(name);
             }
@@ -72,7 +72,7 @@ public class Importing implements ChildContainer {
                               "Redirecting...");
         } catch (IOException ioe)  {
             // DCI: Later, do better.
-            throw new ServerErrorException("Unexpected error calling mArchiveManager.savePrimaryArchiveToBlob()");
+            throw new ServerErrorException("Unexpected error calling mArchiveManager.loadArchiveFromBlob()");
         }
         return null; // Ureachable
     }

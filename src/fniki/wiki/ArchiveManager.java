@@ -1,3 +1,4 @@
+// DCI: must retest theme importing / insertion.
 /* Class to manage reading from and writing Freenet WORM Archives.
  *
  * Copyright (C) 2010, 2011 Darrell Karbott
@@ -38,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import fmsutil.FMSUtil;
 import wormarc.Archive;
@@ -84,6 +86,9 @@ public class ArchiveManager {
     Map<String, SiteTheme> mThemeMap = new HashMap<String, SiteTheme>();
     String mCurrentThemeName = "default";
 
+    // Name to info map to allow switching between known wikis.
+    Map<String, WikiInfo> mWikiInfoMap = new HashMap<String, WikiInfo>();
+
     // Main version
     String mParentUri;
     Archive mArchive;
@@ -95,6 +100,8 @@ public class ArchiveManager {
     Archive mSecondaryArchive;
     FileManifest mSecondaryFileManifest;
     WikiTextChanges mSecondaryChanges;
+
+    ByteStore mByteStore;
 
     public ArchiveManager() {
         mThemeMap.put("default", buildDefaultSiteTheme());
@@ -154,6 +161,29 @@ public class ArchiveManager {
 
     public String getSecondaryUri() { return mSecondaryUri; }
 
+    // REQUIRES: Configuration already validated.
+    public void updateFromConfiguration(Configuration config) {
+        // Can throw.
+        setFmsId(config.mFmsId);
+        setPrivateSSK(config.mFmsSsk);
+
+        // Don't throw.
+        setFcpHost(config.mFcpHost);
+        setFcpPort(config.mFcpPort);
+        setFmsHost(config.mFmsHost);
+        setFmsPort(config.mFmsPort);
+        setFmsGroup(config.mFmsGroup);
+        setBissName(config.mWikiName);
+    }
+
+    // Reset all state associated with the secondary archive.
+    private void resetSecondaryArchive() {
+        mSecondaryArchive = null;
+        mSecondaryFileManifest = null;
+        mSecondaryChanges = null;
+        mSecondaryUri = null;
+    }
+
     public void load(String uri, boolean isSecondary) throws IOException {
         if (isSecondary && mFileManifest == null) {
             throw new IOException("Can't load secondary archive because no primary archive is loaded yet!");
@@ -182,10 +212,10 @@ public class ArchiveManager {
         mParentUri = uri;
 
         // Loading primary resets secondary.
-        mSecondaryArchive = null;
-        mSecondaryFileManifest = null;
-        mSecondaryChanges = null;
-        mSecondaryUri = null;
+        resetSecondaryArchive();
+
+        // Loading primary updates current WikiInfo.
+        updateLoadedWikiInfo();
     }
     public void load(String uri) throws IOException { load(uri, false); }
 
@@ -194,6 +224,7 @@ public class ArchiveManager {
         mFileManifest = FileManifest.fromArchiveRootObject(mArchive);
         mOverlay = new LocalWikiChanges(mArchive, mFileManifest); // DCI: why copy ?
         mParentUri = null;
+        resetSecondaryArchive();
     }
 
     public static class UpToDateException extends IOException {
@@ -317,8 +348,8 @@ public class ArchiveManager {
         return io.getRequestUri();
     }
 
-    // DCI: commitAndPushToFreenet() ?
-    public String pushToFreenet(PrintStream out) throws IOException {
+    // Commit the local changes and insert them into freenet.
+    public String commitAndPushToFreenet(PrintStream out) throws IOException {
         FileManifest.Changes changes = mFileManifest.diffTo(mArchive, mOverlay);
         if (changes.isUnmodified()) {
             throw new IOException("Didn't find any local changes to submit.");
@@ -387,6 +418,12 @@ public class ArchiveManager {
         mParentUri = io.getRequestUri();
         out.println("Request URI: " + mParentUri);
 
+        // Submitting resets secondary archive.
+        // DCI: test bugfix
+        resetSecondaryArchive(); // Fixes bug present until: b06c3161ca35
+
+        updateLoadedWikiInfo();
+
         return mParentUri;
     }
 
@@ -424,7 +461,6 @@ public class ArchiveManager {
 
     public List<RebaseStatus.Record> getRebaseStatus() throws IOException {
         if (mSecondaryFileManifest == null) {
-            System.err.println("No rebased changes!");
             return new ArrayList<RebaseStatus.Record>();
         }
 
@@ -488,6 +524,8 @@ public class ArchiveManager {
         }
         return mSecondaryChanges;
     }
+
+    public boolean isUnmodified() { return mOverlay.isUnmodified(); }
 
     public String getNym(String sskRequestUri, boolean showPublicKey) {
         int start = sskRequestUri.indexOf("@");
@@ -652,12 +690,17 @@ public class ArchiveManager {
         mOverlay = localChanges;
         mParentUri = metaData[0];
 
-        // Loading primary resets secondary.
-        mSecondaryArchive = null;
-        mSecondaryFileManifest = null;
-        mSecondaryChanges = null;
-        mSecondaryUri = null;
+        String group = metaData[1];
+        String name = metaData[2];
+        if (!(group.equals("")) || name.equals("")) {
+            setFmsGroup(group);
+            setBissName(name);
+        }
 
+        // Loading primary resets secondary.
+        resetSecondaryArchive();
+
+        updateLoadedWikiInfo();
         return metaData;
     }
 
@@ -697,14 +740,16 @@ public class ArchiveManager {
             throw new IOException("Can't insert because the wiki has unsubmitted local changes.");
         }
 
-        Iterable<FileInfo> dataSource = new WikiHtmlExporter(this, cfg.mTemplate, cfg.mStaticFiles).export();
+        Iterable<FileInfo> dataSource = new WikiHtmlExporter(this,
+                                                             cfg.getTemplate(),
+                                                             cfg.getStaticFiles()).export();
 
         FcpTools runner = new  FcpTools(mFcpHost, mFcpPort, "jfniki");
         FcpTools.setDebugOutput(out);
 
         FcpTools.InsertFreesite cmd = runner.sendInsertFreesite(insertUri,
-                                                                        dataSource,
-                                                                        cfg.mDefaultPage);
+                                                                dataSource,
+                                                                cfg.getDefaultPage());
         runner.waitUntilAllFinished();
         cmd.raiseOnFailure();
 
@@ -728,11 +773,7 @@ public class ArchiveManager {
     }
 
     public void loadSiteTheme(String themeFileName, byte[] zipFileBytes) throws IOException {
-        System.err.println("NAME: " + themeFileName + " len: " + zipFileBytes.length);
         String[] fields = themeFileName.split("\\.");
-        for (String field : fields) {
-            System.err.println("FIELD: " + field);
-        }
         if (fields.length < 2 || (!fields[fields.length - 1].toLowerCase().equals("zip"))) {
             throw new IOException("Expected a zip file: " + themeFileName);
         }
@@ -764,8 +805,177 @@ public class ArchiveManager {
     }
 
     ////////////////////////////////////////////////////////////
+    // WikiInfo stuff.
+
+    private static String allowedName(String value) {
+        StringBuffer buffer = new StringBuffer(value);
+        for (int index = 0; index < buffer.length(); index++) {
+            char c  = buffer.charAt(index);
+            if ((c >= '0' && c <= '9') ||
+                (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_' ||
+                c == '-') {
+                continue;
+            }
+            buffer.setCharAt(index, '_');
+        }
+
+        return buffer.toString();
+    }
+
+    // Safe to render in html without escaping.
+    static String infoKey(String name, String group) {
+        return
+            allowedName(name) +
+            '|' +
+            allowedName(group);
+    }
+
+    void clearWikiInfo() {
+        mWikiInfoMap.clear();
+    }
+
+    void updateLoadedWikiInfo() {
+        String key = infoKey(mBissName, mFmsGroup);
+        if (!mWikiInfoMap.containsKey(key)) {
+            mWikiInfoMap.put(key,
+                             new WikiInfo(mBissName,
+                                          mFmsGroup,
+                                          mParentUri,
+                                          new HashSet<String>()));
+        }
+        WikiInfo info = mWikiInfoMap.get(key);
+        info.setUri(mParentUri);
+    }
+
+    public List<String> getSortedWikiNameBarGroups() {
+        List<String> values = new ArrayList<String>();
+        values.addAll(mWikiInfoMap.keySet());
+        Collections.sort(values);
+        return values;
+    }
+
+    public boolean switchWiki(String nameBarGroup, boolean allowUnknown) throws IOException {
+        String[] fields = nameBarGroup.split("\\|"); // Because it's a regex.
+        if (fields.length != 2 ||
+            fields[0].length() == 0 ||
+            fields[1].length() == 0) {
+            return false;
+        }
+
+        String key = infoKey(fields[0], fields[1]);
+        if (!mWikiInfoMap.containsKey(key)) {
+            if (!allowUnknown) { return false; }
+
+            mWikiInfoMap.put(nameBarGroup,
+                             new WikiInfo(fields[0],
+                                          fields[1],
+                                          "",
+                                          new HashSet<String>()));
+        }
+        // Reset to default state.
+        createEmptyArchive();
+
+        WikiInfo info = mWikiInfoMap.get(key);
+        setBissName(info.getName());
+        setFmsGroup(info.getGroup());
+        return true;
+    }
+
+    public void switchWiki(String nameBarGroup) throws IOException {
+        switchWiki(nameBarGroup, false);
+    }
+
+    public boolean updateLastKnownHeads(Set<String> headUris) {
+        String key = infoKey(mBissName, mFmsGroup);
+        if (!mWikiInfoMap.containsKey(key)) {
+            return false;
+        }
+        mWikiInfoMap.get(key).setKnownHeads(headUris);
+        return true;
+    }
+
+    public Set<String> getKnownHeadUris() {
+        Set<String> knownUris = new HashSet<String>();
+        String key = infoKey(mBissName, mFmsGroup);
+        if (mWikiInfoMap.containsKey(key)) {
+            knownUris.addAll(mWikiInfoMap.get(key).getKnownHeads());
+        }
+
+        return knownUris;
+    }
+
+    // Returns true if the user has ever loaded
+    // the wiki corresponding to the current WikiInfo,
+    // false otherwise.
+    public boolean hasLoadedCurrentWiki() {
+        Set<String> knownUris = new HashSet<String>();
+        String key = infoKey(mBissName, mFmsGroup);
+        if (!mWikiInfoMap.containsKey(key)) {
+            return false;
+        }
+        return mWikiInfoMap.get(key).getUri() != null;
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Saving / restoring app state between invocations.
+    public void setByteStore(ByteStore store) { mByteStore = store; }
+
+    public void saveAppState(WikiContext context) throws IOException {
+        if (mByteStore == null) {
+            throw new IOException("WikiApp state persistence not enabled.");
+        }
+        mByteStore.save(new PersistedState(context.getConfiguration(),
+                                           mWikiInfoMap,
+                                           mBissName,
+                                           mFmsGroup,
+                                           mThemeMap,
+                                           mCurrentThemeName).marshal());
+    }
+
+    public void restoreAppState(WikiContext context) throws IOException {
+        if (mByteStore == null) {
+            throw new IOException("WikiApp state persistence not enabled.");
+        }
+
+        PersistedState state = (new PersistedState()).
+            unmarshal(mByteStore.load());
+        //state.debugDump("loaded");
+
+        // Do this first because it can throw for illegal configuraiton values.
+        try {
+            // Hrrrm... a little wonky. The implementation calls back into
+            // ArchiveManager.
+           context.setConfiguration(state.mConfiguration);
+        } catch (Configuration.ConfigurationException ce) {
+            throw new IOException(ce);
+        }
+
+        // Reset wiki to empty state.
+        createEmptyArchive();
+
+        // Then update persisted state.
+        mThemeMap = state.mThemes;
+        mCurrentThemeName = state.mCurrentTheme;
+
+        // Overwrite values loaded from the Configuration
+        mWikiInfoMap = state.mWikiInfos;
+        mBissName = state.mWikiName;
+        mFmsGroup = state.mWikiGroup;
+    }
+
+    public void clearStoredAppState() throws IOException {
+        if (mByteStore == null) {
+            throw new IOException("WikiApp state persistence not enabled.");
+        }
+        mByteStore.remove();
+    }
+
+    ////////////////////////////////////////////////////////////
     // NOT CRYPTO GRADE! but better than nothing.
     public static String generateRandomHexString() {
         return IOUtil.getHexDigest("" + Math.random() + "" + System.currentTimeMillis(), 20);
     }
+
 }

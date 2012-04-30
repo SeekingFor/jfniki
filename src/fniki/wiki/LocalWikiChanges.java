@@ -61,6 +61,10 @@ public class LocalWikiChanges implements WikiTextStorage, FileManifest.IO {
         mBaseVersion = manifest;
     }
 
+    public boolean isUnmodified() {
+        return mMap.size() == 0;
+    }
+
     ////////////////////////////////////////////////////////////
     // WikiTextStorage implementation
     public boolean hasPage(String name) throws IOException {

@@ -18,11 +18,15 @@ re-import your configuration every time you load the plugin.
 
 ==Documentation==
 
-[[freenet:USK@UB0RPdoXvA61bfDbpvIVFyft1JiqUPhTLONHsWVGU0k,gFG9I3679g-1dUZvOorUuudr~JvSgRemmMdfiPxxcY8,AQACAAE/freenetdocwiki_mirror/61/|The Freenet Documentation Wiki]]
+[[freenet:USK@z6lnOx7PPe16P3Sobu1KM9jiLiIxdvE3L918QMVCLak,AmZ7RemmWcKM2-W4Zs38Ks511lRTsWleMj2mVAReB4E,AQACAAE/freenetdocwiki/9/|The Freenet Documentation Wiki (fms version) #__ordinal__]]
+
+[[freenet:USK@z6lnOx7PPe16P3Sobu1KM9jiLiIxdvE3L918QMVCLak,AmZ7RemmWcKM2-W4Zs38Ks511lRTsWleMj2mVAReB4E,AQACAAE/freenetdocwiki/-9/|(search for latest USK version)]]
 
 ==Authoritative Source Code==
 
-[[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/12/|Official jFniki release site]]
+[[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/17/|Official jFniki release site #__ordinal__]]
+
+[[freenet:USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw,2xcoQVdQLyqfTpF2DpkdUIbHFCeL4W~2X1phUYymnhM,AQACAAE/jfniki_releases/-17/|(search for latest USK version)]]
 
 ==Contributors==
 * ##SeekingForAttention## -- Made the jfniki Freenet Plugin into a real toadlet.

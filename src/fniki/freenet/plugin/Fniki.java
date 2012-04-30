@@ -27,6 +27,8 @@ package fniki.freenet.plugin;
 import java.io.IOException;
 import java.util.Set;
 
+import freenet.client.async.DatabaseDisabledException;
+
 import freenet.clients.http.PageMaker;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContainer;
@@ -36,6 +38,7 @@ import freenet.pluginmanager.FredPluginL10n;
 import freenet.pluginmanager.FredPluginThreadless;
 import freenet.pluginmanager.PluginHTTPException;
 import freenet.pluginmanager.PluginRespirator;
+import freenet.pluginmanager.PluginStore;
 
 import freenet.support.api.Bucket;
 import freenet.support.api.HTTPRequest;
@@ -44,6 +47,8 @@ import freenet.support.api.HTTPUploadedFile;
 import wormarc.IOUtil;
 
 import fniki.wiki.ArchiveManager;
+import fniki.wiki.ByteStore;
+
 import fniki.wiki.Query;
 import fniki.wiki.QueryBase;
 import fniki.wiki.Request;
@@ -63,19 +68,96 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
     private PageMaker mPageMaker;
     private Toadlet mToadlet;
 
+    ////////////////////////////////////////////////////////////
+    // ByteStorage implementation to store jfniki state in
+    // the node's db.
+    private final static String STORE_KEY = "jfnikidata";
+    private static class PluginByteStore implements ByteStore {
+        private final PluginRespirator mRespirator;
+        PluginByteStore(PluginRespirator respirator) { mRespirator = respirator; }
+        public void save(byte[] bytes) throws IOException {
+            if (mRespirator == null) {
+                throw new IOException("Respirator not set.");
+            }
+            try {
+                PluginStore store = mRespirator.getStore();
+                if (store == null) {
+                    throw new IOException("Couldn't get PluginStore.");
+                }
+                store.bytesArrays.put(STORE_KEY, bytes);
+                mRespirator.putStore(store);
+            } catch (DatabaseDisabledException dde) {
+                throw new IOException("Database disabled.");
+            }
+        }
+
+        public byte[] load() throws IOException {
+            if (mRespirator == null) {
+                throw new IOException("Respirator not set.");
+            }
+            try {
+                PluginStore store = mRespirator.getStore();
+                if (store == null) {
+                    throw new IOException("Couldn't get PluginStore.");
+                }
+                if (!store.bytesArrays.containsKey(STORE_KEY)) {
+                    throw new IOException("PluginStore has no entry for: " + STORE_KEY);
+                }
+                return store.bytesArrays.get(STORE_KEY);
+            } catch (DatabaseDisabledException dde) {
+                throw new IOException("Database disabled.");
+            }
+        }
+
+        public void remove() throws IOException {
+            if (mRespirator == null) {
+                throw new IOException("Respirator not set.");
+            }
+            try {
+                PluginStore store = mRespirator.getStore();
+                if (store == null) {
+                    throw new IOException("Couldn't get PluginStore.");
+                }
+                if (store.bytesArrays.containsKey(STORE_KEY)) {
+                    store.bytesArrays.remove(STORE_KEY);
+                    mRespirator.putStore(store);
+                }
+            } catch (DatabaseDisabledException dde) {
+                throw new IOException("Database disabled.");
+            }
+        }
+    }
+    ////////////////////////////////////////////////////////////
+
     public void terminate() {
-        System.err.println("jFniki plugin terminating...");
+        System.err.println("jfniki plugin terminating...");
+
+        // // Save app state.
+        // try {
+        //     mWikiApp.getContext().saveAppState();
+        //     System.err.println("jfniki saved app state.");
+        // } catch (IOException ioe){
+        //     // Not allowed. Fails with.
+        //     // java.io.IOException: Database disabled.
+        //     ioe.printStackTrace();
+        //     System.err.println("jfniki failed to save app state!");
+        // }
+
         mFredWebUI.unregister(mToadlet); // unload toadlet
+        // That is the category name. Don't downcase.
         mPageMaker.removeNavigationCategory("jFniki");	// unload category
         mToadlet = null;
-        System.err.println("jFniki plugin terminated.");
+        mWikiApp = null;
+
+        System.err.println("jfniki plugin terminated.");
     }
 
     public void runPlugin(PluginRespirator pr) {
-        System.err.println("Fniki plugin starting...");
+        System.err.println("jfniki plugin starting...");
         try {
             ArchiveManager archiveManager = new ArchiveManager();
             archiveManager.createEmptyArchive();
+            archiveManager.setByteStore(new PluginByteStore(pr));
 
             WikiApp wikiApp = new WikiApp(archiveManager, false /* <= no outer html */);
             if (wikiApp.getContext().getString("container_prefix", null) == null) {
@@ -86,6 +168,14 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
             // HTTP POSTS will be rejected without any useful error message if your form
             // doesn't contain a hidden field with the freenet per boot form password.
             wikiApp.setFormPassword(pr.getNode().clientCore.formPassword);
+
+            // Restore previous state.
+            try {
+                wikiApp.getContext().restoreAppState();
+                System.err.println("Jfniki restored previous app state.");
+            } catch (IOException ioe){
+                System.err.println("Jfniki failed to restore previous app state!");
+            }
 
             mWikiApp = wikiApp;
             mFredWebUI = pr.getToadletContainer();

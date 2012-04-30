@@ -60,11 +60,29 @@ public class LoadingVersionList extends AsyncTaskContainer {
     private StringBuilder mListHtml = new StringBuilder();
     private String mName = "";
     private String mContainerPrefix;
-
+    private String mLoadedUri;
+    private Set<String> mHeadUris;
+    private Set<String> mKnownHeadUris;
+    private boolean mSwitchedWiki;
     // Has no parent.
     private final static String BASE_VERSION = "0000000000000000";
     // We don't know parent.
     private final static String UNKNOWN_VERSION = "???";
+
+    // CSS class names for version links. //
+    // Is the loaded version and is a head.
+    private final static String CSS_LOADED_HEAD = "verLoadedHead";
+    // Is a head that is not the loaded version.
+    // djk20120429 -- I set this to the same as verLoadedHead in
+    // the CSS.  It seemed too confusing to make them different.
+    // i.e. all I care about is, is this one I haven't seen before.
+    private final static String CSS_NON_LOADED_HEAD = "verNonLoadedHead";
+    // Is a head that we haven't seen before.
+    private final static String CSS_NEW_HEAD = "verNewHead";
+    // Is the loaded version, but isn't head.
+    private final static String CSS_LOADED_NON_HEAD = "verLoadedNonHead";
+    // Is neither the loaded version nor a head.
+    private final static String CSS_NON_HEAD = "verNonHead";
 
     public LoadingVersionList(ArchiveManager archiveManager) {
         super(archiveManager);
@@ -76,6 +94,11 @@ public class LoadingVersionList extends AsyncTaskContainer {
 
     public String getHtml(WikiContext context) throws ChildContainerException {
         try {
+            if (context.getQuery().get("wikiName") != null && !mSwitchedWiki) {
+                // LATER: Handle false error code. This should "never" fail.
+                mArchiveManager.switchWiki(context.getQuery().get("wikiName"));
+            }
+
             if (context.getAction().equals("confirm")) {
                 // Copy stuff we need out because context isn't threadsafe.
                 mName = context.getPath();
@@ -83,6 +106,13 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 if (mContainerPrefix == null) {
                     throw new RuntimeException("Assertion Failure: mContainerPrefix == null");
                 }
+
+                mLoadedUri = mArchiveManager.getParentUri();
+                // So I don't need null checks.
+                if (mLoadedUri == null) { mLoadedUri = ""; }
+
+                mKnownHeadUris = mArchiveManager.getKnownHeadUris();
+
                 startTask();
                 try {
                     Thread.sleep(1000); // Hack. Give task thread a chance to finish.
@@ -326,6 +356,26 @@ public class LoadingVersionList extends AsyncTaskContainer {
         return pruned;
     }
 
+    public String versionCssClass(String uri) {
+        if (mHeadUris.contains(uri)) {
+            if (mLoadedUri.equals(uri)) {
+                // Our version is head.
+                return CSS_LOADED_HEAD;
+            }
+            if (mKnownHeadUris.contains(uri)) {
+                return CSS_NON_LOADED_HEAD;
+            }
+            // LATER: Think this through. You only see this once. ok?
+            return CSS_NEW_HEAD;
+        } else {
+            if (mLoadedUri.equals(uri)) {
+                // Our version is not head.
+                return CSS_LOADED_NON_HEAD;
+            }
+            return CSS_NON_HEAD;
+        }
+    }
+
     public synchronized String getRevisionGraphHtml(PrintStream textLog, List<FMSUtil.BISSRecord> records)
         throws IOException {
 
@@ -375,6 +425,10 @@ public class LoadingVersionList extends AsyncTaskContainer {
         // below root nodes.
         List<List<GraphLog.DAGNode>> dags = GraphLog.build_dags(edges, BASE_VERSION);
         sortBySizeAndDate(dags, lut);
+        Set<String> headUris = getHeadUrisFromDags(dags, lut);
+        synchronized(this) {
+            mHeadUris = headUris;
+        }
 
         // Draw the revision graph(s).
         StringWriter out = new StringWriter();
@@ -390,8 +444,10 @@ public class LoadingVersionList extends AsyncTaskContainer {
                 references = removeRedundantEntries(references);
 
                 List<String> lines = new ArrayList<String>();
+                String verClass = versionCssClass(references.get(0).mKey); // All the same.
                 String versionLink = getShortVersionLink(mContainerPrefix, "/jfniki/loadarchive",
-                                                         references.get(0).mKey); // All the same.
+                                                         references.get(0).mKey,
+                                                         verClass); // All the same.
 
                 String rebaseLink = getRebaseLink(mContainerPrefix, "/jfniki/loadarchive",
                                                   references.get(0).mKey, "finished",
@@ -439,6 +495,38 @@ public class LoadingVersionList extends AsyncTaskContainer {
         return out.toString();
     }
 
+    // REVISIT: Simple quick and dirty implementation.
+    // LATER: Look back over code above / GraphLog.java
+    // and figure out how to do this without *another*
+    // iteration over dags.
+    public Set<String> getHeadUrisFromDags(List<List<GraphLog.DAGNode>> dags,
+                                           Map<String, List<FMSUtil.BISSRecord>> lut) {
+
+        // NOTE: The DagNode.mTag values are jfniki hex version ids.
+        Set<String> uris = new HashSet<String>();
+        for (List<GraphLog.DAGNode> dag : dags) {
+            Set<Integer> parents = new HashSet<Integer>();
+            for (GraphLog.DAGNode node : dag) {
+                parents.addAll(node.mParentIds);
+            }
+            // Hmmm two iterations over dag.
+            for (GraphLog.DAGNode node : dag) {
+                // No other node references the node
+                // as a parent so it must be a leaf
+                // node.
+                if (!parents.contains(node.mId)) {
+                    if (lut.containsKey(node.mTag) &&
+                        lut.get(node.mTag).size() > 0) {
+                        // There can be multiple entries but they
+                        // should all have the same key values.
+                        uris.add(lut.get(node.mTag).get(0).mKey);
+                    }
+                }
+            }
+        }
+        return uris;
+    }
+
     public boolean doWork(PrintStream out) throws Exception {
         synchronized (this) {
             mListHtml = new StringBuilder();
@@ -454,4 +542,19 @@ public class LoadingVersionList extends AsyncTaskContainer {
             return false;
         }
     }
+
+    public void exited() {
+        if (getState() == STATE_SUCCEEDED) {
+            // Tell the archive manager the latest head versions we
+            // have seen for this wiki.
+            mArchiveManager.updateLastKnownHeads(mHeadUris);
+        }
+        // Reset.
+        mSwitchedWiki = false;
+        mHeadUris = null;
+        mLoadedUri = null;
+        mKnownHeadUris = null;
+        super.exited();
+    }
+
 }

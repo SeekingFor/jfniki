@@ -127,7 +127,7 @@ public class Submitting extends AsyncTaskContainer {
                 return true;
             } else {
                 out.println("Inserting. Please be patient...");
-                String requestUri = mArchiveManager.pushToFreenet(out);
+                String requestUri = mArchiveManager.commitAndPushToFreenet(out);
                 out.println("Inserted: " + requestUri);
                 return true;
             }

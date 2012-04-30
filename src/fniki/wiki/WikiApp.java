@@ -43,6 +43,7 @@ import static fniki.wiki.HtmlUtils.*;
 import static fniki.wiki.Validations.*;
 
 import fniki.wiki.child.AsyncTaskContainer;
+import fniki.wiki.child.ClearingAppState;
 import fniki.wiki.child.DefaultRedirect;
 import fniki.wiki.child.Exporting;
 import fniki.wiki.child.GotoRedirect;
@@ -54,8 +55,10 @@ import fniki.wiki.child.LoadingChangeLog;
 import fniki.wiki.child.LoadingVersionList;
 import fniki.wiki.child.QueryError;
 import fniki.wiki.child.ResetToEmptyWiki;
+import fniki.wiki.child.SavingAppState;
 import fniki.wiki.child.SettingConfig;
 import fniki.wiki.child.ShowingTools;
+import fniki.wiki.child.StartingUp;
 import fniki.wiki.child.StaticFile;
 import fniki.wiki.child.StaticWikiText;
 import fniki.wiki.child.Submitting;
@@ -116,6 +119,8 @@ public class WikiApp implements ChildContainer {
     private int mListenPort = LISTEN_PORT;
     private static String sContainerPrefix = "/plugins/fniki.freenet.plugin.Fniki";
 
+    private boolean mDidStartupRedirect;
+
     // final because it is called from the ctor.
     private final void resetContentFilter() {
         mFilter = ContentFilterFactory.create(mFproxyPrefix, containerPrefix());
@@ -136,6 +141,8 @@ public class WikiApp implements ChildContainer {
         mRoutes.put("fniki/getversions", new LoadingVersionList(mArchiveManager));
         mRoutes.put("fniki/loadarchive", new LoadingArchive(mArchiveManager));
         mRoutes.put("fniki/resettoempty", new ResetToEmptyWiki(mArchiveManager));
+        mRoutes.put("fniki/saveappstate", new SavingAppState());
+        mRoutes.put("fniki/clearappstate", new ClearingAppState());
         mRoutes.put("fniki/insertsite", new InsertingFreesite(mArchiveManager));
         mRoutes.put("fniki/updateusks", new UpdatingUsks(mArchiveManager));
         mRoutes.put("fniki/likeversion", new LikingVersion(mArchiveManager));
@@ -160,6 +167,7 @@ public class WikiApp implements ChildContainer {
                     new StaticFile("/plugin_jfniki.css", "UTF-8", "text/css"));
 
         // Routes determined by code.
+        mRoutes.put("from_code/startup_redirect", new StartingUp(mArchiveManager));
         mRoutes.put("from_code/goto_redirect", new GotoRedirect());
         mRoutes.put("from_code/query_error", new QueryError());
         mRoutes.put("from_code/wiki_container", new WikiContainer());
@@ -214,6 +222,13 @@ public class WikiApp implements ChildContainer {
     // This function defines the UI state machine.
     private ChildContainer routeRequest(WikiContext request)
         throws IOException {
+
+        if (!mDidStartupRedirect) {
+            // Show the "Discover" page for the previously
+            // loaded wiki if possible.
+            mDidStartupRedirect = true;
+            return mRoutes.get("from_code/startup_redirect");
+        }
 
         String action = request.getAction();
         String path = request.getPath();
@@ -355,7 +370,7 @@ public class WikiApp implements ChildContainer {
     private class WikiContextImplementation implements WikiContext {
         public WikiTextStorage getStorage() throws IOException { return mArchiveManager.getStorage(); }
         public WikiTextChanges getRemoteChanges() throws IOException { return mArchiveManager.getRemoteChanges(); }
-
+        public boolean isUnmodified() { return mArchiveManager.isUnmodified();}
         public FreenetWikiTextParser.ParserDelegate getParserDelegate() { return mParserDelegate; }
 
         public String getString(String keyName, String defaultValue) {
@@ -407,6 +422,14 @@ public class WikiApp implements ChildContainer {
             return defaultValue;
         }
 
+
+        public List<String> getStringList(String keyName, List<String> defaultValue) {
+            if (keyName.equals("wiki_list")) {
+                return mArchiveManager.getSortedWikiNameBarGroups();
+            }
+            return defaultValue;
+        }
+
         public int getInt(String keyName, int defaultValue) {
             if (keyName.equals("allow_images")) {
                 return mAllowImages ? 1 : 0;
@@ -417,6 +440,7 @@ public class WikiApp implements ChildContainer {
 
             return defaultValue;
         }
+
         public boolean isCreatingOuterHtml() { return mCreateOuterHtml; }
 
         // Can return an invalid configuration. e.g. if fms id and private ssk are not set.
@@ -481,17 +505,13 @@ public class WikiApp implements ChildContainer {
         // throws unchecked Configuration.ConfigurationException
         public void setConfiguration(Configuration config) {
             config.validate();
+            // WikiApp specific state.
             setListenPort(config.mListenPort);
-            mArchiveManager.setFcpHost(config.mFcpHost);
-            mArchiveManager.setFcpPort(config.mFcpPort);
-            setFproxyPrefix(config.mFproxyPrefix);
             setAllowImages(config.mAllowImages);
-            mArchiveManager.setFmsHost(config.mFmsHost);
-            mArchiveManager.setFmsPort(config.mFmsPort);
-            mArchiveManager.setFmsId(config.mFmsId);
-            mArchiveManager.setPrivateSSK(config.mFmsSsk);
-            mArchiveManager.setFmsGroup(config.mFmsGroup);
-            mArchiveManager.setBissName(config.mWikiName);
+            setFproxyPrefix(config.mFproxyPrefix);
+
+            // Update ArchiveManager.
+            mArchiveManager.updateFromConfiguration(config);
         }
 
         public String makeLink(String containerRelativePath) {
@@ -551,6 +571,18 @@ public class WikiApp implements ChildContainer {
             return String.format(template, (Object[])values);
         }
 
+        public void saveAppState() throws IOException {
+            mArchiveManager.saveAppState(WikiContextImplementation.this);
+        }
+
+        public void restoreAppState() throws IOException {
+            mArchiveManager.restoreAppState(WikiContextImplementation.this);
+        }
+
+        public void clearStoredAppState() throws IOException {
+            mArchiveManager.clearStoredAppState();
+        }
+
         public void logError(String msg, Throwable t) {
             if (msg == null) {
                 msg = "null";
@@ -568,6 +600,5 @@ public class WikiApp implements ChildContainer {
 
         public String getAction() { return mRequest.getQuery().get("action"); }
         public String getTitle() { return mRequest.getQuery().get("title"); }
-
     }
 }

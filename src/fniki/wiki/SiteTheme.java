@@ -26,6 +26,9 @@ package fniki.wiki;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +37,21 @@ import java.util.zip.ZipInputStream;
 
 import wormarc.IOUtil;
 
-public class SiteTheme {
-    final String mTemplate;
-    final String mDefaultPage;
-    final Iterable<FileInfo> mStaticFiles;
+// LATER: Revisit serialization HACKs?
+public class SiteTheme implements Serializable {
+    static final long serialVersionUID = 8369808699611171904L;
+    // Historical Note: These used to be public final, but
+    // I had to make mStaticFiles transient to get the
+    // serialization to work, which precludes it from
+    // being final (to the best of my knowledge).
+    private String mTemplate;
+    private String mDefaultPage;
+    private transient Iterable<FileInfo> mStaticFiles;
+
+    public String getTemplate() { return mTemplate; }
+    public String getDefaultPage() { return mDefaultPage; }
+    public Iterable<FileInfo> getStaticFiles() { return mStaticFiles; }
+
     public SiteTheme(String template, String defaultPage, Iterable<FileInfo> staticFiles) {
         mTemplate = template;
         mDefaultPage = defaultPage;
@@ -108,6 +122,51 @@ public class SiteTheme {
             if (zin != null) {
                 zin.close();
             }
+        }
+    }
+    public void debugDump(String msg) {
+        System.err.println("--- SiteTheme: " + msg + " ---");
+        System.err.println("mTemplate: " + mTemplate);
+        System.err.println("mDefaultPage: " + mDefaultPage);
+        System.err.println("FileInfos:");
+        for (FileInfo info : mStaticFiles) {
+            System.err.println("   name: " + info.getName());
+            System.err.println("   mimeType: " + info.getMimeType());
+            System.err.println("   length: " + info.getLength());
+            try {
+                System.err.println("   SHA1: " + IOUtil.getFileDigest(info.getInputStream()));
+            } catch (IOException ioe) {
+                System.err.println("   SHA1: EPIC FAIL! IOException");
+            }
+        }
+        System.err.println("---");
+    }
+
+    // Horrible HACK to make serialization work.  I'm not proud...
+    // Save FileInfos as RAMFileInfos, LOSING the original type.
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        ArrayList<RAMFileInfo> list = new ArrayList<RAMFileInfo>();
+        for (FileInfo info : mStaticFiles) {
+            list.add(new RAMFileInfo(info));
+        }
+        out.writeObject(list);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        try {
+            in.defaultReadObject();
+            // Dunno how to "downcast" generic lists.
+            // If this is obvious to some java hacker out there,
+            // please school me.
+            List<FileInfo> list = new ArrayList<FileInfo>();
+
+            for (RAMFileInfo info : (List<RAMFileInfo>)in.readObject()) {
+                list.add(info);
+            }
+            mStaticFiles = list; // List implements Iterable.
+        } catch (ClassNotFoundException cnfe) {
+            throw new IOException(cnfe);
         }
     }
 }

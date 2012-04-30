@@ -24,7 +24,10 @@
 
 package fniki.wiki;
 
-public final class Configuration {
+import java.io.Serializable;
+
+public final class Configuration implements Serializable {
+    static final long serialVersionUID = -6135201094192856987L;
     public final static class ConfigurationException extends IllegalArgumentException {
         protected ConfigurationException(String msg) {
             super(msg);

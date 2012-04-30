@@ -419,10 +419,21 @@ public class WikiContainer implements ChildContainer {
 
         buffer.append(makeLocalLink(context, "fniki/config", "view", "View"));
         buffer.append(" configuration.<br/>\n");
+        buffer.append(makeLocalLink(context, "fniki/saveappstate", "view", "Store"));
+        buffer.append(" app state. (<em>Doesn't store unsubmitted changes!</em>)<br>\n");
         buffer.append(makeLocalLink(context, "fniki/tools", null, "Display"));
         buffer.append(" more tools...<p/>\n");
         buffer.append(gotoPageFormHtml(context.makeLink("/" + name),
                                        context.getString("default_page", "Front_Page")));
+        buffer.append("<p>");
+        // Forces a switch to the corresponding wiki name / group,
+        // resets the contents to empty and starts the "Discover"
+        // page for the new name / group.
+        buffer.append(switchWikiFormHtml(context.makeLink("/fniki/getversions"),
+                                         context.getStringList("wiki_list",
+                                                               new ArrayList<String>()),
+                                         context.isUnmodified()
+                                         ));
    }
 
     private void addFooter(WikiContext context, String name, boolean readOnly, StringBuilder buffer) throws IOException {

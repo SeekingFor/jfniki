@@ -25,6 +25,7 @@
 package fniki.wiki;
 
 import java.io.IOException;
+import java.util.List;
 
 // Add wiki specific functionality.
 public interface WikiContext extends Request {
@@ -33,6 +34,7 @@ public interface WikiContext extends Request {
 
     WikiTextStorage getStorage() throws IOException;
     WikiTextChanges getRemoteChanges() throws IOException;
+    boolean isUnmodified();
     FreenetWikiTextParser.ParserDelegate getParserDelegate();
 
     // Client must deal with url escaping.
@@ -40,6 +42,7 @@ public interface WikiContext extends Request {
 
     String getString(String keyName, String defaultValue);
     int getInt(String keyName, int defaultValue);
+    List<String> getStringList(String keyName, List<String> defaultValue);
 
     boolean isCreatingOuterHtml();
 
@@ -78,4 +81,9 @@ public interface WikiContext extends Request {
     // in the values.
     String fillInTemplate(String templateName, String... values)
         throws ServerErrorException;
+
+    void saveAppState() throws IOException;
+    void restoreAppState() throws IOException;
+    // Clears the underlying data. Doesn't effect running app.
+    void clearStoredAppState() throws IOException;
 }

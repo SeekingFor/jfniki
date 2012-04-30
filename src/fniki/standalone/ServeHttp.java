@@ -24,19 +24,22 @@
 package fniki.standalone;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileInputStream;
 
 import net.freeutils.httpserver.HTTPServer;
 
 import wormarc.IOUtil;
-import fniki.wiki.Configuration;
-import fniki.wiki.WikiApp;
 import fniki.wiki.ArchiveManager;
+import fniki.wiki.Configuration;
+import fniki.wiki.ByteStore;
+import fniki.wiki.WikiApp;
 
 public class ServeHttp {
     private final static int DEFAULT_PORT = 8080;
+    private final static String STATE_FILE = "jfnikidb.dat";
 
-    // DCI: update. can't run from jar without class?
     private final static String HELP_TEXT =
         "ServeHttp: Experimental distributed anonymous wiki over Freenet + FMS\n" +
         "written as part of the fniki Freenet Wiki project\n" +
@@ -47,14 +50,51 @@ public class ServeHttp {
         "USAGE:\n" +
         "java -jar jfniki.jar <listen_port> [SSK@/XXX...XXX/0123456789abcdef]\n" +
         "or\n" +
-        "java -jar jfniki.jar <config_file> [SSK@/XXX...XXX/0123456789abcdef]\n\n" +
-        "NOTE:\nfreenet.jar MUST be in your classpath.\n" +
+        "java -jar jfniki.jar <config_file> [SSK@/XXX...XXX/0123456789abcdef]\n" +
+        "or\n" +
+        "java -jar jfniki.jar path/to/" +
+        STATE_FILE + " [SSK@/XXX...XXX/0123456789abcdef]\n\n" +
+        "NOTES:\nfreenet.jar MUST be in your classpath.\n" +
+        "There is already a *nix wrapper script. See ./script/jfniki.sh\n" +
+        "If you use the file name '" + STATE_FILE +
+        "' the app will use\n" +
+        "that file to store its state. Make sure the path points\n" +
+        "to somewhere safe. THE CONTENTS ARE NOT ENCRYPTED!\n" +
         "If you include an archive SSK on the command line, the web UI doesn't\n" +
         "start until it is loaded.\n\n" +
         "EXAMPLES:\n" +
+        "#Start jfniki using the exported configuration.\n" +
         "java -jar jfniki.jar ~/saved_jfniki.cfg\n\n" +
-        "java -jar jfniki.jar 8099\n\n";
+        "# Reads / writes app state to ~/jfniki_storage/" + STATE_FILE + "\n" +
+        "# This persists most app state including the configuration.\n" +
+        "java -jar jfniki.jar ~/jfniki_storage\n\n" +
+        "# Start jfniki on port 8099 with no config loaded.\n" +
+        "java -jar jfniki.jar 8099\n\n" +
+        "BUG: The default class is currently broken in the jar.  You will need to\n" +
+        "list fniki.standalone.ServeHttp on the command lines above. See\n" +
+        "./script/jfniki.sh in the source.\n\n";
 
+    private static class FileByteStore implements ByteStore {
+        private final String mStateFileName;
+        public FileByteStore(File file) {
+            if (!file.getName().equals(STATE_FILE)) {
+                throw new IllegalArgumentException("Unexpected file name.");
+            }
+            mStateFileName = file.getAbsolutePath();
+        }
+        public void save(byte[] bytes) throws IOException {
+            IOUtil.writeFully(bytes, mStateFileName);
+        }
+
+        public byte[] load() throws IOException {
+            return IOUtil.readFully(mStateFileName);
+        }
+        public void remove() throws IOException {
+            // CLI users don't want to do this by mistake.
+            //(new File(mStateFileName)).delete();
+            throw new IOException("Not implemented! Delete the file manually.");
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         if (args.length > 2 || args.length < 1) {
@@ -74,10 +114,23 @@ public class ServeHttp {
             wikiApp.setListenPort(Integer.parseInt(args[0]));
 
         } catch (NumberFormatException nfe) {
-            System.out.println("Reading configuration from: " + args[0]);
-            Configuration config =
-                Configuration.fromStringRep(IOUtil.readUtf8StringAndClose(new FileInputStream(args[0])));
-            wikiApp.getContext().setConfiguration(config);
+            File asFile = new File(args[0]);
+            if (asFile.getName().equals(STATE_FILE)) {
+                System.out.println("Using app state file: " + asFile.getAbsolutePath());
+                archiveManager.setByteStore(new FileByteStore(asFile));
+                try {
+                    wikiApp.getContext().restoreAppState();
+                    System.out.println("Loaded saved state.");
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                    System.out.println("Couldn't load saved state.");
+                }
+            } else {
+                System.out.println("Reading expored configuration from: " + args[0]);
+                Configuration config =
+                    Configuration.fromStringRep(IOUtil.readUtf8StringAndClose(new FileInputStream(args[0])));
+                wikiApp.getContext().setConfiguration(config);
+            }
         }
 
         if (args.length == 1) {
