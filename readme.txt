@@ -1,4 +1,4 @@
-20120212
+20120429
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -54,6 +54,14 @@ Then you can start the script with the saved configuration. i.e.:
 
 will start the stand alone app on the same port you used before.
 
+If you want the app to store information about visited wikis between
+invocations, use the 'magic' config file name 'jfnikidb.dat' i.e.
+
+./script/jfniki.sh path/to/jfnikidb.dat
+
+You need to manually import your configuration the first time.
+Saving is not automatic.  Hit the 'Store' link before exiting.
+
 RUNNING STAND ALONE ON WINDOWS:
 I don't have access to a Windows machine to test on so I didn't write a .bat.
 
@@ -67,11 +75,17 @@ Load the jar file from ./build/jar/jfniki.jar
 
 Follow the "Quick Start" intructions.
 
+You can use the "Store" link to save the current app state.
+The stored app state is automatically reloaded when the plugin loads.
+
 OTHER DOC:
 See quickstart.txt in the doc directory (The default page when an empty wiki is displayed).
 It has some notes on experimental support for Freetalk implemented by sethcg.
 
 KNOWN ISSUES:
+o When running stand alone, jfnikidb.dat is stored UNENCRYPTED. It contains private keys.
+  Use a safe location. i.e an encrypted / and / or removable drive. jfniki will never write
+  this file unless you tell it to by starting with a jfnikidb.dat file as described above.
 o "Cancel" sometimes fails. [WORKAROUND: load and unload the plugin / kill restart the stand alone app.]
 o FMS Id displays "???" when importing config with non-default FCP host and/or port.
   [WORKAROUND: Click "Done", then click view again and the FMS Id should be correctly displayed.]
@@ -88,13 +102,14 @@ sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
 ---
 Dev notes -- Personal notes about work in progress. Take everything you see below here with a grain of salt.
 ---
-BUG: Coalesce creation and "like" messages in the version graph.
 ?BUG: Saw spurious content filter trip viewing ChangeLog on freenetdocwiki. couldn't repro standalone.
       loading the wiki again made it go away?
 BUG: mSecondary not reset after submit?[verified, fix it!]
 BUG: am seeing sha1('') hash values for cached CHKs for re-insert code? what's up [looks ugly. not critical. punt for now.]
 BUG: wikitext should use unix line terminators not DOS (+1 byte per line) [punt for now]
 ---
+CHORE: Implement auto-saving of app state?
+** CHORE: clean up revision graph drawing code. It is getting ugly.
 ** CHORE: Fix all the places I should be using context.fillInTemplate
 CHORE: Fix commented out assertion in release script.
 CHORE: Fix release script to automagically truncate the latest_version file at a sentinel line.
@@ -172,6 +187,7 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+4cb00d6bddfb: BUG: Coalesce creation and "like" messages in the version graph.
 ac35943f6761: BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 54e4f3b61ef8: BUG: insert top key to CHK if the end user doesnt have the private key.
                    i.e. don't leave a trace of re-insertions in SSK keyspace.

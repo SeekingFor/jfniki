@@ -1,3 +1,17 @@
+Added support for header and footer template pages.
+__meta__header__ is the name of the header template page.
+__meta__footer__ is the name of the header template page.
+
+Added code to allow switching between known wikis.
+
+Added code to save the app state between invocations.
+Note that this is not automatic. You must use the 'Store'
+link to save the current app state.
+See the readme.txt for information on specifying the
+location of the file to store state in when running stand
+alone.
+
+bc83a94cf0b2
 Added "Read FMS Identities" button to the configuration page which imports
 identity configuration directly from FMS so that users don't have
 to deal with manually exporting private keys.
