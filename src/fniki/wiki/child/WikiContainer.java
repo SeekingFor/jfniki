@@ -211,9 +211,40 @@ public class WikiContainer implements ChildContainer {
         }
     }
 
-    private static String getPageWikiText(WikiContext context, String name, String action) throws IOException {
+    private final static String FOOTER_PAGE = "__meta__footer__";
+    private final static String HEADER_PAGE = "__meta__header__";
+    private static String getTemplateWikiText(WikiContext context,
+                                              String template_page,
+                                              String name)
+        throws IOException {
+        if (name.startsWith("__meta__")) {
+            // I am not sure this is right, but not doing
+            // it is definitely wrong.
+            // i.e. don't show the headers / footers as you are
+            // editing them.
+            return "";
+        }
+        if (!context.getStorage().hasPage(template_page)) {
+            return "";
+        }
+        return context.getStorage().getPage(template_page);
+    }
+
+    private static String getPageWikiText(WikiContext context, String name, String action)
+        throws IOException {
         if (action.equals("view")) {
-            return context.getStorage().getPage(name);
+            return
+                // Header
+                getTemplateWikiText(context,
+                                    HEADER_PAGE,
+                                    name) +
+                // WikiText
+                context.getStorage().getPage(name) +
+
+                // Footer
+                getTemplateWikiText(context,
+                                    FOOTER_PAGE,
+                                    name);
         } else if (action.equals("viewparent")) {
             return context.getStorage().getUnmodifiedPage(name);
         } else if (action.equals("viewrebase")) {
