@@ -105,10 +105,8 @@ Dev notes -- Personal notes about work in progress. Take everything you see belo
 BUG: I saw a graph rendering bug in the revision graph for the fdw.  Investigate.
 ?BUG: Saw spurious content filter trip viewing ChangeLog on freenetdocwiki. couldn't repro standalone.
       loading the wiki again made it go away? [I have not seen this in months]
-BUG: Fix html dumping to include __meta__head__ and __meta__footer__ wikitext in output.
 BUG: Rendering of __meta__* links / page titles is confusing because '_' gets converted to ' '.
      make it clearer.
-BUG: Fix missing link break before fdw activelink.
 BUG: Should print a message when the latest known loaded version doesn't show up in version list.
      i.e. so you know that the announcement has arrived / didn't arrive
 BUG: mSecondary not reset after submit?[verified, fix it! FIXED. retest]
@@ -196,6 +194,8 @@ IDEA: Wikibot ng. Just uses its FMS trust info to decide which version is the la
       send a "Stake" biss message for it.
 ---
 Fixed bugs:
+96e78e745b7d: BUG: Fix missing line break before fdw activelink.
+96e78e745b7d: BUG: Fix html dumping to include __meta__head__ and __meta__footer__ wikitext in output.
 4cb00d6bddfb: BUG: Coalesce creation and "like" messages in the version graph.
 ac35943f6761: BUG: Fix dumpwiki to set CSS class for "Discussion" links.
 54e4f3b61ef8: BUG: insert top key to CHK if the end user doesnt have the private key.
