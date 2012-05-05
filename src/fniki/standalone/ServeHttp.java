@@ -67,7 +67,7 @@ public class ServeHttp {
         "java -jar jfniki.jar ~/saved_jfniki.cfg\n\n" +
         "# Reads / writes app state to ~/jfniki_storage/" + STATE_FILE + "\n" +
         "# This persists most app state including the configuration.\n" +
-        "java -jar jfniki.jar ~/jfniki_storage\n\n" +
+        "java -jar jfniki.jar ~/jfniki_storage/" + STATE_FILE + "\n\n" +
         "# Start jfniki on port 8099 with no config loaded.\n" +
         "java -jar jfniki.jar 8099\n\n" +
         "BUG: The default class is currently broken in the jar.  You will need to\n" +

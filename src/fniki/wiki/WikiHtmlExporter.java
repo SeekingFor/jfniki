@@ -54,10 +54,14 @@ public class WikiHtmlExporter {
     }
 
     private String dumpPage(String name) throws IOException {
-        if (!mArchiveManager.getStorage().hasPage(name)) {
-            return "Page doesn't exist in the wiki yet.";
+        String wikiText = "Page doesn't exist in the wiki yet.";
+        if (mArchiveManager.getStorage().hasPage(name)) {
+            wikiText = WikiTextUtils.
+                getPageWithHeaderAndFooter(mArchiveManager.getStorage(),
+                                           name);
         }
-        return new FreenetWikiTextParser(mArchiveManager.getStorage().getPage(name), mParserDelegate).toString();
+        return new FreenetWikiTextParser(wikiText,
+                                         mParserDelegate).toString();
     }
 
     private String getTalkName(String name) throws IOException {

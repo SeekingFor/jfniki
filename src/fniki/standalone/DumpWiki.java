@@ -46,6 +46,7 @@ import wormarc.IOUtil;
 import fniki.wiki.ArchiveManager;
 import fniki.wiki.FreenetWikiTextParser;
 import fniki.wiki.WikiParserDelegate;
+import fniki.wiki.WikiTextUtils;
 import fniki.wiki.HtmlExportParserDelegate;
 
 public class DumpWiki {
@@ -130,14 +131,15 @@ public class DumpWiki {
                     talkCssClass = "notalktitle";
                 }
 
-                String html = "Page doesn't exist in the wiki yet.";
+                String wikiText = "Page doesn't exist in the wiki yet.";
                 if (archiveManager.getStorage().hasPage(name)) {
-                    html = new FreenetWikiTextParser(archiveManager.
-                                                     getStorage().
-                                                     getPage(name),
-                                                     mParserDelegate).
-                        toString();
+                    wikiText = WikiTextUtils.
+                        getPageWithHeaderAndFooter(archiveManager.getStorage(),
+                                                   name);
                 }
+                String html = new FreenetWikiTextParser(wikiText,
+                                                        mParserDelegate).toString();
+
                 // djk: sethcg, look at my example wiki_dump_template.html
                 //      We should get rid of the duplicates and use ordinals
                 //      in the templates.

@@ -46,6 +46,7 @@ import wormarc.FileManifest;
 import wormarc.IOUtil;
 
 import fniki.wiki.FreenetWikiTextParser;
+import fniki.wiki.WikiTextUtils;
 import static fniki.wiki.HtmlUtils.*;
 import fniki.wiki.RebaseStatus;
 import static fniki.wiki.Validations.*;
@@ -233,18 +234,9 @@ public class WikiContainer implements ChildContainer {
     private static String getPageWikiText(WikiContext context, String name, String action)
         throws IOException {
         if (action.equals("view")) {
-            return
-                // Header
-                getTemplateWikiText(context,
-                                    HEADER_PAGE,
-                                    name) +
-                // WikiText
-                context.getStorage().getPage(name) +
-
-                // Footer
-                getTemplateWikiText(context,
-                                    FOOTER_PAGE,
-                                    name);
+            // Only show headers and footers for the normal view.
+            return WikiTextUtils.
+                getPageWithHeaderAndFooter(context.getStorage(), name);
         } else if (action.equals("viewparent")) {
             return context.getStorage().getUnmodifiedPage(name);
         } else if (action.equals("viewrebase")) {

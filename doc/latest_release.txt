@@ -1,3 +1,6 @@
+Fixed html exporting to render headers and footers.
+
+4ea32e81659b
 Added support for header and footer template pages.
 __meta__header__ is the name of the header template page.
 __meta__footer__ is the name of the header template page.
