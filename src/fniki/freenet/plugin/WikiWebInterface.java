@@ -76,6 +76,7 @@ public class WikiWebInterface extends Toadlet {
     //FIXME link the core.
     //FIXME validate referrer.
     //FIXME validate session.
+    // SFA: this can be additional security checks.. maybe not needed though. for "link the core": no idea either :)
     public void handleMethodPOST(URI uri, HTTPRequest request, ToadletContext ctx)
         throws ToadletContextClosedException, IOException, RedirectException, PluginHTTPException {
         handleJfnikiRequest(request, ctx);
@@ -84,6 +85,7 @@ public class WikiWebInterface extends Toadlet {
     private void handleJfnikiRequest(HTTPRequest request, ToadletContext ctx)
         throws ToadletContextClosedException,  IOException, PluginHTTPException {
         // djk: why is SFA doing this on every request?
+    	// SFA: afaik this should not be needed, feel free to move this elsewhere.
         mWikiApp.setContainerPrefix(mNameSpace.substring(0, mNameSpace.length() - 1));
         try {
             mWikiApp.setRequest(new PluginRequest(request, mNameSpace));
@@ -92,7 +94,7 @@ public class WikiWebInterface extends Toadlet {
             if (appResult.getMimeType().equals("text/html")) {
                 PageNode pageNode = ctx.getPageMaker().getPageNode("jFniki", true, ctx);
                 pageNode.addCustomStyleSheet(mNameSpace + "jfniki.css");
-                pageNode.content.setContent(new String(appResult.getData(), "UTF-8"));
+                pageNode.content.addChild("%", new String(appResult.getData(), "UTF-8"));
                 if (appResult.getMetaRefreshSeconds() > 0) {
                     pageNode.headNode.addChild("meta", "http-equiv", "Refresh").
                         addAttribute("content","" + appResult.getMetaRefreshSeconds());
@@ -108,6 +110,7 @@ public class WikiWebInterface extends Toadlet {
             //                      Do not use it if you don't know what you are doing.
             // djk: All I meant is that the my code runs the content filter over the html which is returned
             //      by handle() above, but  not  over whatever you return from the catch blocks below.
+            // SFA: so i guess this comment block but the first line can be removed.
         } catch(AccessDeniedException accessDenied) {
             // FIXME: Check. This doesn't need to be HTML escaped because it is text/plain, right?
             writeReply(ctx, 403, "text/plain", "Forbidden", accessDenied.getMessage());
@@ -132,6 +135,7 @@ public class WikiWebInterface extends Toadlet {
             // throw new DownloadPluginHTTPException(forceDownload.mData,
             //                                       forceDownload.mFilename,
             //                                       forceDownload.mMimeType);
+	    	// SFA: so this can be removed too i guess?
 
         } catch(ChildContainerException childError) {
             writeReply(ctx, 500, "text/plain", "Internal Server Error", childError.getMessage());
@@ -141,4 +145,5 @@ public class WikiWebInterface extends Toadlet {
     // djk: SFA, I ripped out your createRequestInfo method, because I didn't
     // know if it needed to be doing HTML escaping and it looked like it was
     // only for debugging.
+    // SFA: it was only for debugging. this comment block can be removed.
 }

@@ -58,7 +58,7 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * Process a URI.
      * If it cannot be turned into something sufficiently safe, then return null.
      * @param overrideType Force the return type.
-     * @throws CommentException If the URI is nvalid or unacceptable in some way.
+     * @throws CommentException If the URI is invalid or unacceptable in some way.
      */
     public String processURI(String uri, String overrideType) throws CommentException {
         if (uri.startsWith("#")) {
@@ -83,7 +83,7 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * Process a URI.
      * If it cannot be turned into something sufficiently safe, then return null.
      * @param overrideType Force the return type.
-     * @throws CommentException If the URI is nvalid or unacceptable in some way.
+     * @throws CommentException If the URI is invalid or unacceptable in some way.
      */
     public String processURI(String uri, String overrideType, boolean noRelative, boolean inline) throws CommentException {
         // inline is true for images (which we allow mod URI filtering).
