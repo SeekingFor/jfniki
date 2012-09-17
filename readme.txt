@@ -1,4 +1,4 @@
-20120405
+20120916
 djk@isFiaD04zgAgnrEC5XJt1i4IE7AkNPqhBG5bONi6Yks
 
 WARNING:
@@ -94,7 +94,7 @@ CONTRIBUTORS:
 ---
 SeekingForAttention
  o made the jfniki Freenet Plugin into a real toadlet.
-
+ o fixed jfniki Freenet pluging to work after the freenet 1413 changes to the plugin api.
 sethcg@a-tin0kMl1I~8xn5lkQDqYZRExKLzJITrxcNsr4T~fY
  o patch to make jfniki work with Freetalk.
  o patch to dump jfniki to html for insertion as a freesite (DumpWiki)

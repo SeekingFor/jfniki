@@ -54,10 +54,10 @@ JUST_CHECK_HTML = False
 STAGING_DIR = '/tmp/staging'
 
 FCP_HOST = '127.0.0.1'
-FCP_PORT = 19481
+FCP_PORT = 9481
 
 FMS_HOST = '127.0.0.1'
-FMS_PORT =  11119
+FMS_PORT =  1119
 
 FMS_ID = 'djk'
 FMS_GROUP = 'sites'
@@ -72,9 +72,9 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 ############################################################
 # Indexes of referenced USK sites
 
-FREENET_DOC_WIKI_IDX = 10
+FREENET_DOC_WIKI_IDX = 14
 FNIKI_IDX = 85
-REPO_IDX = 33
+REPO_IDX = 34
 DFC_IDX = 25
 
 ############################################################

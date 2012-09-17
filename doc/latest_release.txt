@@ -1,3 +1,8 @@
+Merged fix from SeekingFor to make jfniki work again with freenet 1413 and later.
+
+Many thanks! 
+
+0267db0042a3
 Fixed html exporting to render headers and footers.
 
 4ea32e81659b
