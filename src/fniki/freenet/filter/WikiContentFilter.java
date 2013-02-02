@@ -117,6 +117,9 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      */
     public void onText(String s, String type) {}
 
+    // TODO: write some nice description
+	public void onFinished() { }
+	
     /**
      * Process a form on the page.
      * @param method The form sending method. Normally GET or POST.
