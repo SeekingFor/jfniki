@@ -72,10 +72,10 @@ PUBLIC_SITE = "USK@kRM~jJVREwnN2qnA8R0Vt8HmpfRzBZ0j4rHC2cQ-0hw," + \
 ############################################################
 # Indexes of referenced USK sites
 
-FREENET_DOC_WIKI_IDX = 14
+FREENET_DOC_WIKI_IDX = 17
 FNIKI_IDX = 85
-REPO_IDX = 34
-DFC_IDX = 25
+REPO_IDX = 36
+DFC_IDX = 28
 
 ############################################################
 RELEASE_NOTES_SENTINEL = "~~~END_OF_PUBLISHED_RELEASE_NOTES~~~"
