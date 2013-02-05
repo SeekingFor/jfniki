@@ -512,9 +512,7 @@ public class WikiContainer implements ChildContainer {
         buffer.append("");
         buffer.append(makeLocalLink(context, path, "viewsrc", "View Wikitext Source"));
         buffer.append("</form>\n");
-        if (mCreateOuterHtml) {
-            buffer.append("</body></html>\n");
-        }
+        buffer.append("</body></html>\n");
 
         return buffer.toString();
     }
