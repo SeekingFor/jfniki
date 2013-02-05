@@ -117,9 +117,6 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      */
     public void onText(String s, String type) {}
 
-    // TODO: write some nice description
-	public void onFinished() { }
-	
     /**
      * Process a form on the page.
      * @param method The form sending method. Normally GET or POST.
@@ -143,6 +140,13 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
      * @return The new tag, or null, if it doesn't need changing
      * */
     public String processTag(ParsedTag pt) { return null; }
+
+
+    /* TODO: There is no documentation for this method in the
+     * Freenet source. I(djk) assume a NOP definition is sufficient.
+     */
+    public void onFinished() {}
+
 
     ////////////////////////////////////////////////////////////
     // One off hacks to allow specific cases mangled by the filter.

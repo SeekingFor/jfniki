@@ -1,6 +1,12 @@
+Merged fix from SeekingFor to make jfniki work again after the freenet
+devs changed the freenet.client.filter.FilterCallback interface.
+
+Many thanks!
+
+5fa71437c816
 Merged fix from SeekingFor to make jfniki work again with freenet 1413 and later.
 
-Many thanks! 
+Many thanks!
 
 0267db0042a3
 Fixed html exporting to render headers and footers.
