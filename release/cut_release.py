@@ -54,10 +54,10 @@ JUST_CHECK_HTML = False
 STAGING_DIR = '/tmp/staging'
 
 FCP_HOST = '127.0.0.1'
-FCP_PORT = 9481
+FCP_PORT = 19481
 
 FMS_HOST = '127.0.0.1'
-FMS_PORT =  1119
+FMS_PORT =  11119
 
 FMS_ID = 'djk'
 FMS_GROUP = 'sites'
