@@ -1,3 +1,5 @@
+Added more compatibility fixes for FilterCallback to work with 1493.
+
 Merged fix from SeekingFor to make jfniki work again after the freenet
 devs changed the freenet.client.filter.FilterCallback interface.
 
