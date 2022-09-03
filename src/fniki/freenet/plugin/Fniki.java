@@ -27,7 +27,7 @@ package fniki.freenet.plugin;
 import java.io.IOException;
 import java.util.Set;
 
-import freenet.client.async.DatabaseDisabledException;
+import freenet.client.async.PersistenceDisabledException;
 
 import freenet.clients.http.PageMaker;
 import freenet.clients.http.Toadlet;
@@ -86,7 +86,7 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
                 }
                 store.bytesArrays.put(STORE_KEY, bytes);
                 mRespirator.putStore(store);
-            } catch (DatabaseDisabledException dde) {
+            } catch (PersistenceDisabledException dde) {
                 throw new IOException("Database disabled.");
             }
         }
@@ -104,7 +104,7 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
                     throw new IOException("PluginStore has no entry for: " + STORE_KEY);
                 }
                 return store.bytesArrays.get(STORE_KEY);
-            } catch (DatabaseDisabledException dde) {
+            } catch (PersistenceDisabledException dde) {
                 throw new IOException("Database disabled.");
             }
         }
@@ -122,7 +122,7 @@ public class Fniki implements FredPlugin, FredPluginThreadless, FredPluginL10n {
                     store.bytesArrays.remove(STORE_KEY);
                     mRespirator.putStore(store);
                 }
-            } catch (DatabaseDisabledException dde) {
+            } catch (PersistenceDisabledException dde) {
                 throw new IOException("Database disabled.");
             }
         }

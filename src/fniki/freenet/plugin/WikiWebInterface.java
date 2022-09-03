@@ -65,8 +65,12 @@ public class WikiWebInterface extends Toadlet {
     }
 
     public void handleMethodGET(URI uri, HTTPRequest request, ToadletContext ctx) throws
-        ToadletContextClosedException, IOException, RedirectException, PluginHTTPException {
-        handleJfnikiRequest(request, ctx);
+        ToadletContextClosedException, IOException {
+        try {
+            handleJfnikiRequest(request, ctx);
+        } catch (PluginHTTPException e) {
+            throw new IOException(e);
+        }
     }
 
     // djk: Check with Toad.  This should only be called if the form has the

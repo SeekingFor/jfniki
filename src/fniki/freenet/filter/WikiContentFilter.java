@@ -98,6 +98,25 @@ class WikiContentFilter implements ContentFilter, FilterCallback  {
     }
 
     /**
+     * Process a URI.
+     * If it cannot be turned into something sufficiently safe, then return null.
+     * @param overrideType Force the return type.
+     * @param forceSchemeHostAndPort Force a host and port. This is like noRelative, which we do not allow.
+     * @throws CommentException If the URI is invalid or unacceptable in some way.
+     */
+    public String processURI(String uri, String overrideType, String forceSchemeHostAndPort, boolean inline) throws CommentException {
+        // inline is true for images (which we allow mod URI filtering).
+        // if forceSchemeHostAndPort is set, you must return an absolute URI, which we don't allow.
+        if (forceSchemeHostAndPort != null && !forceSchemeHostAndPort.isEmpty() && !forceSchemeHostAndPort.chars().allMatch(Character::isWhitespace)) {
+            System.err.println("processURI(1): " + uri + " : " + overrideType + " : " + forceSchemeHostAndPort + " : " + inline);
+            System.err.println("processURI(1): REJECTED URI because of forceSchemeHostAndPort.");
+            filterTripped();
+            return null;
+        }
+        return processURI(uri, overrideType);
+    }
+
+    /**
      * Process a base URI in the page. Not only is this filtered, it affects all
      * relative uri's on the page.
      */
